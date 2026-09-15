@@ -1,0 +1,738 @@
+:root {
+  --accent: #3eb5f0;
+  --accent-soft: rgba(62, 181, 240, 0.18);
+  --line: #e3e6ea;
+  --ink: #1c1f23;
+  --muted: #6b7280;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 0 60px;
+  background: #f6f7f9;
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans SC", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+  line-height: 1.6;
+}
+
+header {
+  background: linear-gradient(135deg, #125475, #1c7fa8);
+  color: #fff;
+  padding: 22px 28px 20px;
+}
+
+header h1 {
+  margin: 0 0 4px;
+  font-size: 1.45rem;
+  letter-spacing: 0.02em;
+}
+
+header .sub {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.88;
+}
+
+header .note {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.12);
+  border-left: 3px solid rgba(255, 255, 255, 0.5);
+  padding: 6px 10px;
+  border-radius: 0 6px 6px 0;
+}
+
+header .note code {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px 20px 0;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.examples {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.examples-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.examples button {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  background: #fafbfc;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.examples button:hover {
+  border-color: var(--accent);
+  color: #0d6e9c;
+}
+
+/* ---------------------------------------------------------------- 编辑器 */
+
+.ste {
+  font-size: 14px;
+}
+
+.ste-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.ste-btn {
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 44px;
+  min-height: 40px;
+  /* 按钮名补全成「＋女儿节点」之后变长了，内边距和间距都收紧一点，
+     让工具栏尽量排成一行 */
+  padding: 3px 7px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--ink);
+  white-space: nowrap;
+  line-height: 1.15;
+}
+
+/* 按钮下边那行就是快捷键，不用再记 */
+.ste-btn-label {
+  font-size: 0.78rem;
+}
+
+.ste-btn-key {
+  font-size: 0.6rem;
+  color: #9aa3ad;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.01em;
+}
+
+.ste-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: #f2fafe;
+}
+
+.ste-btn:hover:not(:disabled) .ste-btn-key {
+  color: #0d6e9c;
+}
+
+.ste-btn:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+.ste-sep {
+  width: 1px;
+  height: 26px;
+  background: var(--line);
+  margin: 0 4px;
+}
+
+/* ---------------------------------------------------------- 垂直对齐选择 */
+
+.ste-align {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.ste-align-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* 三个按钮必须紧贴成一组（gap:0），否则中间的竖线只有一半，
+   看着就像"有时候消失"。 */
+.ste-seg-group {
+  display: flex;
+  gap: 0;
+}
+
+.ste-seg {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.ste-seg + .ste-seg {
+  border-left: none;
+}
+
+.ste-seg:first-child {
+  border-radius: 999px 0 0 999px;
+}
+
+.ste-seg:last-child {
+  border-radius: 0 999px 999px 0;
+}
+
+.ste-seg:hover:not(.is-active) {
+  background: #f2fafe;
+}
+
+/* 选中项用整块底色标记，而不是只靠边框 —— 边框方案在相邻按钮上会互相吃掉 */
+.ste-seg.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.ste-seg.is-active + .ste-seg {
+  border-left: 1px solid var(--accent);
+}
+
+.ste-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.ste-chip {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 2px 9px;
+  border: 1px solid #d8e6ef;
+  background: #f4fafe;
+  color: #0d5c85;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.ste-chip:hover {
+  background: #e3f4fd;
+  border-color: var(--accent);
+}
+
+.ste-scroll {
+  position: relative;
+  overflow: auto;
+  min-height: 220px;
+  max-height: 62vh;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  outline: none;
+  padding: 8px;
+}
+
+.ste-scroll:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.ste-surface {
+  position: relative;
+  display: block;
+}
+
+.ste-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  /* 关键：让点击穿透到下面的画布，只有按钮自己接收事件 */
+  pointer-events: none;
+  user-select: none;
+}
+
+.ste-placeholder[hidden] {
+  display: none;
+}
+
+.ste-placeholder-title {
+  font-size: 0.95rem;
+  color: #9aa3ad;
+  letter-spacing: 0.08em;
+}
+
+.ste-placeholder-sub {
+  font-size: 0.78rem;
+  color: #b3bac2;
+  max-width: 30em;
+  line-height: 1.6;
+}
+
+.ste-placeholder-btn {
+  pointer-events: auto;
+  font: inherit;
+  font-size: 0.82rem;
+  margin-top: 2px;
+  padding: 6px 16px;
+  border: 1px dashed var(--accent);
+  background: #f2fafe;
+  color: #0d6e9c;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.ste-placeholder-btn:hover {
+  background: #e3f4fd;
+  border-style: solid;
+}
+
+.ste-svg {
+  display: block;
+}
+
+.ste-node {
+  cursor: pointer;
+}
+
+.ste-node:hover .ste-hit {
+  fill: rgba(62, 181, 240, 0.1);
+}
+
+.ste-node.is-selected .ste-hit {
+  fill: var(--accent-soft);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.ste-input {
+  position: absolute;
+  z-index: 3;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--accent);
+  border-radius: 6px;
+  background: #fff;
+  color: #0000cc;
+  text-align: center;
+  outline: none;
+  box-shadow: 0 1px 6px rgba(62, 181, 240, 0.35);
+}
+
+.ste-text {
+  margin-top: 12px;
+}
+
+.ste-text-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+.ste-caption {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.ste-textarea {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  resize: vertical;
+  color: #14213d;
+  background: #fcfdfe;
+}
+
+.ste-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ------------------------------------------------- 代码框：装订线 + 文本区 */
+
+.ste-code {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fcfdfe;
+  overflow: hidden;
+}
+
+.ste-code:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* 装订线：只用来查看。不可选中、不接收焦点，点它只会把焦点交给文本框。 */
+.ste-gutter {
+  flex: 0 0 auto;
+  overflow: hidden;
+  min-width: 2.4em;
+  padding: 8px 6px 8px 10px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  text-align: right;
+  color: #aab3bd;
+  background: #f4f6f8;
+  border-right: 1px solid var(--line);
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.ste-gutter[hidden] {
+  display: none;
+}
+
+.ste-gutter-lines {
+  display: block;
+  white-space: pre;
+  will-change: transform;
+}
+
+/* 文本框放进代码框里之后，边框和圆角交给外层 */
+.ste-code .ste-textarea {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ste-code .ste-textarea:focus {
+  border: none;
+  box-shadow: none;
+}
+
+.ste-err {
+  min-height: 1.1em;
+  font-size: 0.78rem;
+  color: #b42318;
+  margin-top: 3px;
+}
+
+.ste-err.is-visible::before {
+  content: "⚠ ";
+}
+
+.ste-status {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.ste-hint {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #9aa3ad;
+  line-height: 1.7;
+}
+
+/* ---------------------------------------------------------------- 文档 */
+
+.docs h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+/* 目录：两级，用序号层级表达从属关系 */
+.docs-toc {
+  background: #f7f9fb;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px 10px 34px;
+  margin: 0 0 18px;
+}
+
+.docs-toc ol {
+  margin: 4px 0;
+  padding-left: 20px;
+  font-size: 0.85rem;
+  line-height: 1.9;
+}
+
+.docs-toc > ol {
+  margin: 0;
+}
+
+.docs-toc a {
+  color: #0d5c85;
+  text-decoration: none;
+}
+
+/* 正文里的页内链接 */
+.docs p a,
+.docs li a,
+.docs td a {
+  color: #0d5c85;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.docs-toc a:hover {
+  text-decoration: underline;
+}
+
+.ste-hint b {
+  font-weight: 600;
+  color: #1c2b36;
+}
+
+.doc-shot {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  margin: 8px 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.docs h3,
+.docs h4 {
+  scroll-margin-top: 10px;
+}
+
+.docs h4 {
+  margin: 16px 0 4px;
+  font-size: 0.88rem;
+  color: #2b3d4a;
+}
+
+.docs h3 {
+  margin: 22px 0 6px;
+  font-size: 0.92rem;
+  color: #0d5c85;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.docs ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.85rem;
+}
+
+.docs table {
+  border-collapse: collapse;
+  font-size: 0.83rem;
+  width: 100%;
+}
+
+.docs table td {
+  border-bottom: 1px solid #f0f2f4;
+  padding: 5px 10px 5px 0;
+  vertical-align: top;
+}
+
+.docs table td:first-child {
+  white-space: nowrap;
+  width: 1%;
+  color: #0d5c85;
+}
+
+.docs p {
+  font-size: 0.85rem;
+  margin: 6px 0;
+}
+
+.docs h4 {
+  margin: 14px 0 4px;
+  font-size: 0.85rem;
+  color: #12547a;
+}
+
+.docs ul {
+  margin: 6px 0;
+}
+
+.code-block {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  background: #f7f9fb;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 8px 12px;
+  margin: 8px 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.docs .tip {
+  background: #f4fafe;
+  border-left: 3px solid var(--accent);
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  color: #0d5c85;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.92em;
+  background: #f2f5f8;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+kbd {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.85em;
+  border: 1px solid #d5dae0;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 5px;
+  background: #fafbfc;
+}
+
+footer {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px;
+  font-size: 0.75rem;
+  color: #98a2b3;
+}
+
+/* --------------------------------------------------------------- 文档排版
+   标题按层级依次变小（h2 > h3 > h4），
+   正文 —— 段落 / 列表 / 表格 / 代码块 / 提示框 / 目录 —— 统一同一个字号。
+   放在最后，同等优先级下覆盖前面的零散定义。 */
+.docs {
+  font-size: 0.87rem;
+  line-height: 1.75;
+}
+
+.docs h2 {
+  font-size: 1.12rem;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.docs h3 {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.docs h4 {
+  font-size: 0.91rem;
+  line-height: 1.5;
+}
+
+.docs p,
+.docs li,
+.docs td,
+.docs th,
+.docs pre,
+.docs code,
+.docs .code-block,
+.docs .tip,
+.docs-toc,
+.docs-toc ol,
+.docs-toc li {
+  font-size: 0.87rem;
+  line-height: 1.75;
+}
+
+/* 代码块用等宽体，字号和正文一样 */
+.docs pre,
+.docs .code-block {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  line-height: 1.65;
+}
+
+/* --------------------------------------------------------------- 称谓选择 */
+.terms {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+}
+
+.terms-label {
+  color: var(--muted, #6b7b88);
+}
+
+.terms-group {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.terms-group button {
+  border: 0;
+  background: #fff;
+  padding: 3px 12px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: #445563;
+  cursor: pointer;
+}
+
+.terms-group button + button {
+  border-left: 1px solid var(--line);
+}
+
+.terms-group button.is-on {
+  background: var(--accent, #2196c9);
+  color: #fff;
+}
+
+.terms-hint {
+  color: var(--muted, #8a9aa5);
+  font-size: 0.78rem;
+}
+
+/* 按钮名补全成「＋女儿节点」之后变长了，别让它折行 */
+.ste-btn,
+.ste-btn-label {
+  white-space: nowrap;
+}

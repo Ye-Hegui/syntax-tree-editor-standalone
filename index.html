@@ -1,0 +1,494 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Syntax Tree Editor Standalone —— 图与代码双向可编辑</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="src/main.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Syntax Tree Editor Standalone</h1>
+      <p class="sub">
+        简单而轻量化的句法树编辑器
+      </p>
+      <p class="sub note">
+        这个页面用的是 ES Modules，必须通过 HTTP 打开（<code>http://127.0.0.1:8123/</code>）。
+        直接双击本文件会被浏览器的 CORS 规则拦掉，编辑器不会出现 ——
+        想双击就用同目录下的 <code>Syntax Tree Editor Standalone.html</code>（单文件内联版，功能一样）。
+      </p>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="terms">
+          <span class="terms-label">称谓</span>
+          <div class="terms-group">
+            <button type="button" data-terms="mother" class="is-on">母系</button>
+            <button type="button" data-terms="neutral">中性</button>
+            <button type="button" data-terms="father">父系</button>
+          </div>
+          <span class="terms-hint">只改界面上的说法，不影响树的任何行为</span>
+        </div>
+        <div class="examples">
+          <span class="examples-label">示例：</span>
+          <button type="button" data-example="0">经典结构</button>
+          <button type="button" data-example="1">CP 例句</button>
+          <button type="button" data-example="2">三角例句</button>
+          <button type="button" data-example="3">移位例句</button>
+          <button type="button" data-example="4">空白画布</button>
+        </div>
+        <div id="tree-editor"></div>
+      </section>
+
+            <section class="card docs">
+        <h2>使用方法</h2>
+
+        <nav class="docs-toc">
+          <ol>
+            <li>
+              <a href="#doc-basic">基础操作</a>
+              <ol>
+                <li><a href="#doc-start">从零开始</a></li>
+                <li><a href="#doc-create">创建节点</a></li>
+                <li><a href="#doc-delete">删除节点</a></li>
+                <li><a href="#doc-undo">撤销与重做</a></li>
+                <li><a href="#doc-triangle">创建三角</a></li>
+                <li><a href="#doc-arrow">创建箭头</a></li>
+                <li><a href="#doc-export">导出</a></li>
+              </ol>
+            </li>
+            <li>
+              <a href="#doc-advanced">进阶操作</a>
+              <ol>
+                <li><a href="#doc-align">垂直对齐</a></li>
+                <li><a href="#doc-hcenter">水平位置</a></li>
+                <li><a href="#doc-keys">方向键选中</a></li>
+                <li><a href="#doc-level">下移</a></li>
+                <li><a href="#doc-up">上移</a></li>
+                <li><a href="#doc-move">左移和右移</a></li>
+                <li><a href="#doc-style">斜体</a></li>
+              </ol>
+            </li>
+            <li>
+              <a href="#doc-source">源代码说明</a>
+              <ol>
+                <li><a href="#doc-bracket">括号记法</a></li>
+                <li><a href="#doc-rules">规则记法</a></li>
+              </ol>
+            </li>
+            <li><a href="#doc-notes">注意事项</a></li>
+          </ol>
+        </nav>
+
+        <h3 id="doc-basic">一、基础操作</h3>
+
+        <h4 id="doc-start">1. 从零开始</h4>
+        <p class="tip">本编辑器是简单而轻量化的句法树编辑器，可以简单方便地创建句法树。</p>
+        <p>
+    点击上方按钮「空白画布」，可以从一个节点都没有的状态开始画。点击其他示例，也可以通过直接对其进行修改。
+          清空下面的源代码框，画布也会变成空白。粘贴来自其他地方的括号表示的源代码，也可以直接立即生成句法树。
+        </p>
+        <p>
+          在空白画布点击一下，编辑器就创建一个根节点，并且立刻打开改名框输入标签。
+          直接点击范畴按钮（S、CP、VP 等），编辑器会用那个标签创建一个根节点。
+        </p>
+        <p>
+          上面的五个示例按钮可以随便点着看。载入示例会覆盖当前的句法树，
+          不过可以按 <kbd>Ctrl</kbd>+<kbd>Z</kbd> 撤销载入操作。
+        </p>
+
+        <h4 id="doc-create">2. 创建节点</h4>
+        <p class="tip">可以为节点增加一个女儿节点或者姊妹节点。</p>
+        <table>
+          <tbody>
+            <tr><td><kbd>Enter</kbd></td><td>编辑器会创建一个女儿节点，并且立刻打开改名框。</td></tr>
+            <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>编辑器会创建一个姊妹节点，并且立刻打开改名框。</td></tr>
+            <tr><td><kbd>F2</kbd></td><td>编辑器会打开改名框，用于修改当前选中节点的标签。双击也可以触发。</td></tr>
+          </tbody>
+        </table>
+        <p>
+          使用键盘快捷键可以保持选中句法树中的节点，因此仅需要键盘就可以操作。
+      用鼠标点工具栏上的「＋女儿节点」或「＋姊妹节点」同样可以创建节点，支持点击节点进行操作。
+        </p>
+        <p>
+          点范畴按钮（S、CP、VP 等）可以把标签直接套到当前选中的节点上，比打字快。
+          其中 <i>v</i> 和 <i>pro</i> 在树里也用斜体显示。
+        </p>
+
+        <h4 id="doc-delete">3. 删除节点</h4>
+        <p class="tip">删除节点会把该节点及其整棵子树一并移除。</p>
+        <p>
+          选中一个节点之后按 <kbd>Delete</kbd>，或者点工具栏的「删除」，
+          编辑器就会把该节点和它的整棵子树一起删掉。
+        </p>
+        <p>对根节点进行删除操作比较特殊：</p>
+        <ul>
+          <li>它没有女儿节点时，删除会让画布回到空白状态。</li>
+          <li>它只有一个女儿节点时，编辑器会把这个女儿节点提上来当新的根节点。</li>
+          <li>它有两个以上女儿节点时不允许删，因为剩下的分支没法安置。</li>
+        </ul>
+
+        <h4 id="doc-undo">4. 撤销与重做</h4>
+        <p class="tip">撤销和重做可以在编辑历史中前后移动。</p>
+        <table>
+          <tbody>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>编辑器会撤销上一步。改名框打开时也可以使用。</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></td><td>编辑器会重做被撤销的一步。</td></tr>
+          </tbody>
+        </table>
+        <p>
+          在改名框里按 <kbd>Ctrl</kbd>+<kbd>Z</kbd> 是分两步的：若标签已被修改，
+          它先把标签恢复原样并留在框里；如果标签没动过，编辑器就退出改名框，
+          再撤销真正上一步的操作。
+        </p>
+
+                        <h4 id="doc-triangle">5. 创建三角</h4>
+        <p class="tip">创建三角是指将多个词写进同一个叶子节点，编辑器会把该节点画成三角形。</p>
+        <p>
+          我们先看一棵最普通的树，
+          它的每个词都各占一个叶子节点：
+        </p>
+        <pre class="code-block">[XP [Z word1] [X' [X word2] [Y word3]]]</pre>
+        <img class="doc-shot" src="example/base.svg" alt="改动之前：四个词各占一个叶子节点" />
+        <p>
+          现在在 <code>word2</code> 后面空一格、再写一个词：
+        </p>
+        <pre class="code-block">[XP [Z word1] [X' [X word2 word4] [Y word3]]]</pre>
+        <p>
+          相邻的两个词会合成<b>同一个</b>叶子节点，该叶子的标签是 <code>"word2 word4"</code>。
+          编辑器把这种「一个节点底下压着好几个词」的情况画成三角形：
+        </p>
+        <img class="doc-shot" src="example/triangle.svg" alt="改动之后：word2 word4 合成一个叶子节点，被画成三角形" />
+        <p>
+          所以创建三角只有一步：<b>把词写在一起</b>，编辑器就自动画成三角形。
+          要注意它和两个独立叶子节点的区别 —— <code>[X word2] [Y word3]</code> 是两个叶子节点，
+          而 <code>[X word2 word4]</code> 是一个叶子节点。
+        </p>
+
+        <h4 id="doc-arrow">6. 创建箭头</h4>
+        <p class="tip">在规则记法末尾添加一行表示移位关系的声明，可以创建移位箭头。</p>
+        <p>
+          图上没法直接画箭头，要在代码面板里写。还是从同一棵最普通的树出发：
+        </p>
+        <pre class="code-block">[XP [Z word1] [X' [X word2] [Y word3]]]</pre>
+        <img class="doc-shot" src="example/base.svg" alt="改动之前：还没有箭头" />
+        <p>点代码面板上方的「规则记法」，编辑器会把这棵树按一条一条的边列出来，长这样：</p>
+        <pre class="code-block">0 XP -&gt; Z
+0 XP -&gt; X'
+1 Z -&gt; word1
+2 X' -&gt; X
+2 X' -&gt; Y
+4 X -&gt; word2
+5 Y -&gt; word3</pre>
+        <p>这就是<b>改动之前</b>的样子。如果想创建 <code>word3</code> 指向 <code>word1</code> 的移位箭头，那么：</p>
+        <ol>
+          <li>观察代码左侧存在带有行号的装订线。</li>
+          <li>
+            第一次引入这个节点的行号，就是这个节点的编号。
+            要查找节点的编号，只需要寻找左侧的行号。
+          </li>
+          <li>
+            读出要连起来的两个词：<code>word1</code> 在第 3 行，编号是 3；
+            <code>word3</code> 在第 7 行，编号是 7。
+          </li>
+          <li>
+            在最后单独加一行 <code>7 --&gt; 3</code>。
+            它的意思是「把编号 7 的那个词移到编号 3 那个词的位置」，
+            也就是把 <code>word3</code> 移到 <code>word1</code> 的位置。
+          </li>
+        </ol>
+        <pre class="code-block">0 XP -&gt; Z
+0 XP -&gt; X'
+1 Z -&gt; word1        &lt;- word1 在第 3 行，编号是 3
+2 X' -&gt; X
+2 X' -&gt; Y
+4 X -&gt; word2
+5 Y -&gt; word3       &lt;- word3 在第 7 行，编号是 7
+
+7 --&gt; 3</pre>
+        <p>写完这一行，图上就多出一条从 <code>word3</code> 指向 <code>word1</code> 的箭头：</p>
+        <img class="doc-shot" src="example/arrow.svg" alt="改动之后：多出一条 word3 指向 word1 的箭头" />
+        <p>
+          箭头的起点必须是叶子节点（比如 <code>word3</code> 这样的词），
+          落点可以是任何节点，也包括根节点。
+        </p>
+
+<h4 id="doc-export">7. 导出</h4>
+        <p class="tip">当前句法树可以导出为矢量图或者位图。</p>
+        <p>
+          点击「SVG」可以导出一张矢量图，矢量图能直接插进 Word、LaTeX 或 Illustrator。
+          点击「PNG」可以导出一张两倍分辨率的位图。选中高亮不会被导出。
+        </p>
+
+        <h3 id="doc-advanced">二、进阶操作</h3>
+
+                <h4 id="doc-align">1. 垂直对齐</h4>
+        <p class="tip">垂直对齐可以改变节点的纵向位置。</p>
+        <p>
+          工具栏下方的「按层级」「词对齐底部」「整树贴底」三个按钮决定各个层次的纵向位置。
+          载入上面的「移位例句」，切换三个模式，即可看出三者的区别。
+        </p>
+        <table>
+          <tbody>
+            <tr><td><b>按层级</b></td><td>每个节点都待在自己那一层的行上，同一层的节点处在同一个高度。</td></tr>
+            <tr><td><b>词对齐底部</b></td><td>所有叶子节点（也就是词）落到最下面一行，中间节点保持原来的层次。</td></tr>
+            <tr><td><b>整树贴底</b></td><td>叶子节点对齐到底部之后，中间节点尽量下移贴住自己的女儿节点，整棵树压缩到底线。</td></tr>
+          </tbody>
+        </table>
+        <p>垂直对齐只改变节点的纵向位置，横向位置由「水平位置」决定。</p>
+
+        <h4 id="doc-hcenter">2. 水平位置</h4>
+        <p class="tip">水平位置可以改变母亲节点的横向位置。</p>
+        <p>「水平位置」决定母亲节点在横向上站在哪里：</p>
+        <table>
+          <tbody>
+            <tr><td><b>母亲节点居中</b></td><td>母亲节点落在<b>最左和最右那两个女儿节点的正中间</b>。（默认）</td></tr>
+            <tr><td><b>节点整体居中</b></td><td>母亲节点居中于<b>所有女儿节点的包围盒</b>，整棵子树看起来更平衡。</td></tr>
+          </tbody>
+        </table>
+        <p>只有存在拥有两个宽度不等的女儿节点时，两种模式才有区别。</p>
+
+<h4 id="doc-keys">3. 方向键选中</h4>
+        <p class="tip">方向键选中可以用键盘在节点之间移动选中状态。</p>
+        <p>
+          在图上点一下取得键盘焦点之后，就可以用方向键在节点之间移动选中状态。
+          四个键就是四个方向：
+        </p>
+        <table>
+          <tbody>
+            <tr><td><kbd>↑</kbd></td><td>跳到<b>母亲节点</b>。</td></tr>
+            <tr><td><kbd>↓</kbd></td><td>跳到<b>最左边</b>的那个女儿节点。</td></tr>
+            <tr><td><kbd>←</kbd></td><td>跳到<b>左姊妹节点</b>。</td></tr>
+            <tr><td><kbd>→</kbd></td><td>跳到<b>右姊妹节点</b>。</td></tr>
+          </tbody>
+        </table>
+        <p>
+          已经是最边上的那个节点时，<kbd>←</kbd> <kbd>→</kbd> 会跨到母亲节点的同侧姊妹节点底下，
+          去找最靠近的<b>堂表姊妹节点</b>。这个范围和左移右移的
+          <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd> 一致。
+        </p>
+
+        <h4 id="doc-level">4. 下移</h4>
+        <p class="tip">下移是在这个节点上创建一个投射层的快捷操作。</p>
+        <p>下移的作用是给投射链<b>增加一层</b>。先看这棵树：</p>
+        <img class="doc-shot" src="example/base.svg" alt="改动之前" />
+        <p>
+          现在<b>选中 X</b>，按 <kbd>Tab</kbd>（或者点工具栏的「下移」）。
+        </p>
+        <p>
+          X 所在的投射链是 <code>X</code> → <code>X'</code>，再往上到 <code>XP</code> 就断了，
+          因为 <code>XP</code> 不是 <code>X''</code>。所以链顶是 <code>X'</code>。
+          编辑器会在链顶的<b>上面</b>插一层 <code>X''</code>，
+          并把 <code>X'</code> 除 X 以外的女儿节点（这里是 <code>Y</code>）留在原来的高度、
+          改挂到 <code>X''</code> 底下：
+        </p>
+        <img class="doc-shot" src="example/down.svg" alt="对 X 下移之后" />
+        <p>
+          对着图看两个变化：<code>X''</code> 底下现在有 <code>X'</code> 和 <code>Y</code> 两个女儿节点，
+          而 <code>X'</code> 底下只剩下 <code>X</code>。
+          写成括号记法就是 <code>[XP [Z word1] [X'' [X' [X word2]] [Y word3]]]</code>。
+        </p>
+        <p>下移只作用于被选中节点及其支配的节点，链顶其余女儿节点的高度保持不变。</p>
+
+        <h4 id="doc-up">5. 上移</h4>
+        <p class="tip">上移是撤销一层投射层的快捷操作。</p>
+        <p>上移是下移的逆操作，但条件比较严格。这一次从下移之后的样子出发：</p>
+        <img class="doc-shot" src="example/down.svg" alt="出发点：X 已经下移过一层" />
+        <p>
+      选中 <code>X'</code> 不能进行上移。上移要求<b>母亲节点只有选中的唯一一个女儿节点</b>，
+          而 <code>X'</code> 的母亲节点是 <code>X''</code>，<code>X''</code> 底下有 <code>X'</code>
+          和 <code>Y</code> 两个女儿节点，不满足条件，
+          所以「上移」按钮这时是禁用的。
+        </p>
+        <p>
+      选中 <code>X</code> 可以进行上移。<code>X</code> 的母亲节点是 <code>X'</code>，
+          <code>X'</code> 底下确实只有 <code>X</code> 一个女儿节点，
+          且 <code>X'</code> 的标签正好是 <code>X</code> 加一个撇 —— 同时满足两个条件。
+          于是编辑器删掉 <code>X'</code>、让 <code>X</code> 顶替该节点的位置，
+          再把 <code>X'</code> 以上的每一层各减去一个撇（<code>X''</code> 就变回了 <code>X'</code>）：
+        </p>
+        <img class="doc-shot" src="example/base.svg" alt="对 X 上移之后：回到原来的样子" />
+        <p>
+          结果正好回到最开始的 <code>[XP [Z word1] [X' [X word2] [Y word3]]]</code>，
+          也就是下移之前的原样。注意 <code>Y</code> 又回到了 <code>X'</code> 底下。
+        </p>
+        <p>上移需要同时满足两个条件：母亲节点只有被选中的那一个女儿节点，且母亲节点的标签是选中节点名称加一个撇。</p>
+
+        <h4 id="doc-move">6. 左移和右移</h4>
+        <p class="tip">左移和右移可以把节点在同级之间移动。</p>
+        <p>这两个操作作用在当前选中的节点上，而且完全对称。每一个方向都分两种情况。</p>
+        <table>
+          <tbody>
+            <tr>
+              <td><b>左移</b></td>
+              <td>
+                ① 如果选中的节点有左姊妹节点，编辑器会将其和左姊妹节点交换位置，也就是原地左挪一位。<br />
+                ② 如果选中的节点是最左边的女儿节点，编辑器会将其移动到母亲节点的左姊妹节点底下，
+                作为那个姊妹节点的最右边的女儿节点。
+              </td>
+            </tr>
+            <tr>
+              <td><b>右移</b></td>
+              <td>
+                ① 如果选中的节点有右姊妹节点，编辑器会将其和右姊妹节点交换位置，也就是原地右挪一位。<br />
+                ② 如果选中的节点是最右边的女儿节点，编辑器会将其移动到母亲节点的右姊妹节点底下，
+                作为那个姊妹节点的最左边的女儿节点。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p>还是用同一棵树，分别看三种情况：</p>
+        <img class="doc-shot" src="example/base.svg" alt="出发点" />
+
+        <p><b>选中 <code>X'</code> 左移</b>：<code>X'</code> 有左姊妹节点 <code>Z</code>，走 ①，二者换位。</p>
+        <img class="doc-shot" src="example/left-xp.svg" alt="X' 左移之后：X' 和 Z 换了位置" />
+
+        <p>
+          <b>选中 <code>X</code> 左移</b>：<code>X</code> 没有左姊妹节点
+          （它是 <code>X'</code> 最左边的女儿节点），所以走 ②，
+          搬到母亲节点 <code>X'</code> 的左姊妹节点 <code>Z</code> 底下，当 <code>Z</code> 最右边的女儿节点。
+        </p>
+        <img class="doc-shot" src="example/left-x.svg" alt="X 左移之后：X 搬到了 Z 底下" />
+
+        <p><b>选中 <code>X</code> 右移</b>：<code>X</code> 有右姊妹节点 <code>Y</code>，走 ①，二者换位。</p>
+        <img class="doc-shot" src="example/right-x.svg" alt="X 右移之后：X 和 Y 换了位置" />
+
+        <p>
+          三种结果都在图上。如果既没有那一侧的姊妹节点、
+          母亲节点也没有那一侧的姊妹节点，那么工具栏上的按钮会变成禁用状态，
+          按快捷键也不会有任何改动。
+        </p>
+
+                <h4 id="doc-style">7. 斜体</h4>
+        <p class="tip">在规则记法末尾添加一行表示字体的声明，可以将节点的标签改成斜体显示。</p>
+        <p>
+          语言学里有些词习惯写成斜体（比如小 <i>v</i>、<i>pro</i>、语迹）。
+          在<b>末尾单独加一行声明</b>，括号里填节点编号，就可以把这些节点变成斜体：
+        </p>
+        <pre class="code-block">Italic(1, 3)</pre>
+        <p>
+          这一行让编号 1 和编号 3 那两个节点的标签变成斜体。
+          编号怎么数参考 <a href="#doc-arrow">1.6 创建箭头</a>。
+        </p>
+        <p>
+          声明只能写在末尾、单独成行。规则记法里声明排在所有边和位移箭头之后；
+          括号记法里声明排在整棵树之后：
+        </p>
+        <pre class="code-block">[vP [v [V know]] [pro [N him]]]
+Italic(1, 2)</pre>
+        <img class="doc-shot" src="example/italic.svg" alt="v 和 pro 被渲染成斜体" />
+        <p>
+          这棵树里 <code>vP=0</code>，三个女儿依次是 <code>v=1</code>、<code>pro=2</code>、
+          <code>NP=3</code>，所以这一行让 <code>v</code> 和 <code>pro</code> 变成斜体。
+          多个编号用逗号隔开，顺序随意。
+        </p>
+        <p>编号随结构自动重算，增删节点不会让斜体跟错节点。</p>
+
+        <h3 id="doc-source">三、源代码说明</h3>
+        <p>
+          在代码框里直接输入源代码，效果和图形化编辑完全一致，两边始终同步。
+          代码框上方有两个按钮，可以在这两套等价的记法之间切换。切换的时候树不会改变，只是换一种写法。
+        </p>
+        <table>
+          <tbody>
+            <tr><td><b>括号记法</b></td><td>语言学通行的写法。可以兼容 jsSyntaxTree 的代码。</td></tr>
+            <tr><td><b>规则记法</b></td><td>一行写一条边。绘制位移箭头和改为斜体建议使用这种记法。</td></tr>
+          </tbody>
+        </table>
+
+        <h4 id="doc-bracket">1. 括号记法</h4>
+        <p>这一套写法沿用语言学通用的括号记法（labelled bracket notation）。</p>
+        <table>
+          <tbody>
+            <tr><td><code>[S [NP Dogs][VP barks]]</code></td><td>方括号表示节点，裸标签表示叶子节点。</td></tr>
+            <tr><td><code>[N_s Dogs]</code></td><td><code>_</code> 后面的内容会写成下标。</td></tr>
+            <tr><td><code>[N^s Cats]</code></td><td><code>^</code> 后面的内容会写成上标。</td></tr>
+            <tr><td><code>["Main clause" [S][V][O]]</code></td><td>标签里含空格、引号、<code>_</code> 或 <code>^</code> 时，用双引号将标签整体括起来。</td></tr>
+            <tr><td><code>[S NP VP]</code></td><td>相邻的裸标签会合成<b>一个</b>多词叶子节点，编辑器把该节点画成三角形，表示省略的下层结构。</td></tr>
+            <tr><td><code>[S [NP] [VP]]</code></td><td>这才是两个各含一个词的叶子节点。和上一行画出来一模一样，但结构含义不同。</td></tr>
+            <tr><td><code>[A [B C][D E][F G -&gt;6]]</code></td><td>位移箭头，数字是节点编号。写起来不如规则记法直观。</td></tr>
+            <tr><td><code>[X'' [X word]]</code></td><td>方括号包起来的空节点表示「没有展开的范畴」，该节点<b>不是</b>词，不染红。</td></tr>
+          </tbody>
+        </table>
+
+        <h4 id="doc-rules">2. 规则记法</h4>
+        <p>每行写一条「母亲节点 → 女儿节点」的边，适合逐条核对。下面这棵树：</p>
+        <pre class="code-block">[XP [D w1] [X' [X w2] [Y w3]]]</pre>
+        <p>写成规则记法是这样的：</p>
+        <pre class="code-block">0 XP -&gt; D
+0 XP -&gt; X'
+1 D -&gt; w1
+2 X' -&gt; X
+2 X' -&gt; Y
+4 X -&gt; w2
+5 Y -&gt; w3</pre>
+        <p>每一行的格式是：<b>母亲节点编号 · 母亲节点标签 · 箭头 · 女儿节点标签</b>。</p>
+        <table>
+          <tbody>
+            <tr><td><b>根节点</b></td><td>编号固定是 0。</td></tr>
+            <tr><td><b>其余节点</b></td><td>编号等于该节点第一次出现在箭头右边的那一行的<b>行号</b>。</td></tr>
+            <tr><td><b>行号</b></td><td>显示在代码框左边的装订线上，不在文本里，框选复制不会带上行号。装订线给每一行都编号，包括空行和箭头行。</td></tr>
+            <tr><td><b>引用顺序</b></td><td>母亲节点必须先在前面出现过，编号一定小于当前行号。同一个母亲节点的行不必连续。</td></tr>
+            <tr><td><b>标签</b></td><td>含空格、引号、<code>_</code> 或 <code>^</code> 时用双引号括起来。下标上标写在标签后面，例如 <code>NP_1</code>、<code>N^s</code>、<code>"the mailman"_1</code>。</td></tr>
+            <tr><td><b>编号错误</b></td><td>中间插一行或删一行会让下面的引用错位，编辑器会自动把行首编号改回正确值，不需要自己数。</td></tr>
+          </tbody>
+        </table>
+        <p>
+          上面那棵树里编号依次是 <code>XP=0 D=1 X'=2 w1=3 X=4 Y=5 w2=6 w3=7</code>，
+          也就是左边装订线上的 1 到 7。所以「把 w3 移到 w2 的位置」写成单独一行：
+        </p>
+        <pre class="code-block">7 --&gt; 6</pre>
+        <table>
+          <tbody>
+            <tr><td><b>格式</b></td><td><code>起点编号 --&gt; 落点编号</code>，放在所有边的后面。</td></tr>
+            <tr><td><b>起点</b></td><td>必须是叶子节点，因为记法里箭头挂在叶子上。</td></tr>
+            <tr><td><b>落点</b></td><td>可以是任何节点，也包括根节点（写成 <code>--&gt; 0</code>）。</td></tr>
+            <tr><td><b>编号</b></td><td>两套记法共用同一套，所以同一个箭头在两边的数字一样。</td></tr>
+          </tbody>
+        </table>
+
+<h3 id="doc-notes">四、注意事项</h3>
+        <ul>
+          <li>
+            <b>只有词才会被染成红色。</b>判断标准是该节点在记法里写成裸标签，也就是该节点是母亲节点唯一的女儿节点。
+            用方括号包起来的空节点表示「没有展开的范畴」，其颜色与非叶子节点相同。
+            例如在 <code>[XP [D [X'' [X word] [Y]]] [X']]</code> 里，只有 <code>word</code> 是词，
+            <code>Y</code> 和 <code>X'</code> 都不染色。
+          </li>
+          <li>
+            <b>相邻的裸标签会被当成一个多词叶子节点。</b>所以 <code>[S NP VP]</code> 表示 S 底下只有一个叶子节点
+            <code>"NP VP"</code>，而不是 NP 和 VP 两个叶子节点。需要表示两个叶子节点时，应写成
+            <code>[S [NP] [VP]]</code>。这两种写法画出来一模一样，但是结构含义不同。
+          </li>
+          <li>
+            <b>标签里不能包含双引号</b>，因为记法里没有转义写法。编辑器会在输入时自动去掉双引号。
+          </li>
+          <li>
+            <b>叶子节点一旦有了女儿节点，该节点原有的位移箭头会被清除</b>，因为记法无法表示「带箭头的非叶子节点」。
+          </li>
+          <li>
+            括号记法允许使用<code>--&gt;</code>、<code>&lt;-</code>、<code>&lt;&gt;</code> 作为位移箭头的输入，
+            编辑器能兼容读取，但是一律会改写成 <code>-&gt;</code>。
+          </li>
+          <li>
+            <b>规则记法必须有至少一条边。</b>只有一个孤立节点的树（例如 <code>[X]</code>）在规则记法里是空的。
+          </li>
+          <li>
+            <b>代码框里手写的写法可能会和导出的写法不完全一致</b>，例如空格数量、箭头写法和规则记法的行号。
+            这是正常的，因为代码框不会在输入时改写文本，否则光标会被打断。
+            唯一的例外是规则记法里的行首编号，编辑器会主动修正。
+          </li>
+        </ol>
+      </section>
+    </main>
+
+    <footer>
+      独立的编辑器实现，输入格式沿用 phpSyntaxTree / jsSyntaxTree 通行的括号记法；
+      代码为本项目自写，不包含原项目源码。
+      <br />
+      v1.2 · 以 MIT 许可证发布，Copyright (c) 2026 Ye Hegui。
+    </footer>
+  </body>
+</html>
