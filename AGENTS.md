@@ -117,6 +117,18 @@ new SyntaxTreeEditor(elOrSelector, {
 | `toSvgString({background})` / `exportSvg()` / `exportPng()` | 导出 |
 | 属性：`root` `selected` `lay` `size` `opts` `undoStack` `redoStack` `isEmpty` | 只读访问用 |
 
+### ⚠️ 教程正文的术语不能随便写
+
+网页顶部的「称谓」切换（母系 / 中性 / 父系）是靠**对教程正文做全局字符串替换**实现的
+（`src/main.js` 的 `TERM_SETS` + `editor.js` 的 `setTerms()`）。替换表只认这几个词：
+
+`母亲节点` `姊妹节点` `女儿节点` `母亲` `姊妹` `女儿`
+
+所以新写的教程文字**必须沿用这几个词**，否则切换到父系时它们不会被替换，和周围文字不一致。
+这个错误**不会报错**，只会在用户点按钮时才看出来。
+
+另外：换称谓会重建文档 DOM，所以 `bindToc()` 每次都要重新绑定页内链接。
+
 ---
 
 ## 三、六条不能违反的约定
@@ -142,7 +154,7 @@ new SyntaxTreeEditor(elOrSelector, {
 | 加一种水平位置 | `src/layout.js` 的 `CENTER_MODES` + `place()`；再补 `editor.js` 的 `CENTER_TEXT` |
 | 改键位 | `src/editor.js` 的 `#onKeyDown()` 和 `#buildDom()` 里的按钮 `key` 参数 |
 | 加一种记法 | 新建一个像 `notation.js` 的模块，导出 `parse`/`serialize`，再接到 `editor.js` 的 `TEXT_MODES` |
-| 改教程文字 | `index.html` 的 `<section class="card docs">`（**注意目录锚点和正文 id 必须配对**） |
+| 改教程正文 | `index.html` 的 `<section class="card docs">`。**术语必须用「母亲节点 / 姊妹节点 / 女儿节点」**（见上方警告），且**目录锚点必须和正文 id 配对** |
 | 改样式 | `style.css`（编辑器用 `.ste-` 前缀，教程用 `.docs` 前缀） |
 | 加示例图 | 加进 `tools/gen-examples.mjs` 的 `CASES`，跑 `node tools/gen-examples.mjs`。**只丢 SVG 进 `example/` 不够** —— 构建靠这个模式内联 |
 
@@ -165,6 +177,15 @@ cmd /c "npm run build"   ← 重新生成单文件版
 
 **改完代码一定要 `npm run build`** —— `check-project.mjs` 会拿磁盘上的单文件版和"重新构建一遍"
 的结果逐字节比对，忘了构建会直接报错。这是故意的。
+
+### 发版流程
+
+1. 改 `package.json` 的 `version` 和 `index.html` 页脚的版本号
+2. `cmd /c "npm run build"` → `cmd /c "npm test"`
+3. `git add .` → `git commit -m "vX.Y.Z"` → `git push`
+4. 到 GitHub 的 Releases 新建 Release，tag 填 `vX.Y.Z`，把 `Syntax Tree Editor Standalone.html` 作为附件上传
+
+> 推送前记得先开代理，Git 配了走 Clash 的本地端口。
 
 ### 不要做的事
 

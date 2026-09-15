@@ -73,7 +73,7 @@ for (const [file, label] of [
 // ---------------------------------------------------------- 3. 文件结构清单
 
 section("README 的文件结构清单覆盖了所有源码");
-const treeSection = README.slice(README.indexOf("## 文件结构"), README.indexOf("## 两套记法"));
+const treeSection = README.slice(README.indexOf("## 文件结构"), (README.indexOf("\n## ", README.indexOf("## 文件结构") + 1) + 1 || README.length));
 for (const dir of ["src", "test", "tools"]) {
   for (const f of readdirSync(join(ROOT, dir))) {
     if (treeSection.includes(f)) pass(`${dir}/${f} 在清单里`);

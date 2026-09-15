@@ -1,0 +1,9 @@
+# 统一换行符：仓库里一律存 LF，检出到 Windows 时自动转成 CRLF。
+# 这样就不会再出现 "LF will be replaced by CRLF" 的警告，
+# 跨平台协作时也不会因为换行符差异产生整篇 diff。
+* text=auto eol=lf
+
+# 二进制文件不要做任何换行转换
+*.png binary
+*.jpg binary
+*.svg text eol=lf
