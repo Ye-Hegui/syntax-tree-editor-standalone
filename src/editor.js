@@ -258,16 +258,13 @@ export class SyntaxTreeEditor {
   // 颜色是"一个节点一个颜色"，所以标红对已经带别的颜色的节点是【覆盖】。
   // 没有任何变化时（例如对已经红的词再点一次"词红"）直接返回，不压撤销历史、不产生重复声明。
 
-  /**
-   * 全蓝：给**每个**节点写上蓝色声明（所以"全蓝"就是真的全蓝，不是"清掉颜色"）。
-   * 返回是否真的改了东西
-   */
+  /** 全蓝：删掉所有颜色声明（回到默认画法）。返回是否真的改了东西 */
   markAllBlue() {
     if (!this.root) return false;
-    const nodes = preorder(this.root).filter((n) => n.color !== "blue");
-    if (!nodes.length) return false;
+    const colored = preorder(this.root).filter((n) => n.color);
+    if (!colored.length) return false;
     this.#mutate(() => {
-      for (const n of nodes) n.color = "blue";
+      for (const n of colored) n.color = null;
     });
     return true;
   }
@@ -293,12 +290,12 @@ export class SyntaxTreeEditor {
     return true;
   }
 
-  /** 单个标蓝：给选中节点写上蓝色声明（词默认是红的，所以"标蓝"要显式写出来） */
+  /** 单个标蓝：删掉选中节点的颜色声明（词会回到默认的词红） */
   markSelectedBlue() {
     const n = this.selected;
-    if (!this.root || !n || n.color === "blue") return false;
+    if (!this.root || !n || !n.color) return false;
     this.#mutate(() => {
-      n.color = "blue";
+      n.color = null;
     });
     return true;
   }
@@ -636,7 +633,7 @@ export class SyntaxTreeEditor {
     // 整棵树一起变的放一组
     const allGroup = mk("div", "ste-style-group");
     this.btnAllBlue = swatch(
-      styleButton("全部标蓝", "给每个节点写上蓝色声明，整棵树变成蓝色", () => this.markAllBlue(), allGroup),
+      styleButton("全部标蓝", "删掉所有颜色声明，整棵树回到默认画法", () => this.markAllBlue(), allGroup),
       "blue",
     );
     this.btnWordsRed = swatch(
@@ -656,7 +653,7 @@ export class SyntaxTreeEditor {
       "red",
     );
     this.btnSelectedBlue = swatch(
-      styleButton("节点标蓝", "给选中的节点写上蓝色声明（词默认是红的，所以标蓝要显式写）", () => this.markSelectedBlue(), oneGroup),
+      styleButton("节点标蓝", "删掉选中节点的颜色声明，该节点回到默认画法", () => this.markSelectedBlue(), oneGroup),
       "blue",
     );
 
@@ -1091,11 +1088,11 @@ export class SyntaxTreeEditor {
     this.btnUndo.disabled = this.undoStack.length === 0;
     this.btnRedo.disabled = this.redoStack.length === 0;
 
-    // 颜色按钮：没有可做的改动时（例如整棵树已经是全蓝）就灰掉，免得点下去没有反应
-    this.btnAllBlue.disabled = ord.every((x) => x.color === "blue");
+    // 颜色按钮：没有可做的改动时（例如整棵树已经没有任何颜色声明）就灰掉，免得点下去没有反应
+    this.btnAllBlue.disabled = !ord.some((x) => x.color);
     this.btnWordsRed.disabled = !wordNodes(this.root).some((x) => x.color !== "red");
     this.btnSelectedRed.disabled = !n || n.color === "red";
-    this.btnSelectedBlue.disabled = !n || n.color === "blue";
+    this.btnSelectedBlue.disabled = !n || !n.color;
     // 字体样式那两个是开关，选中了节点就总能切换
     this.btnSelectedItalic.disabled = !n;
     this.btnSelectedStrike.disabled = !n;

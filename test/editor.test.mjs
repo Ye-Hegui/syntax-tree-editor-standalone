@@ -1062,33 +1062,33 @@ await t("单个标红：没选中节点时什么也不做", async () => {
   assert.equal(ed.getValue(), "[S [NP Dogs]]");
 });
 
-await t("单个标蓝：给该节点写上蓝色声明（词默认红，所以标蓝要显式写）", async () => {
+await t("单个标蓝：删掉该节点的颜色声明", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]\nRed(3, 4)");
   const dogs = preorder(ed.root).find((x) => x.label === "Dogs");
   clickNode(ed, dogs);
   assert.equal(ed.markSelectedBlue(), true);
-  assert.equal(fillOf(ed, "Dogs"), "#1565c0", "变成显式声明的蓝");
+  assert.equal(fillOf(ed, "Dogs"), "#CC0000", "声明删掉后回到默认的词红");
   assert.equal(fillOf(ed, "barks"), "#d32f2f", "别的词不受影响");
   assert.equal(declLines(ed, "Red")[0], "Red(4)", ed.getValue());
-  assert.equal(ed.markSelectedBlue(), false, "已经是蓝的，应该报告没改动");
+  assert.equal(ed.markSelectedBlue(), false, "本来就没有颜色声明，应该报告没改动");
 });
 
-await t("全蓝：给每个节点写上蓝色声明", async () => {
+await t("全蓝：一次删掉所有颜色声明", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]\nRed(3, 4)\nGreen(0)\nBold(1)");
   assert.equal(ed.markAllBlue(), true);
-  assert.equal(fillOf(ed, "Dogs"), "#1565c0");
-  assert.equal(fillOf(ed, "S"), "#1565c0");
-  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nBold(1)\nBlue(0, 1, 2, 3, 4)", "字体声明要留着");
-  assert.equal(ed.markAllBlue(), false, "已经全蓝了");
+  assert.equal(fillOf(ed, "Dogs"), "#CC0000", "词回到默认的词红");
+  assert.equal(fillOf(ed, "S"), "#0000CC", "范畴回到默认的蓝");
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nBold(1)", "字体声明不该被一起删掉");
+  assert.equal(ed.markAllBlue(), false, "已经没有颜色声明了");
 });
 
 await t("四个颜色按钮跟着有无可做的改动灰掉", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]");
   // 构造完默认选中根节点，所以两个"单个"按钮一开始是可用的
-  assert.equal(ed.btnAllBlue.disabled, false, "还不是全蓝，全蓝有事可做");
+  assert.equal(ed.btnAllBlue.disabled, true, "没有任何颜色声明，全蓝无事可做");
   assert.equal(ed.btnWordsRed.disabled, false, "还有词没标红");
   assert.equal(ed.btnSelectedRed.disabled, false, "根节点还没标红");
-  assert.equal(ed.btnSelectedBlue.disabled, false, "根节点还没显式标蓝");
+  assert.equal(ed.btnSelectedBlue.disabled, true, "根节点没有颜色声明");
 
   ed.markWordsRed();
   assert.equal(ed.btnAllBlue.disabled, false);
@@ -1102,7 +1102,7 @@ await t("四个颜色按钮跟着有无可做的改动灰掉", async () => {
   const np = preorder(ed.root).find((x) => x.label === "NP");
   clickNode(ed, np);
   assert.equal(ed.btnSelectedRed.disabled, false, "NP 还没标红");
-  assert.equal(ed.btnSelectedBlue.disabled, false, "NP 也还没显式标蓝");
+  assert.equal(ed.btnSelectedBlue.disabled, true, "NP 没有颜色声明");
 
   // 取消选中后，两个"单个"按钮都该灰掉
   ed.svg.dispatchEvent(makeEvent("pointerdown"));
