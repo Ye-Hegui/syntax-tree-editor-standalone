@@ -11,7 +11,7 @@
 //
 // 五类声明的形式完全一样：声明词 + 一对括号，括号里可以列多个编号，用逗号隔开。
 // 颜色名自己就是声明词（Red / Blue / ...），所以不需要 Color 前缀。
-// 颜色名大小写不敏感，导出统一成首字母大写。
+// 声明词大小写不敏感（`ITALIC(1)` 和 `italic(1)` 都认），导出统一成首字母大写。
 //
 // 规则记法里接在所有边和位移箭头后面：
 //
@@ -53,8 +53,11 @@ export const COLOR_VALUES = {
   white: "#ffffff",
 };
 
-/** 字体样式声明：Italic(1, 3)、Bold(2)、Strike(4) */
-const DECL = /^\s*(Italic|Bold|Strike)\s*\(([^)]*)\)\s*$/;
+/**
+ * 字体样式声明：Italic(1, 3)、Bold(2)、Strike(4)。
+ * 声明词**大小写不敏感**（`ITALIC(1)`、`italic(1)` 都认），导出统一成首字母大写。
+ */
+const DECL = /^\s*(Italic|Bold|Strike)\s*\(([^)]*)\)\s*$/i;
 
 /**
  * 颜色声明：Red(1, 3)、Blue(6)。
@@ -73,9 +76,9 @@ function parseIds(s) {
     .filter((n) => Number.isInteger(n) && n >= 0);
 }
 
-/** red -> Red。导出的颜色声明统一用首字母大写，和 Italic/Bold/Strike 排在一起才整齐 */
+/** red -> Red、ITALIC -> Italic。声明词大小写不敏感，内部和导出一律用规范写法 */
 function capitalize(name) {
-  return name.charAt(0).toUpperCase() + name.slice(1);
+  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
 }
 
 /**
@@ -93,7 +96,8 @@ export function splitStyleDecls(text) {
   while (end > 0) {
     const m = DECL.exec(lines[end - 1]);
     if (m) {
-      decls.unshift({ kind: m[1], ids: parseIds(m[2]) });
+      // 声明词大小写不敏感，内部统一成 Italic / Bold / Strike 三种规范写法
+      decls.unshift({ kind: capitalize(m[1]), ids: parseIds(m[2]) });
       end--;
       continue;
     }

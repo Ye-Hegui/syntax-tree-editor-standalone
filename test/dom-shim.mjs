@@ -26,6 +26,13 @@ class ClassList {
   contains(name) {
     return this.#list().includes(name);
   }
+  /** 真 DOM 里 classList.toggle(name, force?) 是标准 API，这里也照做一份 */
+  toggle(name, force) {
+    const want = force === undefined ? !this.contains(name) : !!force;
+    if (want) this.add(name);
+    else this.remove(name);
+    return want;
+  }
 }
 
 let NODE_SEQ = 0;
@@ -122,9 +129,31 @@ export class El {
   }
 
   // --- 选择器
-  matches(sel) {
+  //
+  // 支持：简单选择器（`.类名` / `标签名`）+ **后代组合**（`.a .b`）。
+  // 不支持：`>` `+` `~` 组合器、伪类、属性选择器（遇到前三种会**直接报错**，
+  // 免得 querySelectorAll 安静地返回空数组，让 `assert.equal(...length, 0)` 假通过）。
+  // ⚠️ 属性选择器不报错但永远匹配不到 —— src/main.js 的 `[data-example]` 就是靠这条
+  // 在垫片里被忽略掉的，别改成抛错。
+  #matchesSimple(sel) {
     if (sel.startsWith(".")) return this.classList.contains(sel.slice(1));
     return this.tagName === sel.toUpperCase();
+  }
+  matches(sel) {
+    const s = String(sel).trim();
+    if (/[>+~]/.test(s)) {
+      throw new Error(`dom-shim 的选择器不支持 ${s}：只能用简单选择器和后代组合（.a .b）`);
+    }
+    const parts = s.split(/\s+/).filter(Boolean);
+    if (!parts.length) return false;
+    if (!this.#matchesSimple(parts[parts.length - 1])) return false;
+    let node = this.parentNode;
+    for (let i = parts.length - 2; i >= 0; i--) {
+      while (node && !node.#matchesSimple(parts[i])) node = node.parentNode;
+      if (!node) return false;
+      node = node.parentNode;
+    }
+    return true;
   }
   closest(sel) {
     let n = this;

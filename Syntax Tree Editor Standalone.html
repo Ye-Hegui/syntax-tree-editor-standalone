@@ -258,10 +258,52 @@ main {
   border-color: var(--accent);
 }
 
-/* 标色那一行：四个按钮各管一件事（不是单选），所以不拼成一整块，中间留缝 */
-.ste-color-group {
+/* 标色那一行的按钮。刻意做得和下面的范畴快捷标签（.ste-chip 的圆胶囊）不一样：
+   这里是方角小按钮 —— 下边那一排是"套标签"，这一排是"改样式"。
+   颜色按钮左边那道竖条用内联样式染成目标颜色（色值唯一来源是 style.js 的 COLOR_VALUES）。 */
+.ste-style-group {
   display: flex;
   gap: 4px;
+}
+
+.ste-style-group + .ste-style-group {
+  margin-left: 6px;
+}
+
+.ste-style-btn {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* 颜色按钮：左边一道目标颜色的竖条 */
+.ste-style-swatch {
+  border-left: 4px solid var(--line);
+  padding-left: 8px;
+}
+
+.ste-style-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: #f2fafe;
+}
+
+.ste-style-btn:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+/* 斜体 / 删除线是开关：打开时整块底色，和「垂直对齐」的选中态一致 */
+.ste-style-btn.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
 }
 
 .ste-chip:disabled {
@@ -1093,17 +1135,20 @@ Strike(4)
 Red(5)</pre>
         <p>
           五类声明的写法完全一样：<b>颜色名自己就是声明词</b>，括号里可以列出多个编号，用逗号隔开，顺序随意。
+          声明词<b>大小写不敏感</b>（<code>ITALIC(1)</code> 与 <code>italic(1)</code> 等效），
+          导出时统一写成首字母大写。
           颜色共九种：<code>Red</code>、<code>Yellow</code>、<code>Blue</code>、<code>Green</code>、
           <code>Orange</code>、<code>Magenta</code>、<code>Purple</code>、<code>Black</code>、
-          <code>White</code>，大小写不敏感，导出时统一写成首字母大写。
+          <code>White</code>。
           一个节点只能有一个颜色，被多条颜色声明命中时以靠后的那条为准。
           编号怎么数参考 <a href="#doc-arrow">1.6 创建箭头</a>。
         </p>
         <p>
-          没有任何颜色声明时，整棵树默认绘制成蓝色。<b>「标色」那一行</b>有四个按钮可以一键标色：
-          <b>全蓝</b>删除所有颜色声明，<b>词红</b>给所有词添加红色声明，
-          <b>单个标红</b>与<b>单个标蓝</b>作用于当前选中的节点。
-          这四个按钮不引入新的机制，只是代为增删上面这些声明，所以效果可以往返，也可以随时手动修改。
+          没有任何颜色声明时，整棵树默认绘制成蓝色。<b>「标色」那一行</b>的按钮可以代为增删上面这些声明，
+          因此效果可以往返，也可以随时手动修改：<b>全部标蓝</b>删除所有颜色声明，
+          <b>单词标红</b>给所有词添加红色声明，<b>节点标红</b>与<b>节点标蓝</b>作用于当前选中的节点。
+          同一行的<b>节点斜体</b>与<b>节点删除线</b>是开关：按下时给选中的节点加上该样式，
+          再按一次则取消。粗体不提供按钮，只能用声明书写。
         </p>
         <p>
           声明只能写在末尾、单独成行。规则记法里声明排在所有边和位移箭头之后；
@@ -1190,7 +1235,7 @@ Red(4)</pre>
           <li>
             <b>默认整棵树都绘制成蓝色。</b>没有任何颜色声明时，词与范畴的颜色相同。
             颜色只能来自声明：既可以在代码框末尾添加，也可以用<b>「标色」那一行</b>的
-            <b>全蓝</b>、<b>词红</b>、<b>单个标红</b>、<b>单个标蓝</b>四个按钮一键添加。
+            <b>全部标蓝</b>、<b>单词标红</b>、<b>节点标红</b>、<b>节点标蓝</b>四个按钮代为增删。
             其中「词」指写成裸标签的叶子节点（也就是母亲节点唯一的女儿节点），以及带位移箭头的叶子节点；
             用方括号包起来的空节点表示「没有展开的范畴」，不算词。
             例如在 <code>[XP [D [X'' [X word] [Y]]] [X']]</code> 里，只有 <code>word</code> 是词，
@@ -1571,7 +1616,7 @@ function moveNodeRight(root, n) {
 //
 // 五类声明的形式完全一样：声明词 + 一对括号，括号里可以列多个编号，用逗号隔开。
 // 颜色名自己就是声明词（Red / Blue / ...），所以不需要 Color 前缀。
-// 颜色名大小写不敏感，导出统一成首字母大写。
+// 声明词大小写不敏感（`ITALIC(1)` 和 `italic(1)` 都认），导出统一成首字母大写。
 //
 // 规则记法里接在所有边和位移箭头后面：
 //
@@ -1612,8 +1657,11 @@ const COLOR_VALUES = {
   white: "#ffffff",
 };
 
-/** 字体样式声明：Italic(1, 3)、Bold(2)、Strike(4) */
-const DECL = /^\s*(Italic|Bold|Strike)\s*\(([^)]*)\)\s*$/;
+/**
+ * 字体样式声明：Italic(1, 3)、Bold(2)、Strike(4)。
+ * 声明词**大小写不敏感**（`ITALIC(1)`、`italic(1)` 都认），导出统一成首字母大写。
+ */
+const DECL = /^\s*(Italic|Bold|Strike)\s*\(([^)]*)\)\s*$/i;
 
 /**
  * 颜色声明：Red(1, 3)、Blue(6)。
@@ -1632,9 +1680,9 @@ function parseIds(s) {
     .filter((n) => Number.isInteger(n) && n >= 0);
 }
 
-/** red -> Red。导出的颜色声明统一用首字母大写，和 Italic/Bold/Strike 排在一起才整齐 */
+/** red -> Red、ITALIC -> Italic。声明词大小写不敏感，内部和导出一律用规范写法 */
 function capitalize(name) {
-  return name.charAt(0).toUpperCase() + name.slice(1);
+  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
 }
 
 /**
@@ -1652,7 +1700,8 @@ function splitStyleDecls(text) {
   while (end > 0) {
     const m = DECL.exec(lines[end - 1]);
     if (m) {
-      decls.unshift({ kind: m[1], ids: parseIds(m[2]) });
+      // 声明词大小写不敏感，内部统一成 Italic / Bold / Strike 三种规范写法
+      decls.unshift({ kind: capitalize(m[1]), ids: parseIds(m[2]) });
       end--;
       continue;
     }
@@ -3085,6 +3134,25 @@ class SyntaxTreeEditor {
     return true;
   }
 
+  /**
+   * 节点斜体：切换选中节点的斜体（再点一次取消）。
+   * 和标色按钮一样，只是加或删末尾那行 Italic(编号) 声明。
+   */
+  toggleSelectedItalic() {
+    const n = this.selected;
+    if (!this.root || !n) return false;
+    this.setStyle({ italic: !n.italic });
+    return true;
+  }
+
+  /** 节点删除线：切换选中节点的删除线（Strike(编号) 声明，加或删） */
+  toggleSelectedStrike() {
+    const n = this.selected;
+    if (!this.root || !n) return false;
+    this.setStyle({ strike: !n.strike });
+    return true;
+  }
+
   /** 导出为括号记法；空白画布返回空字符串 */
   getValue() {
     return this.root ? serialize(this.root).text : "";
@@ -3245,8 +3313,8 @@ class SyntaxTreeEditor {
         this.scroller.focus();
       });
       this.#term(b, "textContent", label);
-this.#term(b, "title", hint);
-segGroup.appendChild(b);
+      this.#term(b, "title", hint);
+      segGroup.appendChild(b);
       this.alignButtons[value] = b;
     }
     alignRow.appendChild(segGroup);
@@ -3265,8 +3333,8 @@ segGroup.appendChild(b);
         this.scroller.focus();
       });
       this.#term(b, "textContent", label);
-this.#term(b, "title", hint);
-centerGroup.appendChild(b);
+      this.#term(b, "title", hint);
+      centerGroup.appendChild(b);
       this.centerButtons[value] = b;
     }
     centerRow.appendChild(centerGroup);
@@ -3358,38 +3426,76 @@ centerGroup.appendChild(b);
     this.hintEl = this.#term(mk("span", "", HINT), "textContent", HINT);
     hint.appendChild(this.hintEl);
 
-    // 标色。默认整棵树是蓝的，红色（或其他颜色）只能靠声明得到，
-    // 这四个按钮就是帮用户生成或删掉那些声明的，自己不引入任何新的染色机制。
+    // 标色与节点样式。默认整棵树是蓝的，红色（或其他颜色、字体样式）只能靠声明得到，
+    // 这一排按钮就是帮用户生成或删掉那些声明的，自己不引入任何新的机制。
     //
-    // 刻意【不放进工具栏】：加上它们工具栏就排不成一行了（CSS 里明确要求一行），
-    // 而且它们和结构编辑不是一回事，单独占一行反而更好找。
+    // 刻意【不放进工具栏】：加上它们工具栏就排不成一行了（CSS 里明确要求一行）。
+    // 按钮形状也刻意和下面的范畴快捷标签不同 —— 下边那一排是"套标签"，这一排是"改样式"。
     const colorRow = mk("div", "ste-align");
     colorRow.appendChild(mk("span", "ste-align-label", "标色"));
-    const colorGroup = mk("div", "ste-color-group");
-    const chipButton = (label, title, fn) => {
-      const b = mk("button", "ste-chip", label);
+    const styleButton = (label, title, fn, parent) => {
+      const b = mk("button", "ste-style-btn", label);
       b.type = "button";
       b.title = title;
       b.addEventListener("click", () => {
         fn();
         this.scroller.focus();
       });
-      colorGroup.appendChild(b);
+      parent.appendChild(b);
       return b;
     };
-    this.btnAllBlue = chipButton("全蓝", "删掉所有颜色声明，整棵树回到默认的蓝色", () => this.markAllBlue());
-    this.btnWordsRed = chipButton(
-      "词红",
-      '把所有"词"标成红色（词 = 裸标签的叶子节点，或带位移箭头的叶子节点）',
-      () => this.markWordsRed(),
+    /** 颜色按钮左边带一道该颜色的竖条，一眼看出点下去会变成什么颜色 */
+    const swatch = (b, colorName) => {
+      b.classList.add("ste-style-swatch");
+      b.style.borderLeftColor = COLOR_VALUES[colorName];
+      return b;
+    };
+
+    // 整棵树一起变的放一组
+    const allGroup = mk("div", "ste-style-group");
+    this.btnAllBlue = swatch(
+      styleButton("全部标蓝", "删掉所有颜色声明，整棵树回到默认的蓝色", () => this.markAllBlue(), allGroup),
+      "blue",
     );
-    this.btnSelectedRed = chipButton("单个标红", "把选中的节点标成红色（选中的是词或范畴都可以）", () =>
-      this.markSelectedRed(),
+    this.btnWordsRed = swatch(
+      styleButton(
+        "单词标红",
+        '把所有"词"标成红色（词 = 裸标签的叶子节点，或带位移箭头的叶子节点）',
+        () => this.markWordsRed(),
+        allGroup,
+      ),
+      "red",
     );
-    this.btnSelectedBlue = chipButton("单个标蓝", "删掉选中节点的颜色声明，该节点回到默认的蓝色", () =>
-      this.markSelectedBlue(),
+
+    // 只作用于当前选中节点的放一组
+    const oneGroup = mk("div", "ste-style-group");
+    this.btnSelectedRed = swatch(
+      styleButton("节点标红", "把选中的节点标成红色（选中的是词或范畴都可以）", () => this.markSelectedRed(), oneGroup),
+      "red",
     );
-    colorRow.appendChild(colorGroup);
+    this.btnSelectedBlue = swatch(
+      styleButton("节点标蓝", "删掉选中节点的颜色声明，该节点回到默认的蓝色", () => this.markSelectedBlue(), oneGroup),
+      "blue",
+    );
+
+    // 字体样式开关：只作用于当前选中节点，按一下切换。粗体刻意没有按钮，只能用声明写。
+    const fontGroup = mk("div", "ste-style-group");
+    this.btnSelectedItalic = styleButton(
+      "节点斜体",
+      "给选中的节点切换斜体（等价于在末尾加或删一行 Italic(编号) 声明）",
+      () => this.toggleSelectedItalic(),
+      fontGroup,
+    );
+    this.btnSelectedItalic.style.fontStyle = "italic";
+    this.btnSelectedStrike = styleButton(
+      "节点删除线",
+      "给选中的节点切换删除线（等价于在末尾加或删一行 Strike(编号) 声明）",
+      () => this.toggleSelectedStrike(),
+      fontGroup,
+    );
+    this.btnSelectedStrike.style.textDecoration = "line-through";
+
+    colorRow.append(allGroup, oneGroup, mk("span", "ste-sep"), fontGroup);
 
     this.el.append(
       toolbar,
@@ -3705,6 +3811,17 @@ centerGroup.appendChild(b);
     }
   }
 
+  /**
+   * 斜体 / 删除线那两个按钮是开关，所以要反映选中节点的当前状态。
+   * 放在 #updateStatus() 里调用 —— 重绘和切换选中都会走到那里。
+   */
+  #syncStyleButtons() {
+    if (!this.btnSelectedItalic) return;
+    const n = this.selected;
+    this.btnSelectedItalic.classList.toggle("is-on", !!(n && n.italic));
+    this.btnSelectedStrike.classList.toggle("is-on", !!(n && n.strike));
+  }
+
   /** 切换垂直对齐方式："depth" | "leaves" | "compact" */
   setAlign(align) {
     if (!ALIGN_CHOICES.some(([v]) => v === align)) return;
@@ -3733,6 +3850,7 @@ centerGroup.appendChild(b);
 
   #updateStatus() {
     const n = this.selected;
+    this.#syncStyleButtons();
 
     if (!this.root) {
       this.status.textContent = "空白画布 —— 还没有任何节点";
@@ -3747,6 +3865,8 @@ centerGroup.appendChild(b);
         this.btnWordsRed,
         this.btnSelectedRed,
         this.btnSelectedBlue,
+        this.btnSelectedItalic,
+        this.btnSelectedStrike,
       ])
         b.disabled = true;
       this.btnChild.disabled = false; // 此时它是"创建根节点"
@@ -3784,6 +3904,9 @@ centerGroup.appendChild(b);
     this.btnWordsRed.disabled = !wordNodes(this.root).some((x) => x.color !== "red");
     this.btnSelectedRed.disabled = !n || n.color === "red";
     this.btnSelectedBlue.disabled = !n || !n.color;
+    // 字体样式那两个是开关，选中了节点就总能切换
+    this.btnSelectedItalic.disabled = !n;
+    this.btnSelectedStrike.disabled = !n;
   }
 
   #showError(err) {

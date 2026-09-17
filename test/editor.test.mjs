@@ -1636,20 +1636,74 @@ await t("每个工具栏按钮下边的快捷键说明都对", async () => {
   });
 });
 
-await t("四个标色按钮单独占一行，不挤进工具栏", async () => {
+await t("标色那一行：两组颜色按钮 + 两个字体开关，形状不和范畴标签雷同", async () => {
   const ed = mount("[S [A]]");
-  const row = ed.el.querySelector(".ste-color-group");
-  assert.ok(row, "找不到标色那一行");
+  const groups = [...ed.el.querySelectorAll(".ste-style-group")];
+  assert.equal(groups.length, 3, "三个小组：整树标色 / 单个标色 / 字体样式");
   assert.deepEqual(
-    [...row.querySelectorAll(".ste-chip")].map((b) => b.textContent),
-    ["全蓝", "词红", "单个标红", "单个标蓝"],
+    groups.map((g) => [...g.querySelectorAll(".ste-style-btn")].map((b) => b.textContent)),
+    [
+      ["全部标蓝", "单词标红"],
+      ["节点标红", "节点标蓝"],
+      ["节点斜体", "节点删除线"],
+    ],
   );
-  // 工具栏是给结构操作用的，加进这四个就排不成一行了
-  assert.equal(ed.el.querySelectorAll(".ste-toolbar .ste-chip").length, 0);
+  // 「整树」和「单个」两组之间隔一道竖线
+  assert.equal(ed.el.querySelectorAll(".ste-align .ste-sep").length, 1);
+  // 形状必须和下面的范畴快捷标签不同，否则两排看着像同一类东西
+  for (const b of ed.el.querySelectorAll(".ste-style-btn")) {
+    assert.equal(b.classList.contains("ste-chip"), false, `${b.textContent} 不该用范畴标签的样式`);
+  }
+  for (const chip of ed.el.querySelectorAll(".ste-palette .ste-chip")) {
+    assert.equal(chip.classList.contains("ste-style-btn"), false, `${chip.textContent} 不该用标色按钮的样式`);
+  }
+  assert.ok(ed.el.querySelectorAll(".ste-palette .ste-chip").length > 10, "范畴标签那一排还在");
+  // 颜色按钮左边带目标色竖条，字体按钮不带
+  assert.equal(ed.btnAllBlue.classList.contains("ste-style-swatch"), true);
+  assert.equal(ed.btnWordsRed.classList.contains("ste-style-swatch"), true);
+  assert.equal(ed.btnSelectedItalic.classList.contains("ste-style-swatch"), false);
   assert.deepEqual(
     [...ed.el.querySelectorAll(".ste-align-label")].map((s) => s.textContent),
     ["垂直对齐", "水平位置", "标色"],
   );
+});
+
+await t("节点斜体 / 节点删除线是开关，只动选中节点", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]");
+  const dogs = preorder(ed.root).find((n) => n.label === "Dogs");
+  clickNode(ed, dogs);
+
+  assert.equal(ed.btnSelectedItalic.classList.contains("is-on"), false, "默认不带斜体");
+  ed.btnSelectedItalic.click();
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nItalic(3)", ed.getValue());
+  assert.equal(ed.btnSelectedItalic.classList.contains("is-on"), true, "按钮要显示为打开");
+
+  ed.btnSelectedStrike.click();
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nItalic(3)\nStrike(3)", ed.getValue());
+  assert.equal(ed.btnSelectedStrike.classList.contains("is-on"), true);
+
+  // 再点一次取消（声明整行消失，不留空行）
+  ed.btnSelectedItalic.click();
+  ed.btnSelectedStrike.click();
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]", ed.getValue());
+  assert.equal(ed.btnSelectedItalic.classList.contains("is-on"), false);
+  assert.equal(ed.btnSelectedStrike.classList.contains("is-on"), false);
+
+  // 只动选中的那个节点
+  ed.btnSelectedItalic.click();
+  const barks = preorder(ed.root).find((n) => n.label === "barks");
+  assert.equal(barks.italic, false, "别的节点不受影响");
+  assert.equal(dogs.italic, true, "选中的那个才是斜体");
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nItalic(3)", ed.getValue());
+});
+
+await t("没选中节点时，两个字体开关禁用", async () => {
+  const ed = mount("[S [A]]");
+  ed.svg.dispatchEvent(makeEvent("pointerdown")); // 取消选中
+  assert.equal(ed.selected, null);
+  assert.equal(ed.btnSelectedItalic.disabled, true);
+  assert.equal(ed.btnSelectedStrike.disabled, true);
+  assert.equal(ed.toggleSelectedItalic(), false, "没选中时不该改动任何东西");
 });
 
 await t("＋女儿节点 按钮在空白画布上改叫 ＋根节点，快捷键说明不变", async () => {

@@ -251,10 +251,52 @@ main {
   border-color: var(--accent);
 }
 
-/* 标色那一行：四个按钮各管一件事（不是单选），所以不拼成一整块，中间留缝 */
-.ste-color-group {
+/* 标色那一行的按钮。刻意做得和下面的范畴快捷标签（.ste-chip 的圆胶囊）不一样：
+   这里是方角小按钮 —— 下边那一排是"套标签"，这一排是"改样式"。
+   颜色按钮左边那道竖条用内联样式染成目标颜色（色值唯一来源是 style.js 的 COLOR_VALUES）。 */
+.ste-style-group {
   display: flex;
   gap: 4px;
+}
+
+.ste-style-group + .ste-style-group {
+  margin-left: 6px;
+}
+
+.ste-style-btn {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* 颜色按钮：左边一道目标颜色的竖条 */
+.ste-style-swatch {
+  border-left: 4px solid var(--line);
+  padding-left: 8px;
+}
+
+.ste-style-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: #f2fafe;
+}
+
+.ste-style-btn:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+/* 斜体 / 删除线是开关：打开时整块底色，和「垂直对齐」的选中态一致 */
+.ste-style-btn.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
 }
 
 .ste-chip:disabled {

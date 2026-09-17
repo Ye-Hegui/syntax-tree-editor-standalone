@@ -40,7 +40,7 @@
    要两个叶子必须写 `[S [NP] [VP]]`。两种写法画出来一模一样，但结构含义不同。
    多词叶子渲染成**三角形**（`layout.js` 里 `triangles` 选项控制）。
 2. **`[X]` 表示"没有展开的范畴"，不是「词」** —— 默认和别的节点一样是蓝色，
-   「词红」按钮也不会给它标红。判断依据见「约定」第 6 条。
+   「单词标红」按钮也不会给它标红。判断依据见「约定」第 6 条。
 3. 标签里**不能有双引号**（记法没有转义），编辑器输入时自动去掉。
 4. 箭头只挂在**叶子**上，而且**起点和落点都必须是叶子** —— 词序号只能定位到词。
    这是对齐 jsSyntaxTree 的结果，它的箭头本来就只连词。要指向非叶子只能改用规则记法。
@@ -65,8 +65,9 @@
    五类声明形式完全一样，括号里都可以列多个编号：`Italic(1, 3)` 斜体、`Bold(2)` 粗体、
    `Strike(4)` 删除线，以及**颜色名当声明词**的颜色声明 `Red(1, 3)`、`Blue(6)`。
    导出顺序固定为 Italic → Bold → Strike → 颜色（颜色之间按 `COLOR_NAMES` 的顺序）。
-   颜色名共九种：`red` `yellow` `blue` `green` `orange` `magenta` `purple` `black` `white`，
-   大小写不敏感，导出统一成首字母大写。色值表在 `src/style.js` 的 `COLOR_VALUES`。
+   声明词**大小写不敏感**（`ITALIC(1)` 与 `italic(1)` 等效），导出统一成首字母大写。
+   颜色名共九种：`red` `yellow` `blue` `green` `orange` `magenta` `purple` `black` `white`。
+   色值表在 `src/style.js` 的 `COLOR_VALUES`。
    一个节点只有一个颜色，被多条颜色声明命中时**靠后的那条有效**（冗余声明不再导出）；
    九种以外的颜色名（`Chartreuse(1)`）不算声明，会被当成树的内容而报解析错误。
 4. 规则记法**至少要有一条边**。孤立节点（`[X]`）在规则记法里是空的。
@@ -133,7 +134,8 @@ new SyntaxTreeEditor(elOrSelector, {
 | `setOptions(partial)` | 改选项后重绘 |
 | `setAlign(v)` / `setCenter(v)` / `setTerms(pairs)` / `setStyle({italic,bold,strike})` | 改对齐、水平位置、界面称谓、选中节点的字体样式 |
 | `createRoot()` `addChild()` `addSibling()` `addLevel()` `collapseLevel()` `moveLeft()` `moveRight()` `remove()` `setLabel(t)` | 结构编辑，都作用于当前选中节点 |
-| `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的四个按钮）：全蓝 / 词红 / 单个标红 / 单个标蓝。**不引入新的染色机制**，只是增删颜色声明。都返回"是否真的改了东西"，没有变化时不压撤销历史 |
+| `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝。**不引入新的染色机制**，只是增删颜色声明。都返回"是否真的改了东西"，没有变化时不压撤销历史 |
+| `toggleSelectedItalic()` `toggleSelectedStrike()` | 同一行右边的两个字体开关：给选中节点切换斜体 / 删除线（等价于加或删一行 `Italic(编号)` / `Strike(编号)` 声明），再按一次取消。粗体刻意没有按钮，只能用声明写 |
 | `undo()` / `redo()` | 撤销 / 重做 |
 | `toSvgString({background})` / `exportSvg()` / `exportPng()` | 导出 |
 | 属性：`root` `selected` `lay` `size` `opts` `undoStack` `redoStack` `isEmpty` | 只读访问用 |
@@ -163,9 +165,9 @@ new SyntaxTreeEditor(elOrSelector, {
 5. **编号有两个来源，别搞混**：节点编号一律来自 `nodeIds()`，词序号一律来自 `leafOrdinals()`。
    两者的用途见「编号体系」一节 —— 它们**不是一回事**。
 6. **默认【全部蓝色】** —— 没有任何颜色声明时，词和范畴同色。需求⑥ 取消了"自动染红"，
-   红色等颜色只能来自声明，「标色」那一行的四个按钮只是替用户生成或删掉那些声明。
+   红色等颜色只能来自声明，「标色」那一行的按钮只是替用户生成或删掉那些声明。
    「词」= 叶子节点 **且**（是母亲节点唯一的女儿节点 **或** 带位移箭头），纯结构判定，
-   不认任何词类；**唯一来源是 `layout.js` 的 `wordNodes(root)`**（"词红"按钮用它）。
+   不认任何词类；**唯一来源是 `layout.js` 的 `wordNodes(root)`**（"单词标红"按钮用它）。
    ⚠️ 它和箭头用的「词序号」（`notation.js` 的 `leafOrdinals`，数**所有**叶子，
    包括 `[Y]`、`[X']` 这类空范畴）**口径不同**，别混用。
 

@@ -543,6 +543,15 @@ t("三种样式按 Italic / Bold / Strike 的顺序导出", () => {
   assert.ok(toText(root).endsWith("Italic(2)\nBold(2)\nStrike(1)"), toText(root));
 });
 
+t("声明词大小写不敏感，导出统一成首字母大写", () => {
+  const root = parse("[XP [A] [B]]\nITALIC(1)\nbold(2)\nsTrIkE(1)");
+  const byLabel = (l) => preorder(root).find((x) => x.label === l);
+  assert.equal(byLabel("A").italic, true);
+  assert.equal(byLabel("A").strike, true);
+  assert.equal(byLabel("B").bold, true);
+  assert.ok(toText(root).endsWith("Italic(1)\nBold(2)\nStrike(1)"), toText(root));
+});
+
 console.log("\n[颜色声明]");
 
 t("Red(节点号) 能设置颜色，且在两套记法里往返", () => {
