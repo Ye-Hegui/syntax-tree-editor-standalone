@@ -1832,6 +1832,19 @@ await t("嵌套的转义节点：内层那一支的连线也要画出来（原�
   const endsAt = (it) => lines.some((l) => Math.abs(l.x2 - it.cx) < 0.01 && Math.abs(l.y2 - (it.y - 3)) < 0.01);
   assert.ok(endsAt(xTop), "内层的侧枝（X -> word2）没有连线");
   assert.ok(endsAt(yTop), "内层共线那一支（Y）没有连线");
+
+  // 关键诉求：**一条线捅到底** —— XP 框底到 Y 框顶是【一条】线段，
+  // 中间那两层转义节点不再各画一段（那样会在分叉点留下折角）。
+  const XP = nodes.find((n) => n.label === "XP");
+  const xpInfo = ed.lay.info.get(XP);
+  const oneLine = lines.some(
+    (l) =>
+      Math.abs(l.x1 - xpInfo.cx) < 0.01 &&
+      Math.abs(l.y1 - (xpInfo.y + ed.lay.nodeH + 2)) < 0.01 &&
+      Math.abs(l.x2 - yTop.cx) < 0.01 &&
+      Math.abs(l.y2 - (yTop.y - 3)) < 0.01,
+  );
+  assert.ok(oneLine, "XP 到 Y 应该是同一条直线（现在被拆成几段了）");
 });
 
 console.log("\n[工具栏快捷键说明]");

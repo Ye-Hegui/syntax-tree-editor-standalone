@@ -99,65 +99,96 @@ export function drawTree(svg, lay, opts = {}) {
   // 转义节点可能**一层套一层**（%Empty 的女儿还是 %Empty）。那种情况下要"从爷爷直接连到孙子"，
   // 所以这里写成递归：沿着"相反那一侧"的女儿一路往下带，每一层的交点都落在同一条直线上，
   // 侧枝再从各自的交点出发。
+  /**
+   * 画转义节点的连线（导出时用）—— **一条线捅到底**。
+   *
+   * 转义节点可能一层套一层（%Empty 的女儿还是 %Empty）。做法分三步：
+   *
+   *   ① **走链**：每一层挑"来向相反那一侧"的女儿（来向正好在本层正上方时挑中间那个）。
+   *      挑中的如果还是转义节点，就以本层 cx 为新的来向继续往下走 ——
+   *      一路走到第一个**不是**转义节点的节点，它就是端点。
+   *   ② **只画一条直线**：来向起点 (ax, ay) → 端点框顶。
+   *      于是"最上面那个母亲 → 最下面那个端点"是笔直的一条（夹角 180°）。
+   *   ③ **链上每一层各自分叉**：分叉点取"这条直线与自己 cx 的交点"（所以必然落在这条线上），
+   *      侧枝从各自的分叉点出发；侧枝自己若是转义节点，就递归走它自己那条链。
+   *
+   * @param {object} node 这一层的转义节点
+   * @param {number} ax 来向起点的横坐标（母亲的框底中心，或上一层转义节点的分叉点）
+   * @param {number} ay 来向起点的纵坐标
+   */
   const drawEscape = (node, ax, ay) => {
-    const ni = info.get(node);
-    if (!ni || !node.children.length) return; // 空转义节点：没东西可画
+    // ① 走链：记下每一层的分叉依据（本层节点、本层 info、选中了第几个女儿）
+    const chain = [];
+    let cur = node;
+    let fromX = ax;
+    while (cur && o.hideEscapes && cur.escape && cur.children.length) {
+      const ci2 = info.get(cur);
+      if (!ci2) break;
+      const same = Math.abs(fromX - ci2.cx) < 0.5;
+      const idx = same
+        ? Math.floor((cur.children.length - 1) / 2)
+        : fromX < ci2.cx
+          ? cur.children.length - 1
+          : 0;
+      chain.push({ node: cur, info: ci2, idx });
+      const next = cur.children[idx];
+      fromX = ci2.cx; // 下一层的"来向"就是这一层的分叉点：它落在直线上，横坐标正是本层 cx
+      cur = next;
+      if (!cur || !o.hideEscapes || !cur.escape || !cur.children.length) break;
+    }
+    if (!chain.length) return;
 
-    // 母亲（或上一层交点）正好在正上方时挑中间那个，否则挑相反那一侧
-    const same = Math.abs(ax - ni.cx) < 0.5;
-    const idx = same ? Math.floor((node.children.length - 1) / 2) : ax < ni.cx ? node.children.length - 1 : 0;
-    const b = node.children[idx];
-    const bi = info.get(b);
+    const ei = info.get(cur);
+    if (!ei) return; // 端点没有布局信息（或链断了）：不画
+
+    // ② 一条直线：来向起点 → 端点框顶
     const x1 = ax;
     const y1 = ay;
-    const x2 = bi.cx;
-    const y2 = bi.y - 3;
-
-    // 交点 J：横坐标取"女儿节点的正中间"（ni.cx 就是居中模式算出来的中点），
-    // 纵坐标取那条直线在该处的值 —— 这样 J 既在正中间，又落在这条直线上（180° 不丢）。
-    // 直线竖直时，J 取转义节点那一行的底。
-    const vertical = Math.abs(x2 - x1) < 0.5;
-    const t = vertical ? 0 : (ni.cx - x1) / (x2 - x1);
-    const Jx = ni.cx;
-    const Jy = vertical ? ni.y + nodeH + 2 : y1 + t * (y2 - y1);
-
-    // 一条直线：母亲框底 -> 共线那个女儿框顶（共线是这么构造出来的）
+    const x2 = ei.cx;
+    const y2 = ei.y - 3;
     gEdge.appendChild(el("line", { x1, y1, x2, y2, stroke: COLORS.edge, "stroke-width": 1.2 }));
 
-    node.children.forEach((d, di) => {
-      // ⚠️ 这个判断必须在"共线那一支"的提前返回【之前】：
-      // 内层转义节点往往正是共线的那一支，放后面就永远走不到，整支连线会丢失。
-      if (o.hideEscapes && d.escape && d.children.length) {
-        drawEscape(d, Jx, Jy);
-        return;
-      }
-      if (di === idx) return;
-      const didx = info.get(d);
-      const isTriangle = o.triangles && d.children.length === 0 && d.label.includes(" ");
-      if (isTriangle) {
-        const half = didx.textW / 2 + 4;
-        gEdge.appendChild(
-          el("polygon", {
-            points: `${Jx},${Jy} ${didx.cx + half},${didx.y - 3} ${didx.cx - half},${didx.y - 3}`,
-            fill: "none",
-            stroke: COLORS.edge,
-            "stroke-width": 1.2,
-            "stroke-linejoin": "round",
-          }),
-        );
-      } else if (o.terminalLines || d.children.length > 0) {
-        gEdge.appendChild(
-          el("line", {
-            x1: Jx,
-            y1: Jy,
-            x2: didx.cx,
-            y2: didx.y - 3,
-            stroke: COLORS.edge,
-            "stroke-width": 1.2,
-          }),
-        );
-      }
-    });
+    // ③ 链上每一层：分叉点取这条直线与本层 cx 的交点，侧枝从那儿出发
+    const vertical = Math.abs(x2 - x1) < 0.5;
+    for (const step of chain) {
+      const t = vertical ? 0 : (step.info.cx - x1) / (x2 - x1);
+      const Jx = step.info.cx;
+      const Jy = vertical ? step.info.y + nodeH + 2 : y1 + t * (y2 - y1);
+
+      step.node.children.forEach((d, di) => {
+        if (di === step.idx) return; // 被选中走直线的那一支，不用再画
+        // 侧枝自己也是转义节点：递归 —— 它自己又是"一条线捅到底"
+        if (o.hideEscapes && d.escape && d.children.length) {
+          drawEscape(d, Jx, Jy);
+          return;
+        }
+        const didx = info.get(d);
+        const isTriangle = o.triangles && d.children.length === 0 && d.label.includes(" ");
+        if (isTriangle) {
+          const half = didx.textW / 2 + 4;
+          gEdge.appendChild(
+            el("polygon", {
+              points: `${Jx},${Jy} ${didx.cx + half},${didx.y - 3} ${didx.cx - half},${didx.y - 3}`,
+              fill: "none",
+              stroke: COLORS.edge,
+              "stroke-width": 1.2,
+              "stroke-linejoin": "round",
+            }),
+          );
+        } else if (o.terminalLines || d.children.length > 0) {
+          gEdge.appendChild(
+            el("line", {
+              x1: Jx,
+              y1: Jy,
+              x2: didx.cx,
+              y2: didx.y - 3,
+              stroke: COLORS.edge,
+              "stroke-width": 1.2,
+            }),
+          );
+        }
+      });
+    }
   };
 
   for (const it of items) {
