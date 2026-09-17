@@ -86,6 +86,22 @@ const svg = rulesToSvg("0 S -> NP\n0 S -> VP\n1 NP -> Dogs\n2 VP -> barks");
 Node 里连浏览器都不需要：`node tools/render-rules.mjs 树.txt 树.svg`。
 No browser needed under Node either: `node tools/render-rules.mjs tree.txt tree.svg`.
 
+界面可以切换**中文 / English**，以及三套**称谓**（母系 / 中性 / 父系 —— 英文下是
+mother node / parent node / father node 那三套）。两件事都只改界面文字，对树没有任何影响：
+The UI can switch between **中文 and English**, and between three **term sets** (mother / neutral /
+father — in English: mother node, parent node, father node). Both only change the wording, never the tree:
+
+```js
+new SyntaxTreeEditor("#tree-editor", { value: "[S [NP Dogs]]", lang: "en" });
+editor.setLanguage("en");      // 也可以事后切换
+editor.setTerms(TERMS.en.neutral);   // 称谓用 src/i18n.js 里的三套表
+```
+
+演示页上还支持 `index.html?lang=en` 直接预置语言。界面的全部文案在 [`src/i18n.js`](src/i18n.js)，
+中英各一套、key 一一对应（自检会核对）。
+The demo page also accepts `index.html?lang=en`. All UI strings live in [`src/i18n.js`](src/i18n.js),
+one table per language with matching keys (checked by the self-test).
+
 ```js
 import { SyntaxTreeEditor } from "./src/editor.js";
 
