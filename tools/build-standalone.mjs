@@ -75,6 +75,18 @@ function buildBundle() {
   return { bundle: `(function () {\n"use strict";\n\n${chunks.join("\n")}\n})();\n`, report };
 }
 
+/**
+ * 把 html 里的某个位置换成一段**原样插入**的文本。
+ *
+ * ⚠️ 必须用函数形式，不能用字符串形式：`String.replace` 会把替换文本里的
+ * `$&`、`` $` ``、`$'`、`$1` 当成特殊记号（`` $` `` = 匹配位置之前的全部内容）。
+ * 源码里只要出现一个 `` $` ``（例如模板字符串写成 `` `...\s*$` ``），
+ * 字符串形式的替换就会把整页 HTML 塞进脚本里，构建产物直接变成语法错误。
+ */
+function replaceVerbatim(html, re, text) {
+  return html.replace(re, () => text);
+}
+
 function buildHtml(bundle) {
   let html = read("index.html");
   const css = read("style.css");
@@ -84,14 +96,20 @@ function buildHtml(bundle) {
 
   const linkTag = /[ \t]*<link\s+rel="stylesheet"[^>]*>\r?\n?/;
   if (!linkTag.test(html)) throw new Error("index.html 里找不到 <link rel=stylesheet>");
-  html = html.replace(linkTag, `<style>\n${css.trim()}\n</style>\n`);
+  html = replaceVerbatim(html, linkTag, `<style>\n${css.trim()}\n</style>\n`);
 
   // 模块脚本原本在 <head> 里（模块天然延迟执行）。内联成普通脚本后必须在
   // </body> 之前，否则脚本跑的时候 #tree-editor 还不存在。
   const scriptTag = /[ \t]*<script\s+type="module"[^>]*><\/script>\r?\n?/;
   if (!scriptTag.test(html)) throw new Error("index.html 里找不到 type=module 的 script");
   html = html.replace(scriptTag, "");
-  html = html.replace(/<\/body>/, `<script>\n${bundle}</script>\n  </body>`);
+  html = replaceVerbatim(html, /<\/body>/, `<script>\n${bundle}</script>\n  </body>`);
+
+  // 内联必须逐字不差。上面那条坑（`` $` ``）不会报错，只会悄悄把页面复制进脚本，
+  // 所以这里再兜一道底：脚本必须完好地躺在产物里。
+  if (!html.includes(bundle)) {
+    throw new Error("打包失败：内联脚本没有原样进入产物（替换文本里的 $ 记号？）");
+  }
 
   // index.html 头部那段提示是给 HTTP 版看的（"必须起服务器 / 想双击就用单文件版"）。
   // 单文件版里用户已经在用单文件了，这段提示纯属噪音，整段删掉。

@@ -246,9 +246,20 @@ main {
   cursor: pointer;
 }
 
-.ste-chip:hover {
+.ste-chip:hover:not(:disabled) {
   background: #e3f4fd;
   border-color: var(--accent);
+}
+
+/* 标色那一行：四个按钮各管一件事（不是单选），所以不拼成一整块，中间留缝 */
+.ste-color-group {
+  display: flex;
+  gap: 4px;
+}
+
+.ste-chip:disabled {
+  opacity: 0.32;
+  cursor: default;
 }
 
 .ste-scroll {

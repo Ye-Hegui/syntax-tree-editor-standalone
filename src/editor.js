@@ -24,7 +24,7 @@ import {
 } from "./model.js";
 import { parse, serialize, NotationError } from "./notation.js";
 import { parseRules, serializeRules, RuleError } from "./rules.js";
-import { layout, ALIGN_MODES, CENTER_MODES } from "./layout.js";
+import { layout, ALIGN_MODES, CENTER_MODES, wordNodes } from "./layout.js";
 import { drawTree } from "./render.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -199,8 +199,9 @@ export class SyntaxTreeEditor {
   }
 
   /**
-   * 设置选中节点的字体样式。italic / bold 会写进记法末尾的 Italic(...) / Bold(...) 声明里。
-   * @param {{italic?: boolean, bold?: boolean}} style
+   * 设置选中节点的字体样式。italic / bold / strike 会写进记法末尾的
+   * Italic(...) / Bold(...) / Strike(...) 声明里。
+   * @param {{italic?: boolean, bold?: boolean, strike?: boolean}} style
    */
   setStyle(style) {
     const n = this.selected;
@@ -208,7 +209,58 @@ export class SyntaxTreeEditor {
     this.#mutate(() => {
       if (style.italic != null) n.italic = !!style.italic;
       if (style.bold != null) n.bold = !!style.bold;
+      if (style.strike != null) n.strike = !!style.strike;
     });
+  }
+
+  // ------------------------------------------------------------ 颜色标记
+  //
+  // 这四个按钮都不引入新的染色机制，只是生成或删掉已有的颜色声明（Red(1, 3) 这种），
+  // 所以效果可以往返 —— 导出的文本里就是那些声明，用户也能手动改、手动删。
+  //
+  // 颜色是"一个节点一个颜色"，所以标红对已经带别的颜色的节点是【覆盖】。
+  // 没有任何变化时（例如对已经红的词再点一次"词红"）直接返回，不压撤销历史、不产生重复声明。
+
+  /** 全蓝：删掉所有颜色声明，整棵树回到默认的蓝色。返回是否真的改了东西 */
+  markAllBlue() {
+    if (!this.root) return false;
+    const colored = preorder(this.root).filter((n) => n.color);
+    if (!colored.length) return false;
+    this.#mutate(() => {
+      for (const n of colored) n.color = null;
+    });
+    return true;
+  }
+
+  /** 词红：把所有"词"标成红色，已经带别的颜色的词会被覆盖 */
+  markWordsRed() {
+    if (!this.root) return false;
+    const words = wordNodes(this.root).filter((n) => n.color !== "red");
+    if (!words.length) return false;
+    this.#mutate(() => {
+      for (const n of words) n.color = "red";
+    });
+    return true;
+  }
+
+  /** 单个标红：把选中的节点标成红色。选中的是范畴也可以，声明体系本来就支持任意节点 */
+  markSelectedRed() {
+    const n = this.selected;
+    if (!this.root || !n || n.color === "red") return false;
+    this.#mutate(() => {
+      n.color = "red";
+    });
+    return true;
+  }
+
+  /** 单个标蓝：删掉选中节点的颜色声明。默认就是蓝色，所以"删掉"就是"标蓝" */
+  markSelectedBlue() {
+    const n = this.selected;
+    if (!this.root || !n || !n.color) return false;
+    this.#mutate(() => {
+      n.color = null;
+    });
+    return true;
   }
 
   /** 导出为括号记法；空白画布返回空字符串 */
@@ -484,10 +536,44 @@ centerGroup.appendChild(b);
     this.hintEl = this.#term(mk("span", "", HINT), "textContent", HINT);
     hint.appendChild(this.hintEl);
 
+    // 标色。默认整棵树是蓝的，红色（或其他颜色）只能靠声明得到，
+    // 这四个按钮就是帮用户生成或删掉那些声明的，自己不引入任何新的染色机制。
+    //
+    // 刻意【不放进工具栏】：加上它们工具栏就排不成一行了（CSS 里明确要求一行），
+    // 而且它们和结构编辑不是一回事，单独占一行反而更好找。
+    const colorRow = mk("div", "ste-align");
+    colorRow.appendChild(mk("span", "ste-align-label", "标色"));
+    const colorGroup = mk("div", "ste-color-group");
+    const chipButton = (label, title, fn) => {
+      const b = mk("button", "ste-chip", label);
+      b.type = "button";
+      b.title = title;
+      b.addEventListener("click", () => {
+        fn();
+        this.scroller.focus();
+      });
+      colorGroup.appendChild(b);
+      return b;
+    };
+    this.btnAllBlue = chipButton("全蓝", "删掉所有颜色声明，整棵树回到默认的蓝色", () => this.markAllBlue());
+    this.btnWordsRed = chipButton(
+      "词红",
+      '把所有"词"标成红色（词 = 裸标签的叶子节点，或带位移箭头的叶子节点）',
+      () => this.markWordsRed(),
+    );
+    this.btnSelectedRed = chipButton("单个标红", "把选中的节点标成红色（选中的是词或范畴都可以）", () =>
+      this.markSelectedRed(),
+    );
+    this.btnSelectedBlue = chipButton("单个标蓝", "删掉选中节点的颜色声明，该节点回到默认的蓝色", () =>
+      this.markSelectedBlue(),
+    );
+    colorRow.appendChild(colorGroup);
+
     this.el.append(
       toolbar,
       alignRow,
       centerRow,
+      colorRow,
       palette,
       this.scroller,
       this.textWrap,
@@ -835,6 +921,10 @@ centerGroup.appendChild(b);
         this.btnMoveRight,
         this.btnAddLevel,
         this.btnCollapseLevel,
+        this.btnAllBlue,
+        this.btnWordsRed,
+        this.btnSelectedRed,
+        this.btnSelectedBlue,
       ])
         b.disabled = true;
       this.btnChild.disabled = false; // 此时它是"创建根节点"
@@ -866,6 +956,12 @@ centerGroup.appendChild(b);
     this.btnCollapseLevel.disabled = !canCollapsePrimeLevel(this.root, n);
     this.btnUndo.disabled = this.undoStack.length === 0;
     this.btnRedo.disabled = this.redoStack.length === 0;
+
+    // 颜色按钮：没有可做的改动时（例如整棵树已经全红）就灰掉，免得点下去没有反应
+    this.btnAllBlue.disabled = !ord.some((x) => x.color);
+    this.btnWordsRed.disabled = !wordNodes(this.root).some((x) => x.color !== "red");
+    this.btnSelectedRed.disabled = !n || n.color === "red";
+    this.btnSelectedBlue.disabled = !n || !n.color;
   }
 
   #showError(err) {

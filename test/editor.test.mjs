@@ -953,7 +953,7 @@ await t("空白画布下左移/右移不会炸", async () => {
   assert.equal(ed.btnMoveRight.disabled, true);
 });
 
-console.log("\n[只有词才染红]");
+console.log("\n[默认全蓝，红色靠声明]");
 
 function fillOf(ed, label) {
   const n = preorder(ed.root).find((x) => x.label === label);
@@ -961,28 +961,129 @@ function fillOf(ed, label) {
   return g.querySelector("text").getAttribute("fill");
 }
 
-await t("用户给的例子：只有 word 是红色", async () => {
-  const ed = mount("[XP [D [X'' [X word] [Y]]] [X']]");
-  assert.equal(fillOf(ed, "word"), "#CC0000", "word 是词，应该染红");
-  assert.equal(fillOf(ed, "Y"), "#0000CC", "Y 是范畴，不该染红");
-  assert.equal(fillOf(ed, "X'"), "#0000CC", "X' 是范畴，不该染红");
-  assert.equal(fillOf(ed, "X"), "#0000CC", "X 非叶子，不该染红");
-  assert.equal(fillOf(ed, "D"), "#0000CC");
-});
+/** 导出文本里的某类声明行 */
+function declLines(ed, word) {
+  return ed.getValue().split("\n").filter((l) => l.startsWith(word + "("));
+}
 
-await t("常规树的词都染红，范畴不染", async () => {
-  const ed = mount("[S [NP [D the][N dog]][VP [V barks]]]");
-  assert.equal(fillOf(ed, "the"), "#CC0000");
-  assert.equal(fillOf(ed, "dog"), "#CC0000");
-  assert.equal(fillOf(ed, "barks"), "#CC0000");
-  assert.equal(fillOf(ed, "S"), "#0000CC");
-  assert.equal(fillOf(ed, "NP"), "#0000CC");
+await t("没有任何颜色声明时，词和范畴一样都是蓝色（不再自动染红）", async () => {
+  const ed = mount("[XP [D [X'' [X word] [Y]]] [X']]");
+  assert.equal(fillOf(ed, "word"), "#0000CC", "词也应该是默认的蓝色");
+  assert.equal(fillOf(ed, "Y"), "#0000CC");
+  assert.equal(fillOf(ed, "X'"), "#0000CC");
+  assert.equal(fillOf(ed, "X"), "#0000CC");
 });
 
 await t("关掉颜色后全部是黑色", async () => {
   const ed = mount("[XP [D [X'' [X word] [Y]]] [X']]", { colors: false });
   assert.equal(fillOf(ed, "word"), "#111111");
   assert.equal(fillOf(ed, "Y"), "#111111");
+});
+
+await t("词红：只给词标红，范畴不动，导出的就是普通颜色声明", async () => {
+  const ed = mount("[XP [D [X'' [X word] [Y]]] [X']]");
+  assert.equal(ed.markWordsRed(), true);
+  assert.equal(fillOf(ed, "word"), "#d32f2f", "word 是词，应该变红");
+  assert.equal(fillOf(ed, "Y"), "#0000CC", "Y 是范畴，不该红");
+  assert.equal(fillOf(ed, "X'"), "#0000CC", "X' 是范畴，不该红");
+  assert.equal(fillOf(ed, "X"), "#0000CC", "X 是非叶子，不该红");
+  const red = declLines(ed, "Red");
+  assert.equal(red.length, 1, "一种颜色一行");
+  assert.ok(/^Red\(\d+\)$/.test(red[0]), red[0]);
+});
+
+await t("词红在两套记法下都能用，规则记法里也一样", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]");
+  ed.markWordsRed();
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nRed(3, 4)");
+  assert.equal(ed.getRules().endsWith("Red(3, 4)"), true, ed.getRules());
+});
+
+await t("词红覆盖词原有的颜色，且没有变化时不再压撤销记录", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]\nGreen(3)");
+  ed.markWordsRed();
+  assert.equal(fillOf(ed, "Dogs"), "#d32f2f", "词原有的绿色应该被红色覆盖");
+  assert.equal(declLines(ed, "Green").length, 0, "冗余的绿色声明应该消失");
+  const before = ed.undoStack.length;
+  const text = ed.getValue();
+  assert.equal(ed.markWordsRed(), false, "已经全红了，应该报告没改动");
+  assert.equal(ed.undoStack.length, before, "没有变化时不该压撤销记录");
+  assert.equal(ed.getValue(), text, "没有变化时导出的文本应该一模一样");
+});
+
+await t("单个标红：选中的是范畴也照做，不受'词'的限制", async () => {
+  const ed = mount("[S [NP [D the] [N dog]] [VP barks]]");
+  const np = preorder(ed.root).find((x) => x.label === "NP");
+  clickNode(ed, np);
+  assert.equal(ed.markSelectedRed(), true);
+  assert.equal(fillOf(ed, "NP"), "#d32f2f", "范畴也能标红");
+  assert.equal(fillOf(ed, "dog"), "#0000CC", "没选中的词不受影响");
+});
+
+await t("单个标红：没选中节点时什么也不做", async () => {
+  const ed = mount("[S [NP Dogs]]");
+  ed.svg.dispatchEvent(makeEvent("pointerdown")); // 取消选中
+  assert.equal(ed.selected, null);
+  assert.equal(ed.markSelectedRed(), false);
+  assert.equal(ed.getValue(), "[S [NP Dogs]]");
+});
+
+await t("单个标蓝：删掉该节点的颜色声明，回到默认蓝", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]\nRed(3, 4)");
+  const dogs = preorder(ed.root).find((x) => x.label === "Dogs");
+  clickNode(ed, dogs);
+  assert.equal(ed.markSelectedBlue(), true);
+  assert.equal(fillOf(ed, "Dogs"), "#0000CC", "应该回到默认蓝");
+  assert.equal(fillOf(ed, "barks"), "#d32f2f", "别的词不受影响");
+  assert.equal(declLines(ed, "Red")[0], "Red(4)", ed.getValue());
+  assert.equal(ed.markSelectedBlue(), false, "本来就没有颜色声明，应该报告没改动");
+});
+
+await t("全蓝：一次删掉所有颜色声明", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]\nRed(3, 4)\nGreen(0)\nBold(1)");
+  assert.equal(ed.markAllBlue(), true);
+  assert.equal(fillOf(ed, "Dogs"), "#0000CC");
+  assert.equal(fillOf(ed, "S"), "#0000CC");
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nBold(1)", "字体声明不该被一起删掉");
+  assert.equal(ed.markAllBlue(), false, "已经没有颜色声明了");
+});
+
+await t("四个颜色按钮跟着有无可做的改动灰掉", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]");
+  // 构造完默认选中根节点，所以两个"单个"按钮一开始是可用的
+  assert.equal(ed.btnAllBlue.disabled, true, "没有任何颜色声明，全蓝无事可做");
+  assert.equal(ed.btnWordsRed.disabled, false, "还有词没标红");
+  assert.equal(ed.btnSelectedRed.disabled, false, "根节点还没标红");
+  assert.equal(ed.btnSelectedBlue.disabled, true, "根节点没有颜色声明");
+
+  ed.markWordsRed();
+  assert.equal(ed.btnAllBlue.disabled, false);
+  assert.equal(ed.btnWordsRed.disabled, true, "已经全红了");
+
+  const dogs = preorder(ed.root).find((x) => x.label === "Dogs");
+  clickNode(ed, dogs);
+  assert.equal(ed.btnSelectedRed.disabled, true, "选中的词已经是红的");
+  assert.equal(ed.btnSelectedBlue.disabled, false);
+
+  const np = preorder(ed.root).find((x) => x.label === "NP");
+  clickNode(ed, np);
+  assert.equal(ed.btnSelectedRed.disabled, false, "NP 还没标红");
+  assert.equal(ed.btnSelectedBlue.disabled, true, "NP 没有颜色声明");
+
+  // 取消选中后，两个"单个"按钮都该灰掉
+  ed.svg.dispatchEvent(makeEvent("pointerdown"));
+  assert.equal(ed.selected, null);
+  assert.equal(ed.btnSelectedRed.disabled, true, "没选中节点");
+  assert.equal(ed.btnSelectedBlue.disabled, true, "没选中节点");
+});
+
+await t("颜色按钮只用声明体系，颜色声明能手工改回文本再解析", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]");
+  ed.markWordsRed();
+  const hand = ed.getValue().replace("Red(3, 4)", "Red(3)");
+  ed.setValue(hand);
+  assert.equal(fillOf(ed, "Dogs"), "#d32f2f");
+  assert.equal(fillOf(ed, "barks"), "#0000CC", "手工删掉的编号不该还红着");
 });
 
 console.log("\n[位移箭头 -->]");
@@ -1247,20 +1348,28 @@ await t("滚动文本框时装订线跟着滚", async () => {
 
 console.log("\n[颜色渲染]");
 
-await t("Color 声明覆盖默认填色，没声明的仍是默认色", async () => {
-  const ed = mount("[CP [NP what_i] [C' [C is_j]]]\nColor(3, red)");
+await t("颜色声明覆盖默认的蓝，没声明的仍是默认蓝", async () => {
+  const ed = mount("[CP [NP what_i] [C' [C is_j]]]\nRed(3)");
   const fill = (l) => [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === l).getAttribute("fill");
   assert.equal(fill("what"), "#d32f2f", "what_i 应该是红色");
-  assert.equal(fill("is"), "#CC0000", "没声明的词应该还是默认的叶子红");
-  assert.notEqual(fill("is"), "#d32f2f", "不该被 Color 声明影响");
+  assert.equal(fill("is"), "#0000CC", "没声明的词是默认蓝");
+  assert.notEqual(fill("is"), "#d32f2f", "不该被颜色声明影响");
   assert.notEqual(fill("CP"), "#d32f2f", "没声明的非叶子也不受影响");
+});
+
+await t("显式声明的颜色优先于「关闭颜色」选项", async () => {
+  const ed = mount("[CP [NP what_i] [C' [C is_j]]]\nRed(3)", { colors: false });
+  const fill = (l) => [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === l).getAttribute("fill");
+  assert.equal(fill("what"), "#d32f2f", "显式声明的颜色不受选项影响");
+  assert.equal(fill("is"), "#111111", "没声明的是单色");
 });
 
 await t("九种颜色各自渲染成不同色值", async () => {
   const names = ["red","yellow","blue","green","orange","magenta","purple","black","white"];
   const seen = new Set();
   for (const name of names) {
-    const ed = mount(`[XP [A] [B]]\nColor(1, ${name})`);
+    const canonical = name.charAt(0).toUpperCase() + name.slice(1);
+    const ed = mount(`[XP [A] [B]]\n${canonical}(1)`);
     const fill = [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === "A").getAttribute("fill");
     assert.ok(/^#[0-9a-f]{6}$/i.test(fill), `${name} 没渲染出色值：${fill}`);
     seen.add(fill);
@@ -1285,6 +1394,17 @@ await t("没有任何声明时不加任何样式", async () => {
   assert.equal(t.getAttribute("text-decoration"), null);
   assert.equal(t.getAttribute("font-style"), null);
   assert.equal(t.getAttribute("font-weight"), null);
+});
+
+await t("setStyle 支持 strike（AGENTS.md 里写了这个参数）", async () => {
+  const ed = mount("[vP [v [V know]]]");
+  clickNode(ed, preorder(ed.root).find((x) => x.label === "v"));
+  ed.setStyle({ strike: true });
+  assert.equal(ed.getValue(), "[vP [v [V know]]]\nStrike(1)", ed.getValue());
+  const v = [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === "v");
+  assert.equal(v.getAttribute("text-decoration"), "line-through");
+  ed.setStyle({ strike: false });
+  assert.equal(ed.getValue(), "[vP [v [V know]]]");
 });
 
 console.log("\n[称谓切换]");
@@ -1481,6 +1601,22 @@ await t("每个工具栏按钮下边的快捷键说明都对", async () => {
     "SVG": "矢量图",
     "PNG": "位图",
   });
+});
+
+await t("四个标色按钮单独占一行，不挤进工具栏", async () => {
+  const ed = mount("[S [A]]");
+  const row = ed.el.querySelector(".ste-color-group");
+  assert.ok(row, "找不到标色那一行");
+  assert.deepEqual(
+    [...row.querySelectorAll(".ste-chip")].map((b) => b.textContent),
+    ["全蓝", "词红", "单个标红", "单个标蓝"],
+  );
+  // 工具栏是给结构操作用的，加进这四个就排不成一行了
+  assert.equal(ed.el.querySelectorAll(".ste-toolbar .ste-chip").length, 0);
+  assert.deepEqual(
+    [...ed.el.querySelectorAll(".ste-align-label")].map((s) => s.textContent),
+    ["垂直对齐", "水平位置", "标色"],
+  );
 });
 
 await t("＋女儿节点 按钮在空白画布上改叫 ＋根节点，快捷键说明不变", async () => {

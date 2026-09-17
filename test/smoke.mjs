@@ -17,7 +17,7 @@ import {
   canCollapsePrimeLevel,
 } from "../src/model.js";
 import { parse, serialize, toText, NotationError } from "../src/notation.js";
-import { layout } from "../src/layout.js";
+import { layout, wordNodes } from "../src/layout.js";
 
 let pass = 0;
 let fail = 0;
@@ -307,7 +307,7 @@ t("findParent / preorder", () => {
   assert.equal(preorder(root).length, 9);
 });
 
-console.log("\n[词的判定：只有词才染红]");
+console.log("\n[词的判定（「词红」按钮用）]");
 
 // 规则：叶子 + 母亲节点的唯一的女儿节点（也就是记法里写成裸标签的那种）才算"词"
 function wordsOf(text) {
@@ -322,6 +322,23 @@ t("用户给的例子：只有 word 是词", () => {
 
 t("常规树：前置语法的词都是词，范畴不是", () => {
   assert.deepEqual(wordsOf("[S [NP [D the][N dog]][VP [V barks]]]"), ["the", "dog", "barks"]);
+});
+
+t("wordNodes() 和布局标记的 isWord 是同一套判定（唯一来源）", () => {
+  const src = "[XP [D [X'' [X word] [Y]]] [X']]";
+  assert.deepEqual(wordNodes(parse(src)).map((n) => n.label), wordsOf(src));
+});
+
+t("wordNodes() 把带位移箭头的叶子也算成词，且不会漏掉裸标签词", () => {
+  const root = parse("[XP [Z word1] [X' [X word2] [Y word3 ->1]]]");
+  assert.deepEqual(wordNodes(root).map((n) => n.label), ["word1", "word2", "word3"]);
+});
+
+t("wordNodes() 与箭头用的「词序号」口径不同：空范畴算词序号、不算词", () => {
+  // leafOrdinals 数所有叶子（Y、X' 都算），wordNodes 只认裸标签词和带箭头的叶子
+  const root = parse("[XP [D [X'' [X word] [Y]]] [X']]");
+  assert.deepEqual(wordNodes(root).map((n) => n.label), ["word"]);
+  assert.equal(serialize(root).text, "[XP [D [X'' [X word] [Y]]] [X']]");
 });
 
 t("方括号包起来的空节点是范畴，不是词", () => {
@@ -526,38 +543,54 @@ t("三种样式按 Italic / Bold / Strike 的顺序导出", () => {
 
 console.log("\n[颜色声明]");
 
-t("Color(节点号, 颜色) 能设置颜色，且在两套记法里往返", () => {
-  const src = "[CP [NP what_i] [C' [C is_j]]]\nStop".replace("Stop", "Color(3, red)\nColor(4, blue)");
+t("Red(节点号) 能设置颜色，且在两套记法里往返", () => {
+  const src = "[CP [NP what_i] [C' [C is_j]]]\nRed(3)\nBlue(4)";
   const root = parse(src);
   assert.equal(preorder(root).find((n) => n.label === "what").color, "red");
   assert.equal(preorder(root).find((n) => n.label === "C").color, "blue");
   assert.equal(toText(root), src);
-  const rules = "0 CP -> NP\n0 CP -> C'\n1 NP -> what_i\n2 C' -> C\n\nColor(3, red)";
+  const rules = "0 CP -> NP\n0 CP -> C'\n1 NP -> what_i\n2 C' -> C\n\nRed(3)";
   assert.equal(toRulesText(parseRules(rules)), rules);
 });
 
-t("九种颜色名都被接受，写大写也能认", () => {
+t("一种颜色一行，多个编号收在同一对括号里，和 Italic(1, 3) 同形", () => {
+  const root = parse("[XP [A] [B] [C]]\nRed(3, 1)");
+  assert.equal(preorder(root).find((n) => n.label === "A").color, "red");
+  assert.equal(preorder(root).find((n) => n.label === "B").color, null);
+  assert.equal(preorder(root).find((n) => n.label === "C").color, "red");
+  assert.ok(toText(root).endsWith("Red(1, 3)"), toText(root));
+});
+
+t("九种颜色名都被接受，写大写也能认，导出统一成首字母大写", () => {
   const names = ["red","yellow","blue","green","orange","magenta","purple","black","white"];
   for (const name of names) {
-    const root = parse(`[XP [A] [B]]\nColor(1, ${name.toUpperCase()})`);
+    const root = parse(`[XP [A] [B]]\n${name.toUpperCase()}(1)`);
     assert.equal(preorder(root).find((n) => n.label === "A").color, name, name);
+    const canonical = name.charAt(0).toUpperCase() + name.slice(1) + "(1)";
+    assert.ok(toText(root).endsWith(canonical), `${name} 导出成了：${toText(root)}`);
   }
 });
 
-t("颜色名不认识时忽略，不报错", () => {
-  const root = parse("[XP [A] [B]]\nColor(1, chartreuse)");
-  assert.equal(preorder(root).find((n) => n.label === "A").color, null);
+t("同一个节点被两条颜色声明命中时，靠后的那条有效，冗余声明不再导出", () => {
+  // 颜色是"一个节点一个颜色"，所以前一条声明是冗余的
+  const root = parse("[XP [A] [B]]\nRed(1)\nBlue(1)");
+  assert.equal(preorder(root).find((n) => n.label === "A").color, "blue");
+  assert.ok(toText(root).endsWith("Blue(1)"), toText(root));
+});
+
+t("颜色名不认识时不再静默忽略 —— 那一行不算声明，会被当成树的内容", () => {
+  assert.throws(() => parse("[XP [A] [B]]\nChartreuse(1)"), NotationError);
 });
 
 t("一个节点可以同时有颜色和字体样式", () => {
-  const root = parse("[XP [A] [B]]\nItalic(1)\nStrike(1)\nColor(1, green)");
+  const root = parse("[XP [A] [B]]\nItalic(1)\nStrike(1)\nGreen(1)");
   const a = preorder(root).find((n) => n.label === "A");
   assert.equal(a.italic, true); assert.equal(a.strike, true); assert.equal(a.color, "green");
 });
 
-t("Color 行按节点编号排序导出，排在字体声明之后", () => {
-  const root = parse("[XP [A] [B] [C]]\nColor(3, blue)\nColor(1, red)\nItalic(2)");
-  assert.ok(toText(root).endsWith("Italic(2)\nColor(1, red)\nColor(3, blue)"), toText(root));
+t("颜色声明排在字体声明之后，颜色之间按固定顺序", () => {
+  const root = parse("[XP [A] [B] [C]]\nBlue(3)\nRed(1)\nItalic(2)");
+  assert.ok(toText(root).endsWith("Italic(2)\nRed(1)\nBlue(3)"), toText(root));
 });
 
 console.log("\n[水平位置：母亲节点居中]");

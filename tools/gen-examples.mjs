@@ -24,8 +24,8 @@ const CASES = [
   { name: "left-xp", value: "[XP [X' [X word2] [Y word3]] [Z word1]]" },
   { name: "left-x", value: "[XP [Z [word1] [X word2]] [X' [Y word3]]]" },
   { name: "right-x", value: "[XP [Z word1] [X' [Y word3] [X word2]]]" },
-  // 2.5 斜体
-  { name: "style", value: "[vP [v [V know]] [pro [N him]] [NP syntax]]\nItalic(1, 2)\nStrike(3)\nColor(4, blue)" },
+  // 2.5 样式声明（斜体 / 删除线 / 颜色）
+  { name: "style", value: "[vP [v [V know]] [pro [N him]] [NP syntax]]\nItalic(1, 2)\nStrike(3)\nRed(4)" },
 ];
 
 installDom();

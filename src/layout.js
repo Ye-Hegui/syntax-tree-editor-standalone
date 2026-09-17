@@ -20,6 +20,35 @@ export const ALIGN_MODES = ["depth", "leaves", "compact"];
 export const CENTER_MODES = ["mother", "block"];
 
 /**
+ * 哪些节点算「词」—— 全项目唯一的判定，布局标记和编辑器的「词红」按钮都从这里取。
+ *
+ * 规则：它是叶子节点，而且是母亲节点唯一的女儿节点 —— 也就是序列化时会写成裸标签的那一种，
+ * 或者它带位移箭头。**纯结构判定，不认任何词类**，所以不需要词性标注。
+ * 用方括号包起来的空节点（如 [Y]、[X']）表示"没有展开的范畴"，不是词。
+ * 根节点永远不是词（根一定带方括号）。
+ *
+ *   [XP [D [X'' [X word] [Y]]] [X']]
+ *     word -> 是 X 唯一的女儿节点 -> 是词
+ *     Y    -> X'' 有 X 和 Y 两个女儿节点，不是唯一 -> 不是词
+ *     X'   -> XP 有 D 和 X' 两个孩子 -> 不是词
+ *
+ * ⚠️ 这和括号记法里箭头用的「词序号」**不是**同一套：词序号（notation.js 的 leafOrdinals）
+ * 数的是所有叶子，包括 [Y]、[X'] 这种空范畴。两者口径不同，别混用。
+ *
+ * @returns {object[]} 按前序排列的词节点
+ */
+export function wordNodes(root) {
+  const out = [];
+  if (!root) return out;
+  (function visit(n, isLoneChild) {
+    if (n.children.length === 0 && (isLoneChild || n.arrow != null)) out.push(n);
+    const lone = n.children.length === 1;
+    for (const c of n.children) visit(c, lone);
+  })(root, false);
+  return out;
+}
+
+/**
  * @param {object} root   模型根节点
  * @param {(text:string, size:number, family:string)=>number} measure  文字宽度测量函数
  * @param {object} options
@@ -155,23 +184,12 @@ export function layout(root, measure, options = {}) {
     if (it.row > maxRow) maxRow = it.row;
   }
 
-  // ---- 哪些节点算"词"（渲染时染成红色）
+  // ---- 哪些节点算"词"
   //
-  // 规则：它是叶子节点，而且是母亲节点唯一的女儿节点 —— 也就是序列化时会写成裸标签的那一种。
-  // 用方括号包起来的空节点（如 [Y]、[X']）表示"没有展开的范畴"，不是词，所以不染色。
-  // 根节点永远不是词（根一定带方括号）。
-  //
-  //   [XP [D [X'' [X word] [Y]]] [X']]
-  //     word -> 是 X 唯一的女儿节点 -> 染红
-  //     Y    -> X'' 有 X 和 Y 两个女儿节点，不是唯一 -> 不染
-  //     X'   -> XP 有 D 和 X' 两个孩子 -> 不染
-  function markWords(n, isLoneChild) {
-    const it = info.get(n);
-    it.isWord = n.children.length === 0 && (isLoneChild || n.arrow != null);
-    const lone = n.children.length === 1;
-    for (const c of n.children) markWords(c, lone);
-  }
-  markWords(root, false);
+  // 判定规则在 wordNodes() 里（本模块导出，编辑器的"词红"按钮也用它）。
+  // 这里只是把结论标到 info 上，渲染层不再据此染色（需求⑥ 取消了自动染红）。
+  for (const it of info.values()) it.isWord = false;
+  for (const n of wordNodes(root)) info.get(n).isWord = true;
 
   // 画布边界只能按**可见内容**（节点标签的实际占位）算。
   //

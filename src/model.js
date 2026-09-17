@@ -14,7 +14,7 @@
 let SEQ = 1;
 
 export function node(label = "", children = []) {
-  // italic / bold / strike 由记法末尾的 Italic(...) / Bold(...) / Strike(...) 声明设置，见 style.js
+  // italic / bold / strike / color 由记法末尾的 Italic(...) / Bold(...) / Strike(...) / Red(...) 声明设置，见 style.js
   return { id: SEQ++, label, sub: null, sup: null, arrow: null, italic: false, bold: false, strike: false, color: null, children };
 }
 

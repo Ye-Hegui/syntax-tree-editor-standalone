@@ -16,7 +16,6 @@ function el(tag, attrs = {}) {
 }
 
 const COLORS = {
-  leaf: "#CC0000",
   branch: "#0000CC",
   mono: "#111111",
   edge: "#000000",
@@ -160,11 +159,11 @@ export function drawTree(svg, lay, opts = {}) {
 
     const contentW = it.textW + it.subW;
     const contentLeft = it.cx - contentW / 2;
-    // 只有"词"染红：叶子节点、而且是母亲节点唯一的女儿节点（也就是记法里写成裸标签的那种）。
-    // 方括号包起来的空节点是范畴，跟非叶子一样用蓝色。
+    // 默认【全部蓝色】：没有任何颜色声明时，词和范畴同色。
+    // （以前是"只有词才染红"，需求⑥ 取消了这个自动判定；要红色得自己声明，或者点工具栏的标红按钮。）
     // 显式声明的颜色优先级最高，不受「关闭颜色」选项影响 —— 那是作者自己的选择
     const declared = n.color ? COLOR_VALUES[n.color] : null;
-    const fill = declared || (o.colors ? (it.isWord ? COLORS.leaf : COLORS.branch) : COLORS.mono);
+    const fill = declared || (o.colors ? COLORS.branch : COLORS.mono);
 
     const label = el("text", {
       x: contentLeft + it.textW / 2,

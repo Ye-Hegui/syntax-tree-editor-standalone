@@ -1,4 +1,4 @@
-﻿# Syntax Tree Editor Standalone
+# Syntax Tree Editor Standalone
 
 简单而轻量化的句法树编辑器，图形与代码双向同步，双击一个 HTML 文件即可使用。
 A simple and lightweight syntax tree editor. Diagram and code stay in sync — just double-click one HTML file.
@@ -27,7 +27,8 @@ Download `Syntax Tree Editor Standalone.html` from [Releases](../../releases/lat
 - 三种垂直对齐，两种水平位置 · Three vertical alignments, two horizontal positions
 - 方向键选中：↑ 母亲节点、↓ 最左女儿节点、← → 左右姊妹节点 · Arrow-key selection
 - 结构操作：下移、上移、左移、右移、增删节点 · Structural edits: move down / up / left / right, add and delete
-- 位移箭头、斜体标注、多词叶子自动画成三角 · Movement arrows, italic labels, multi-word leaves drawn as triangles
+- 位移箭头、斜体 / 粗体 / 删除线 / 九种颜色，多词叶子自动画成三角 · Movement arrows, italic / bold / strikethrough / nine colours, multi-word leaves drawn as triangles
+- 一键标色：全蓝、词红、单个标红、单个标蓝 · One-click colouring: all blue, words red, single node red or blue
 - 导出 SVG / 两倍 PNG，完整撤销重做 · Export SVG / 2x PNG, full undo and redo
 
 各操作的详细用法见编辑器页面底部的「使用方法」。
@@ -99,9 +100,9 @@ npm.cmd test         四套测试 + 一致性自检 / four test suites plus the 
 
 | 测试套件 / Test suite | 负责 / Responsibility |
 | --- | --- |
-| `test/smoke.mjs`（82 项） | 纯逻辑：模型、两套记法、布局、箭头，不需要浏览器<br>Pure logic: model, both notations, layout, arrows; no browser needed |
+| `test/smoke.mjs`（87 项） | 纯逻辑：模型、两套记法、布局、箭头，不需要浏览器<br>Pure logic: model, both notations, layout, arrows; no browser needed |
 | `test/rules.test.mjs`（31 项） | 规则记法的解析、序列化、错误信息<br>Rule notation parsing, serialisation and errors |
-| `test/editor.test.mjs`（130 项） | 交互层，跑在最小 DOM 垫片上<br>Interaction layer, on a minimal DOM shim |
+| `test/editor.test.mjs`（141 项） | 交互层，跑在最小 DOM 垫片上<br>Interaction layer, on a minimal DOM shim |
 | `test/standalone.test.mjs`（13 项） | 单文件版：模块没有遗漏、内联后可以运行<br>Standalone file: nothing missing, still runnable after inlining |
 
 修改 `src/`、`index.html` 或 `style.css` 之后必须重新构建。`npm.cmd test` 会将磁盘上的构建产物与重新构建的结果逐字节比对，缺少重新构建将直接报错。
@@ -122,7 +123,7 @@ STRUCTURE.md                         函数级行号索引 / function-level line
 src/model.js                         数据模型与结构操作，不依赖 DOM / data model and tree ops, DOM-free
 src/notation.js                      括号记法 ↔ 模型 / bracket notation to model
 src/rules.js                         规则记法 ↔ 模型 / rule notation to model
-src/style.js                         斜体 / 粗体声明 / italic and bold declarations
+src/style.js                         斜体 / 粗体 / 删除线 / 颜色声明 / italic, bold, strikethrough and colour declarations
 src/layout.js                        布局与对齐，不依赖 DOM / layout and alignment, DOM-free
 src/render.js                        渲染为可交互 SVG / renders an interactive SVG
 src/editor.js                        核心组件 SyntaxTreeEditor / the core component
