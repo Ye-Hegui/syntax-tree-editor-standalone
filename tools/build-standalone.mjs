@@ -114,7 +114,8 @@ function buildHtml(bundle) {
 
   // index.html 头部那段提示是给 HTTP 版看的（"必须起服务器 / 想双击就用单文件版"）。
   // 单文件版里用户已经在用单文件了，这段提示纯属噪音，整段删掉。
-  const note = /[ \t]*<p class="sub note">[\s\S]*?<\/p>\r?\n?/;
+  // （这段 <p> 上还挂着 data-i18n 属性，所以匹配时允许标签里带别的属性。）
+  const note = /[ \t]*<p class="sub note"[^>]*>[\s\S]*?<\/p>\r?\n?/;
   if (!note.test(html)) throw new Error('index.html 里找不到头部提示（class="sub note"）');
   html = html.replace(note, "");
 

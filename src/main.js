@@ -1,4 +1,5 @@
 import { SyntaxTreeEditor } from "./editor.js";
+import { LANGS, TERM_KINDS, TERM_LABELS, TERMS, i18nText } from "./i18n.js";
 
 const EXAMPLES = [
   // 0 经典结构（首页默认）—— 最小的一棵完整树，后面讲操作都用它
@@ -20,6 +21,7 @@ const EXAMPLES = [
 //   index.html?example=2                    载入第 N 个示例
 //   index.html?align=leaves                 预置垂直对齐：depth / leaves / compact
 //   index.html?textmode=rules               预置代码框记法：bracket / rules
+//   index.html?lang=en                      预置界面语言：zh / en（截图和分享都用得上）
 const params = typeof location !== "undefined" ? new URLSearchParams(location.search) : null;
 
 function initialValue() {
@@ -32,10 +34,17 @@ function initialValue() {
   return EXAMPLES[0];
 }
 
+/** 界面语言：只影响界面文字，对树没有任何影响 */
+function initialLang() {
+  const v = params && params.has("lang") ? params.get("lang") : null;
+  return LANGS.includes(v) ? v : "zh";
+}
+
 const editor = new SyntaxTreeEditor("#tree-editor", {
   value: initialValue(),
   align: params && params.has("align") ? params.get("align") : "depth",
   textMode: params && params.has("textmode") ? params.get("textmode") : "bracket",
+  lang: initialLang(),
   onChange: ({ text }) => {
     document.title = `Syntax Tree Editor Standalone — ${text.slice(0, 40)}`;
   },
@@ -50,29 +59,39 @@ for (const button of document.querySelectorAll("[data-example]")) {
   });
 }
 
-// ---------------------------------------------------------------- 称谓切换
+// ---------------------------------------------------------------- 语言与称谓
 //
-// 三套说法指的是同一件事，只影响界面文案和介绍文字，对树没有任何影响。
-// 从左到右逐条替换，所以长词（"女儿节点"）必须排在短词（"女儿"）前面。
-const TERM_SETS = {
-  mother: null, // 母系就是原文，不用换
-  neutral: [
-    ["母亲节点", "上级节点"],
-    ["姊妹节点", "同级节点"],
-    ["女儿节点", "下级节点"],
-    ["母亲", "上级"],
-    ["姊妹", "同级"],
-    ["女儿", "下级"],
-  ],
-  father: [
-    ["母亲节点", "父节点"],
-    ["姊妹节点", "兄弟节点"],
-    ["女儿节点", "子节点"],
-    ["母亲", "父"],
-    ["姊妹", "兄弟"],
-    ["女儿", "子"],
-  ],
-};
+// 这是两件正交的事，但要叠好：
+//   · **语言**决定用哪张文案表（`STRINGS.zh` / `STRINGS.en`）；
+//   · **称谓**决定"同一件事在这门语言里怎么叫"（母系 / 中性 / 父系）。
+// 界面上所有文字都是"先按语言取、再套称谓"，这件事由 `editor.js` 的 `#t()` 负责，
+// 页面上的静态文案由下面的 `applyPageText()` 负责。两边用的是同一张表。
+//
+// 文案表里亲属称谓一律写成**母系那套**（中文「母亲节点 / 姊妹节点 / 女儿节点」，
+// 英文 `mother node / sister node / daughter node`），中性、父系都是替换出来的 ——
+// 所以三套说法只需要维护一张表，而且中英各自的三套用词都在 `src/i18n.js` 里。
+
+let lang = initialLang();
+let termsKind = "mother";
+
+/** 教程正文目前只有中文版（英文版见工作区 i18n/README.md），所以正文的替换一直用中文那套 */
+const DOCS_LANG = "zh";
+
+/** 页面上挂 data-i18n / data-example / data-terms 的静态文案，按当前语言填一遍 */
+function applyPageText() {
+  for (const el of document.querySelectorAll("[data-i18n]")) {
+    el.textContent = i18nText(lang, el.dataset.i18n);
+  }
+  for (const el of document.querySelectorAll("[data-example]")) {
+    el.textContent = i18nText(lang, `page.examples.${el.dataset.example}`);
+  }
+  for (const el of document.querySelectorAll("[data-terms]")) {
+    el.textContent = TERM_LABELS[lang][el.dataset.terms];
+  }
+  for (const el of document.querySelectorAll("[data-lang]")) {
+    el.classList.toggle("is-on", el.dataset.lang === lang);
+  }
+}
 
 /** 文档里所有页内跳转的绑定（目录 + 正文里的链接）；
  *  换称谓会重建文档 DOM，所以每次都要重新绑。 */
@@ -88,27 +107,50 @@ function bindToc() {
 }
 
 const docsEl = document.querySelector(".docs");
-// 留一份母系原文，每次切换都从它出发，来回切不会串味
+// 留一份母系原文（教程正文目前只有中文版），每次切换都从它出发，来回切不会串味
 const docsBase = docsEl && typeof docsEl.innerHTML === "string" ? docsEl.innerHTML : null;
 
-function setTerms(kind) {
-  const pairs = TERM_SETS[kind] || null;
+/** 把当前语言 + 当前称谓套到编辑器界面与教程正文上 */
+function applyTermsAndLanguage() {
+  const pairs = TERMS[lang][termsKind] || null;
   editor.setTerms(pairs);
 
   if (docsEl && docsBase != null) {
     let html = docsBase;
-    if (pairs) for (const [a, b] of pairs) html = html.split(a).join(b);
+    // 正文的语言和界面语言可能不同（英文版还没翻），所以替换表按正文自己的语言取
+    const docsPairs = TERMS[DOCS_LANG][termsKind] || null;
+    if (docsPairs) for (const [a, b] of docsPairs) html = html.split(a).join(b);
     docsEl.innerHTML = html;
     bindToc();
   }
   for (const b of document.querySelectorAll("[data-terms]")) {
-    b.classList.toggle("is-on", b.dataset.terms === kind);
+    b.classList.toggle("is-on", b.dataset.terms === termsKind);
   }
+}
+
+function setTerms(kind) {
+  termsKind = TERM_KINDS.includes(kind) ? kind : "mother";
+  applyTermsAndLanguage();
+}
+
+function setLang(next) {
+  if (!LANGS.includes(next)) return;
+  lang = next;
+  editor.setLanguage(lang);
+  applyPageText();
+  applyTermsAndLanguage();
 }
 
 for (const b of document.querySelectorAll("[data-terms]")) {
   b.addEventListener("click", () => setTerms(b.dataset.terms));
 }
+for (const b of document.querySelectorAll("[data-lang]")) {
+  b.addEventListener("click", () => setLang(b.dataset.lang));
+}
+
+// 初始状态：页面文案与两组按钮的选中态都对上
+applyPageText();
+applyTermsAndLanguage();
 
 // 方便在控制台里调试
 window.syntaxTreeEditor = editor;

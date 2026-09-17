@@ -164,6 +164,11 @@ export const STRINGS = {
     "err.png": "SVG 转 PNG 失败",
 
     // ---- 演示页（index.html）上的控件 ----
+    "page.subtitle": "简单而轻量化的句法树编辑器",
+    "page.note":
+      "这个页面用的是 ES Modules，必须通过 HTTP 打开（http://127.0.0.1:8123/）。" +
+      "直接双击本文件会被浏览器的 CORS 规则拦掉，编辑器不会出现 —— " +
+      "想双击就用同目录下的 Syntax Tree Editor Standalone.html（单文件内联版，功能一样）。",
     "page.lang.label": "语言",
     "page.terms.label": "称谓",
     "page.terms.hint": "只改界面上的说法，不影响树的任何行为",
@@ -269,6 +274,11 @@ export const STRINGS = {
     "err.png": "Failed to convert SVG to PNG",
 
     // ---- controls on the demo page (index.html) ----
+    "page.subtitle": "A small, lightweight syntax tree editor",
+    "page.note":
+      "This page uses ES Modules, so it must be served over HTTP (http://127.0.0.1:8123/). " +
+      "Opening the file directly is blocked by the browser's CORS rules and the editor will not appear — " +
+      "to double-click, use Syntax Tree Editor Standalone.html in the same folder (single-file build, same features).",
     "page.lang.label": "Language",
     "page.terms.label": "Terms",
     "page.terms.hint": "Wording only; the tree is unaffected",

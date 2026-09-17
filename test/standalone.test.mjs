@@ -93,12 +93,10 @@ t("没有任何外部资源引用（离线、双击可用）", () => {
 });
 
 t("整段 HTTP 提示都删掉了（单文件版不需要任何说明）", () => {
-  assert.ok(
-    !HTML.includes("必须通过 HTTP 打开"),
-    "还留着 HTTP 版的提示，会让朋友以为这个文件也不能双击",
-  );
-  assert.ok(!HTML.includes("不需要联网"), "单文件版的提示也应该整段删掉");
+  // ⚠️ 只看**元素**在不在，不看那句话的文字还在不在：那段提示的文案现在也进了
+  // src/i18n.js 的文案表（切英文要用），而文案表是会被内联进产物的。
   assert.ok(!/class="sub note"/.test(HTML), "提示段落应该整段消失，而不是换成别的文字");
+  assert.ok(!HTML.includes("不需要联网"), "单文件版的提示也应该整段删掉");
 });
 
 console.log("\n[Syntax Tree Editor Standalone.html 真的能跑]");

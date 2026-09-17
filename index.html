@@ -10,10 +10,10 @@
   <body>
     <header>
       <h1>Syntax Tree Editor Standalone</h1>
-      <p class="sub">
+      <p class="sub" data-i18n="page.subtitle">
         简单而轻量化的句法树编辑器
       </p>
-      <p class="sub note">
+      <p class="sub note" data-i18n="page.note">
         这个页面用的是 ES Modules，必须通过 HTTP 打开（<code>http://127.0.0.1:8123/</code>）。
         直接双击本文件会被浏览器的 CORS 规则拦掉，编辑器不会出现 ——
         想双击就用同目录下的 <code>Syntax Tree Editor Standalone.html</code>（单文件内联版，功能一样）。
@@ -22,17 +22,25 @@
 
     <main>
       <section class="card">
+        <!-- 语言：只换界面文字，不改文件内容；称谓的三套说法也跟着语言走 -->
         <div class="terms">
-          <span class="terms-label">称谓</span>
+          <span class="terms-label" data-i18n="page.lang.label">语言</span>
+          <div class="terms-group">
+            <button type="button" data-lang="zh" class="is-on">中文</button>
+            <button type="button" data-lang="en">English</button>
+          </div>
+          <span class="terms-hint" data-i18n="page.terms.hint">只改界面上的说法，不影响树的任何行为</span>
+        </div>
+        <div class="terms">
+          <span class="terms-label" data-i18n="page.terms.label">称谓</span>
           <div class="terms-group">
             <button type="button" data-terms="mother" class="is-on">母系</button>
             <button type="button" data-terms="neutral">中性</button>
             <button type="button" data-terms="father">父系</button>
           </div>
-          <span class="terms-hint">只改界面上的说法，不影响树的任何行为</span>
         </div>
         <div class="examples">
-          <span class="examples-label">示例：</span>
+          <span class="examples-label" data-i18n="page.examples.label">示例：</span>
           <button type="button" data-example="0">经典结构</button>
           <button type="button" data-example="1">CP 例句</button>
           <button type="button" data-example="2">三角例句</button>
@@ -43,7 +51,7 @@
       </section>
 
             <section class="card docs">
-        <h2>使用方法</h2>
+        <h2 data-i18n="page.docs.title">使用方法</h2>
 
         <nav class="docs-toc">
           <ol>
@@ -483,8 +491,8 @@ Red(4)</pre>
     </main>
 
     <footer>
-      独立的编辑器实现，输入格式沿用 phpSyntaxTree / jsSyntaxTree 通行的括号记法；
-      代码为本项目自写，不包含原项目源码。
+      <span data-i18n="page.footer">独立的编辑器实现，输入格式沿用 phpSyntaxTree / jsSyntaxTree 通行的括号记法；
+      代码为本项目自写，不包含原项目源码。</span>
       <br />
       v1.2.1 · 以 MIT 许可证发布，Copyright (c) 2026 Ye Hegui。
     </footer>
