@@ -28,6 +28,7 @@ import { parseRules, serializeRules, RuleError } from "./rules.js";
 import { layout, ALIGN_MODES, CENTER_MODES, wordNodes } from "./layout.js";
 import { COLOR_VALUES } from "./style.js";
 import { drawTree } from "./render.js";
+import { LANGS, TERMS, TERM_KINDS, LANG_LABELS, i18nText, applyTerms } from "./i18n.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -45,34 +46,20 @@ const PALETTE = [
 /** 点这些范畴按钮时顺手打开斜体位 */
 const ITALIC_CHIPS = new Set(["v", "pro"]);
 
-/** 提示行开头那句加粗的建议 */
-const TIPS = "复制粘贴源代码用括号记法，画箭头建议用规则记法。";
+// 界面文案全部来自 src/i18n.js 的文案表：这里只留 key，取文案交给 #t()。
+// 数组形状仍是 [取值, 文案 key, 说明 key]，所以下面那些"取值是否合法"的校验不用动。
 
-const HINT =
-  "Enter 加女儿节点 · Shift+Enter 加姊妹节点 · Tab 下移(加一层投射) · Shift+Tab 上移 · " +
-  "↑ 母亲节点 · ↓ 第一个女儿节点 · ←→ 姊妹节点，到边了跨到堂表姊妹节点 · " +
-  "F2 或双击改名 · Alt+←/→ 左移右移";
-
-// 三种垂直对齐方式：取值来自 layout.js，这里只补按钮文字和说明，
+// 三种垂直对齐方式：取值来自 layout.js，这里只补文案 key，
 // 所以不可能出现"布局支持某个模式、界面上却没有按钮"的情况。
-const ALIGN_TEXT = {
-  depth: ["按层级", "每个节点都待在自己的层级行上，同一层的节点等高（默认）"],
-  leaves: ["词对齐底部", "所有叶子（词）落到最下面一行等高，中间节点保持原来的层级"],
-  compact: ["整树贴底", "叶子节点对齐到底部后，中间节点也尽量下移贴着女儿节点，整棵树压到底线"],
-};
-const ALIGN_CHOICES = ALIGN_MODES.map((mode) => [mode, ...ALIGN_TEXT[mode]]);
+const ALIGN_CHOICES = ALIGN_MODES.map((mode) => [mode, `align.${mode}`, `align.${mode}.hint`]);
 
 // 水平位置：两种模式，说明见 layout.js 的 CENTER_MODES
-const CENTER_TEXT = {
-  mother: ["母亲节点居中", "母亲节点正好落在最左和最右那两个女儿节点的正中间（默认）"],
-  block: ["节点整体居中", "母亲节点居中于所有女儿节点的包围盒，整棵树看起来更平衡"],
-};
-const CENTER_CHOICES = CENTER_MODES.map((mode) => [mode, ...CENTER_TEXT[mode]]);
+const CENTER_CHOICES = CENTER_MODES.map((mode) => [mode, `center.${mode}`, `center.${mode}.hint`]);
 
 // 两套等价的记法，随时可切换
 const TEXT_MODES = [
-  ["bracket", "括号记法", "方括号嵌套式，适合整棵粘贴"],
-  ["rules", "规则记法", "一行一条 mother -> daughter，适合逐条核对"],
+  ["bracket", "code.mode.bracket", "code.mode.bracket.hint"],
+  ["rules", "code.mode.rules", "code.mode.rules.hint"],
 ];
 
 const TEXT_DEBOUNCE = 220;
@@ -178,6 +165,7 @@ export class SyntaxTreeEditor {
     center: "mother",
       showText: true,
       textMode: "bracket",
+      lang: "zh", // "zh" | "en"，只影响界面文字
       onChange: null,
       ...options,
     };
@@ -196,6 +184,8 @@ export class SyntaxTreeEditor {
 
     this.measure = makeMeasurer();
     this.textMode = TEXT_MODES.some(([v]) => v === this.opts.textMode) ? this.opts.textMode : "bracket";
+    // 界面语言：只影响界面文字，对树没有任何影响
+    this.lang = LANGS.includes(this.opts.lang) ? this.opts.lang : "zh";
     this.#buildDom();
     this.#syncTextareaSize();
 
@@ -445,54 +435,65 @@ export class SyntaxTreeEditor {
 
     this.termNodes = [];
     this.termPairs = null;
-    this.btnChild = this.#term(button("＋女儿节点", "Enter", "给选中的节点增加一个女儿节点", () => this.addChild()), "title", "给选中的节点增加一个女儿节点");
-    this.btnSibling = this.#term(button("＋姊妹节点", "Shift+Enter", "增加一个姊妹节点", () => this.addSibling()), "title", "增加一个姊妹节点");
-    this.#term(this.btnSibling.labelEl, "textContent", "＋姊妹节点");
+    this.btnChild = this.#term(button(this.#t("btn.child"), "Enter", this.#t("tip.child"), () => this.addChild()), "title", "tip.child");
+    this.#term(this.btnChild.labelEl, "textContent", "btn.child");
+    this.btnSibling = this.#term(button(this.#t("btn.sibling"), "Shift+Enter", this.#t("tip.sibling"), () => this.addSibling()), "title", "tip.sibling");
+    this.#term(this.btnSibling.labelEl, "textContent", "btn.sibling");
     toolbar.appendChild(mk("span", "ste-sep"));
-    this.btnAddLevel = button("下移", "Tab", "增加一层投射层，选中的节点连同它支配的整棵子树一起下沉一层", () =>
+    this.btnAddLevel = this.#term(button(this.#t("btn.level.add"), "Tab", this.#t("tip.level.add"), () =>
       this.addLevel(),
-    );
-    this.btnCollapseLevel = button("上移", "Shift+Tab", "去掉紧挨着自己上面的那一层投射层", () =>
+    ), "title", "tip.level.add");
+    this.#term(this.btnAddLevel.labelEl, "textContent", "btn.level.add");
+    this.btnCollapseLevel = this.#term(button(this.#t("btn.level.remove"), "Shift+Tab", this.#t("tip.level.remove"), () =>
       this.collapseLevel(),
-    );
+    ), "title", "tip.level.remove");
+    this.#term(this.btnCollapseLevel.labelEl, "textContent", "btn.level.remove");
     toolbar.appendChild(mk("span", "ste-sep"));
     // 左移在左、右移在右，和方向键一致
     this.btnMoveLeft = this.#term(button(
-      "左移",
+      this.#t("btn.move.left"),
       "Alt+←",
-      "如果有左姊妹节点就和它交换位置；如果自己是最左边的女儿节点，就搬到母亲节点的左姊妹节点底下",
+      this.#t("tip.move.left"),
       () => this.moveLeft(),
-    ), "title", "如果有左姊妹节点就和它交换位置；如果自己是最左边的女儿节点，就搬到母亲节点的左姊妹节点底下");
+    ), "title", "tip.move.left");
+    this.#term(this.btnMoveLeft.labelEl, "textContent", "btn.move.left");
     this.btnMoveRight = this.#term(button(
-      "右移",
+      this.#t("btn.move.right"),
       "Alt+→",
-      "如果有右姊妹节点就和它交换位置；如果自己是最右边的女儿节点，就搬到母亲节点的右姊妹节点底下",
+      this.#t("tip.move.right"),
       () => this.moveRight(),
-    ), "title", "如果有右姊妹节点就和它交换位置；如果自己是最右边的女儿节点，就搬到母亲节点的右姊妹节点底下");
+    ), "title", "tip.move.right");
+    this.#term(this.btnMoveRight.labelEl, "textContent", "btn.move.right");
     toolbar.appendChild(mk("span", "ste-sep"));
-    this.btnDelete = button("删除", "Delete", "删除该节点及其整棵子树", () => this.remove());
-    this.btnUndo = button("撤销", "Ctrl+Z", "撤销上一步", () => this.undo());
-    this.btnRedo = button("重做", "Ctrl+Shift+Z", "重做被撤销的一步", () => this.redo());
+    this.btnDelete = this.#term(button(this.#t("btn.remove"), "Delete", this.#t("tip.remove"), () => this.remove()), "title", "tip.remove");
+    this.#term(this.btnDelete.labelEl, "textContent", "btn.remove");
+    this.btnUndo = this.#term(button(this.#t("btn.undo"), "Ctrl+Z", this.#t("tip.undo"), () => this.undo()), "title", "tip.undo");
+    this.#term(this.btnUndo.labelEl, "textContent", "btn.undo");
+    this.btnRedo = this.#term(button(this.#t("btn.redo"), "Ctrl+Shift+Z", this.#t("tip.redo"), () => this.redo()), "title", "tip.redo");
+    this.#term(this.btnRedo.labelEl, "textContent", "btn.redo");
     toolbar.appendChild(mk("span", "ste-sep"));
-    this.btnSvg = button("SVG", "矢量图", "导出 SVG 矢量图", () => this.exportSvg());
-    this.btnPng = button("PNG", "位图", "导出 PNG 位图", () => this.exportPng());
+    // SVG / PNG 两个按钮第一行是格式名（不翻译），第二行才是它的说法
+    this.btnSvg = this.#term(button("SVG", this.#t("btn.svg.key"), this.#t("tip.svg"), () => this.exportSvg()), "title", "tip.svg");
+    this.#term(this.btnSvg.querySelector(".ste-btn-key"), "textContent", "btn.svg.key");
+    this.btnPng = this.#term(button("PNG", this.#t("btn.png.key"), this.#t("tip.png"), () => this.exportPng()), "title", "tip.png");
+    this.#term(this.btnPng.querySelector(".ste-btn-key"), "textContent", "btn.png.key");
 
     // 垂直对齐方式。三个按钮必须紧贴在一起，中间不能有 gap，
     // 否则相邻边框只画了一半，分隔竖线会看起来时有时无。
     const alignRow = mk("div", "ste-align");
-    alignRow.appendChild(mk("span", "ste-align-label", "垂直对齐"));
+    alignRow.appendChild(this.#term(mk("span", "ste-align-label", this.#t("align.label")), "textContent", "align.label"));
     const segGroup = mk("div", "ste-seg-group");
     this.alignButtons = {};
-    for (const [value, label, hint] of ALIGN_CHOICES) {
-      const b = mk("button", "ste-seg", label);
+    for (const [value, labelKey, hintKey] of ALIGN_CHOICES) {
+      const b = mk("button", "ste-seg", this.#t(labelKey));
       b.type = "button";
-      b.title = hint;
+      b.title = this.#t(hintKey);
       b.addEventListener("click", () => {
         this.setAlign(value);
         this.scroller.focus();
       });
-      this.#term(b, "textContent", label);
-      this.#term(b, "title", hint);
+      this.#term(b, "textContent", labelKey);
+      this.#term(b, "title", hintKey);
       segGroup.appendChild(b);
       this.alignButtons[value] = b;
     }
@@ -500,19 +501,19 @@ export class SyntaxTreeEditor {
 
     // 水平位置。和垂直对齐分开一行，因为这是两件独立的事。
     const centerRow = mk("div", "ste-align");
-    centerRow.appendChild(mk("span", "ste-align-label", "水平位置"));
+    centerRow.appendChild(this.#term(mk("span", "ste-align-label", this.#t("center.label")), "textContent", "center.label"));
     const centerGroup = mk("div", "ste-seg-group");
     this.centerButtons = {};
-    for (const [value, label, hint] of CENTER_CHOICES) {
-      const b = mk("button", "ste-seg", label);
+    for (const [value, labelKey, hintKey] of CENTER_CHOICES) {
+      const b = mk("button", "ste-seg", this.#t(labelKey));
       b.type = "button";
-      b.title = hint;
+      b.title = this.#t(hintKey);
       b.addEventListener("click", () => {
         this.setCenter(value);
         this.scroller.focus();
       });
-      this.#term(b, "textContent", label);
-      this.#term(b, "title", hint);
+      this.#term(b, "textContent", labelKey);
+      this.#term(b, "title", hintKey);
       centerGroup.appendChild(b);
       this.centerButtons[value] = b;
     }
@@ -581,17 +582,19 @@ export class SyntaxTreeEditor {
     this.status = mk("div", "ste-status");
 
     const textHead = mk("div", "ste-text-head");
-    textHead.appendChild(mk("div", "ste-caption", "源代码 —— 和上面的图双向同步"));
+    textHead.appendChild(this.#term(mk("div", "ste-caption", this.#t("code.caption")), "textContent", "code.caption"));
     const modeGroup = mk("div", "ste-seg-group");
     this.textModeButtons = {};
-    for (const [value, label, hint] of TEXT_MODES) {
-      const b = mk("button", "ste-seg", label);
+    for (const [value, labelKey, hintKey] of TEXT_MODES) {
+      const b = mk("button", "ste-seg", this.#t(labelKey));
       b.type = "button";
-      b.title = hint;
+      b.title = this.#t(hintKey);
       b.addEventListener("click", () => {
         this.setTextMode(value);
         this.scroller.focus();
       });
+      this.#term(b, "textContent", labelKey);
+      this.#term(b, "title", hintKey);
       modeGroup.appendChild(b);
       this.textModeButtons[value] = b;
     }
@@ -600,9 +603,11 @@ export class SyntaxTreeEditor {
     this.textWrap.append(textHead, this.#buildCodeBox(), this.errBox);
     if (!this.opts.showText) this.textWrap.hidden = true;
 
+    // 提示行：前半句加粗的建议 + 后半句快捷键说明，两段都要能跟着语言走，
+    // 所以分成两个登记项（合成一条会把那个 <b> 弄丢）。
     const hint = mk("div", "ste-hint");
-    hint.appendChild(mk("b", "", `${TIPS} `));
-    this.hintEl = this.#term(mk("span", "", HINT), "textContent", HINT);
+    hint.appendChild(this.#term(mk("b", "", this.#t("hint.tips")), "textContent", "hint.tips"));
+    this.hintEl = this.#term(mk("span", "", this.#t("hint.keys")), "textContent", "hint.keys");
     hint.appendChild(this.hintEl);
 
     // 标色与节点样式。默认整棵树是蓝的，红色（或其他颜色、字体样式）只能靠声明得到，
@@ -1064,7 +1069,7 @@ export class SyntaxTreeEditor {
       this.btnRedo.disabled = this.redoStack.length === 0;
       return;
     }
-    this.btnChild.labelEl.textContent = this.#t("＋女儿节点");
+    this.btnChild.labelEl.textContent = this.#t("btn.child");
 
     const ord = preorder(this.root);
     if (!n) {
@@ -1470,19 +1475,40 @@ export class SyntaxTreeEditor {
    */
   setTerms(pairs) {
     this.termPairs = pairs || null;
-    for (const [el, prop, base] of this.termNodes) el[prop] = this.#t(base);
-    this.#updateStatus();
+    this.#relabel();
   }
 
-  /** 把当前称谓套用到一段文案上 */
-  #t(s) {
-    if (!this.termPairs) return s;
-    return this.termPairs.reduce((acc, [a, b]) => acc.split(a).join(b), s);
+  /**
+   * 换界面语言。**只改界面上的文字**，对树没有任何影响。
+   * 与 `setTerms()` 叠加：文案先按语言取，再套用当前的称谓。
+   * @param {"zh"|"en"} lang
+   */
+  setLanguage(lang) {
+    if (!LANGS.includes(lang) || lang === this.lang) return;
+    this.lang = lang;
+    this.#relabel();
   }
 
-  /** 界面文案要在切换称谓时重新生成的，都登记在这里 */
-  #term(el, prop, base) {
-    (this.termNodes || (this.termNodes = [])).push([el, prop, base]);
+  /** 按当前语言取一条文案，并套用当前称谓；`vars` 用来填 `{...}` 占位符 */
+  #t(key, vars = null) {
+    return applyTerms(this.lang, this.termPairs, i18nText(this.lang, key, vars));
+  }
+
+  /** 语言或称谓一变，所有登记过的界面文字重新生成一遍 */
+  #relabel() {
+    for (const [el, prop, key, vars] of this.termNodes) el[prop] = this.#t(key, vars);
+    if (this.root !== undefined) this.#updateStatus();
+  }
+
+  /**
+   * 界面文案要在切换语言/称谓时重新生成的，都登记在这里。
+   * @param {Element} el 目标元素
+   * @param {string} prop 要改的属性（一般是 textContent / title / placeholder）
+   * @param {string} key 文案表里的 key
+   * @param {object} [vars] `{...}` 占位符的取值
+   */
+  #term(el, prop, key, vars = null) {
+    (this.termNodes || (this.termNodes = [])).push([el, prop, key, vars]);
     return el;
   }
 

@@ -10,6 +10,7 @@ const { RuleError } = await import("../src/rules.js");
 const { preorder } = await import("../src/model.js");
 const { ALIGN_MODES } = await import("../src/layout.js");
 const { COLOR_NAMES } = await import("../src/style.js");
+const { TERMS, TERM_KINDS, i18nText, applyTerms } = await import("../src/i18n.js");
 
 let pass = 0;
 let fail = 0;
@@ -1707,6 +1708,72 @@ await t("rulesToSvg() 默认不染红（函数式入口出全蓝的图）", asyn
 
 await t("rulesToSvg() 解析不了就抛错，错误带行号", async () => {
   assert.throws(() => rulesToSvg("0 S -> NPC\n0 S ->"), RuleError);
+});
+
+console.log("\n[语言切换 i18n]");
+
+await t("setLanguage('en') 换掉工具栏按钮与提示行，切回来复原", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]");
+  const label = (btn) => btn.querySelector(".ste-btn-label").textContent;
+  assert.equal(label(ed.btnUndo), "撤销");
+  ed.setLanguage("en");
+  assert.equal(label(ed.btnUndo), "Undo");
+  assert.equal(label(ed.btnChild), "＋ Daughter");
+  assert.equal(ed.btnChild.title, "Add a daughter node to the selected node");
+  assert.equal(label(ed.btnSvg), "SVG", "格式名不翻译");
+  assert.equal(ed.btnSvg.querySelector(".ste-btn-key").textContent, "Vector");
+  ed.setLanguage("zh");
+  assert.equal(label(ed.btnUndo), "撤销");
+  assert.equal(ed.btnChild.title, "给选中的节点增加一个女儿节点");
+});
+
+await t("英文的三套称谓：mother / neutral / father 都按表替换", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]", { lang: "en" });
+  const label = (btn) => btn.querySelector(".ste-btn-label").textContent;
+  assert.equal(label(ed.btnSibling), "＋ Sister", "母系是基准写法");
+  ed.setTerms(TERMS.en.neutral);
+  assert.equal(ed.btnChild.title, "Add a child node to the selected node");
+  assert.equal(label(ed.btnSibling), "＋ Sibling");
+  ed.setTerms(TERMS.en.father);
+  assert.equal(label(ed.btnSibling), "＋ Brother");
+  assert.equal(ed.btnSibling.title, "Add a brother node");
+  ed.setTerms(TERMS.en.mother);
+  assert.equal(label(ed.btnSibling), "＋ Sister");
+});
+
+await t("切语言、切称谓都只动界面文字，树的文本一个字都不变", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]");
+  const before = ed.getValue();
+  for (const lang of ["en", "zh"]) {
+    ed.setLanguage(lang);
+    for (const kind of TERM_KINDS) {
+      ed.setTerms(TERMS[lang][kind]);
+      assert.equal(ed.getValue(), before, `${lang}/${kind} 之后树不该变`);
+    }
+  }
+});
+
+await t("文案表的两个纯函数：占位符插值与整词替换", async () => {
+  assert.equal(i18nText("en", "status.leaf"), "leaf node");
+  assert.equal(i18nText("zh", "status.leaf"), "叶子节点");
+  assert.equal(
+    i18nText("zh", "status.selected", { i: 1, n: 2, label: "X", kind: "叶子节点", m: 3 }),
+    "已选中第 1 个（共 2 个）：X · 叶子节点 · 子树共 3 个节点",
+  );
+  assert.equal(
+    i18nText("zh", "status.selected", { i: 1 }),
+    "已选中第 1 个（共 {n} 个）：{label} · {kind} · 子树共 {m} 个节点",
+    "缺的占位符要原样留着",
+  );
+  // 英文必须按整词边界替换，别把半个词换掉；大小写也要跟着原文
+  assert.equal(applyTerms("en", TERMS.en.neutral, "Add a daughter node."), "Add a child node.");
+  assert.equal(applyTerms("en", TERMS.en.neutral, "＋ Sister"), "＋ Sibling");
+  assert.equal(
+    applyTerms("en", TERMS.en.neutral, "The mother sits between the leftmost and rightmost daughter nodes."),
+    "The parent sits between the leftmost and rightmost child nodes.",
+  );
+  assert.equal(applyTerms("en", TERMS.en.neutral, "smother"), "smother");
+  assert.equal(applyTerms("zh", TERMS.zh.father, "母亲节点和母亲"), "父节点和父");
 });
 
 console.log("\n[工具栏快捷键说明]");

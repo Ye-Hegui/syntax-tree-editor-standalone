@@ -143,7 +143,7 @@ export const STRINGS = {
     "code.mode.rules": "规则记法",
     "code.mode.rules.hint": "一行一条母亲 -> 女儿，适合逐条核对",
     "code.gutter.title": "行号 = 本行引入的女儿节点编号（根节点是 0）",
-    "hint.tips": "复制粘贴源代码用括号记法，画箭头建议用规则记法。",
+    "hint.tips": "复制粘贴源代码用括号记法，画箭头建议用规则记法。 ",
     "hint.keys":
       "Enter 加女儿节点 · Shift+Enter 加姊妹节点 · Tab 下移(加一层投射) · Shift+Tab 上移 · " +
       "↑ 母亲节点 · ↓ 第一个女儿节点 · ←→ 姊妹节点，到边了跨到堂表姊妹节点 · " +
@@ -214,14 +214,14 @@ export const STRINGS = {
     "align.leaves": "Words at bottom",
     "align.leaves.hint": "All leaves (words) drop to the bottom line; inner nodes keep their depth",
     "align.compact": "Tree at bottom",
-    "align.compact.hint": "Leaves go to the bottom, then inner nodes slide down to hug their daughters",
+    "align.compact.hint": "Leaves go to the bottom, then inner nodes slide down to hug their daughter nodes",
 
     // ---- horizontal position ----
     "center.label": "Horizontal",
     "center.mother": "Mother centred",
-    "center.mother.hint": "The mother sits exactly between the leftmost and rightmost daughters (default)",
+    "center.mother.hint": "The mother sits exactly between the leftmost and rightmost daughter nodes (default)",
     "center.block": "Block centred",
-    "center.block.hint": "The mother is centred over the bounding box of all its daughters",
+    "center.block.hint": "The mother is centred over the bounding box of all its daughter nodes",
 
     // ---- colour and font style ----
     "style.label": "Colour",
@@ -248,10 +248,10 @@ export const STRINGS = {
     "code.mode.rules": "Rules",
     "code.mode.rules.hint": "One mother -> daughter edge per line; best for checking edge by edge",
     "code.gutter.title": "Line number = the node this line introduces (the root is 0)",
-    "hint.tips": "Use bracket notation for pasting source; rule notation for drawing arrows.",
+    "hint.tips": "Use bracket notation for pasting source; rule notation for drawing arrows. ",
     "hint.keys":
       "Enter adds a daughter · Shift+Enter adds a sister · Tab adds a level · Shift+Tab removes one · " +
-      "↑ mother · ↓ leftmost daughter · ←→ sisters, crossing to cousins at the edges · " +
+      "↑ mother · ↓ leftmost daughter · ←→ sister nodes, crossing to cousins at the edges · " +
       "F2 or double-click renames · Alt+←/→ move left/right",
 
     // ---- status bar ----
@@ -287,8 +287,12 @@ export const STRINGS = {
 /**
  * 取一条文案，并把 `{name}` 占位符换成实参。
  * `vars` 里的值会先转成字符串；缺的占位符原样留着（方便一眼看出漏了哪个）。
+ *
+ * ⚠️ 名字起得这么长是有意的：`tools/build-standalone.mjs` 把模块**扁平拼接**成一个脚本，
+ * `import ... as ...` 的别名会被整条去掉，所以这个函数在各模块里必须叫同一个名字，
+ * 而 `text` 这种短名字到处都在当局部变量用（`setValue(text)` 之类），会撞上。
  */
-export function text(lang, key, vars = null) {
+export function i18nText(lang, key, vars = null) {
   const table = STRINGS[lang] || STRINGS.zh;
   let s = table[key];
   if (s == null) s = STRINGS.zh[key] != null ? STRINGS.zh[key] : key;
@@ -299,19 +303,33 @@ export function text(lang, key, vars = null) {
 /**
  * 把称谓替换应用到一句话上。
  *
- * `pairs` 为 null（母系）时原样返回。英文按**整词边界**替换，中文直接替换
- * （中文没有词边界，所以同一套里必须长词在前 —— 表里已经这么排了）。
+ * `pairs` 为 null（母系）时原样返回。中文直接替换（中文没有词边界，所以同一套里必须
+ * 长词在前 —— 表里已经这么排了）。
+ *
+ * 英文有两件事要小心，否则会出洋相：
+ *   1. **按整词边界**替换，`smother` 里的 `mother` 不许动；
+ *   2. **大小写不敏感、但要保留原样的大小写** —— 按钮上是 "＋ Sister"（首字母大写），
+ *      说明文字里是 "a sister node"（小写），替换后要各自保持原样，
+ *      所以 "Sister" -> "Sibling"、MOTHER -> PARENT。
+ *
+ * ⚠️ 英文表里**不要写亲属词的复数**（daughters / sisters…）—— 复数靠长词规则处理：
+ * 写成 "daughter nodes" 就会被 `daughter node -> child node` 换成 "child nodes"。
+ * 这也是表里为什么长词排在短词前面。
  */
 export function applyTerms(lang, pairs, s) {
   if (!pairs || !pairs.length) return s;
   let out = s;
   for (const [from, to] of pairs) {
-    if (lang === "en") {
-      const re = new RegExp(`\\b${from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "g");
-      out = out.replace(re, to);
-    } else {
+    if (lang !== "en") {
       out = out.split(from).join(to);
+      continue;
     }
+    const esc = from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    out = out.replace(new RegExp(`\\b${esc}\\b`, "gi"), (m) => {
+      if (m === m.toUpperCase() && m !== m.toLowerCase()) return to.toUpperCase();
+      if (m[0] === m[0].toUpperCase()) return to.charAt(0).toUpperCase() + to.slice(1);
+      return to;
+    });
   }
   return out;
 }

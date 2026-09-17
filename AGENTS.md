@@ -97,7 +97,7 @@
 | 模块 | 导出 |
 | --- | --- |
 | `src/model.js` | `node` `walk` `preorder` `findParent` `nodeIds` `cloneSubtree` `ESCAPE_LABEL` `addChild` `removeNode` `canAddPrimeLevel` `addPrimeLevel` `canCollapsePrimeLevel` `collapsePrimeLevel` `moveNodeLeft` `moveNodeRight` |
-| `src/i18n.js` | `STRINGS` `LANGS` `LANG_LABELS` `TERMS` `TERM_KINDS` `TERM_LABELS` `text` `applyTerms` —— 界面文案表与三套称谓用词，纯数据加两个纯函数，不依赖 DOM |
+| `src/i18n.js` | `STRINGS` `LANGS` `LANG_LABELS` `TERMS` `TERM_KINDS` `TERM_LABELS` `i18nText` `applyTerms` —— 界面文案表与三套称谓用词，纯数据加两个纯函数，不依赖 DOM |
 | `src/notation.js` | `parse` `serialize` `toText` `NotationError` |
 | `src/rules.js` | `parseRules` `serializeRules` `toRulesText` `RuleError` |
 | `src/style.js` | `splitStyleDecls` `applyStyleDecls` `styleDeclsText` |
