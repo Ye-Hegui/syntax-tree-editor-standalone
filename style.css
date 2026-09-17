@@ -48,6 +48,36 @@ header .note {
   border-radius: 0 6px 6px 0;
 }
 
+/* 页头一行：标题在左，语言切换在右上角。
+   语言按钮沿用 .terms-group 的样式，这里只把它调成适合深色页头的配色。 */
+.head-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.head-lang {
+  flex: none;
+  margin-top: 2px;
+}
+
+.head-lang button {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.head-lang button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.head-lang button.is-on {
+  color: #125475;
+  background: #fff;
+  border-color: #fff;
+}
+
 header .note code {
   background: rgba(255, 255, 255, 0.18);
   color: #fff;

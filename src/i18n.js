@@ -65,11 +65,17 @@ export const TERMS = {
   },
 };
 
-/** 三个称谓按钮的标签（顺序固定：母系 → 中性 → 父系） */
+/** 三个称谓按钮的标签（顺序固定：母系 → 中性 → 父系）
+ *
+ *  中文就是原来的「母系 / 中性 / 父系」。
+ *  英文用 **Maternal / Neutral / Paternal** —— 这正是"母系 / 父系"的英文说法
+ *  （maternal line / paternal line），比 Mother / Father 准确：按钮选的是**术语体系**，
+ *  不是某个节点的称呼。（作者 2026-09-17 定）
+ */
 export const TERM_KINDS = ["mother", "neutral", "father"];
 export const TERM_LABELS = {
   zh: { mother: "母系", neutral: "中性", father: "父系" },
-  en: { mother: "Mother", neutral: "Neutral", father: "Father" },
+  en: { mother: "Maternal", neutral: "Neutral", father: "Paternal" },
 };
 
 export const STRINGS = {

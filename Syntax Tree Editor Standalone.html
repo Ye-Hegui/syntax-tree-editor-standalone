@@ -55,6 +55,36 @@ header .note {
   border-radius: 0 6px 6px 0;
 }
 
+/* 页头一行：标题在左，语言切换在右上角。
+   语言按钮沿用 .terms-group 的样式，这里只把它调成适合深色页头的配色。 */
+.head-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.head-lang {
+  flex: none;
+  margin-top: 2px;
+}
+
+.head-lang button {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.head-lang button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.head-lang button.is-on {
+  color: #125475;
+  background: #fff;
+  border-color: #fff;
+}
+
 header .note code {
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
@@ -800,23 +830,23 @@ footer {
   </head>
   <body>
     <header>
-      <h1>Syntax Tree Editor Standalone</h1>
-      <p class="sub" data-i18n="page.subtitle">
-        简单而轻量化的句法树编辑器
-      </p>
+      <div class="head-bar">
+        <div class="head-text">
+          <h1>Syntax Tree Editor Standalone</h1>
+          <p class="sub" data-i18n="page.subtitle">
+            简单而轻量化的句法树编辑器
+          </p>
+        </div>
+        <!-- 语言切换放右上角：两个按钮，当前语言高亮（data-lang 的值来自 src/i18n.js 的 LANGS） -->
+        <div class="head-lang terms-group">
+          <button type="button" data-lang="zh" class="is-on">中文</button>
+          <button type="button" data-lang="en">English</button>
+        </div>
+      </div>
     </header>
 
     <main>
       <section class="card">
-        <!-- 语言：只换界面文字，不改文件内容；称谓的三套说法也跟着语言走 -->
-        <div class="terms">
-          <span class="terms-label" data-i18n="page.lang.label">语言</span>
-          <div class="terms-group">
-            <button type="button" data-lang="zh" class="is-on">中文</button>
-            <button type="button" data-lang="en">English</button>
-          </div>
-          <span class="terms-hint" data-i18n="page.terms.hint">只改界面上的说法，不影响树的任何行为</span>
-        </div>
         <div class="terms">
           <span class="terms-label" data-i18n="page.terms.label">称谓</span>
           <div class="terms-group">
@@ -824,6 +854,7 @@ footer {
             <button type="button" data-terms="neutral">中性</button>
             <button type="button" data-terms="father">父系</button>
           </div>
+          <span class="terms-hint" data-i18n="page.terms.hint">只改界面上的说法，不影响树的任何行为</span>
         </div>
         <div class="examples">
           <span class="examples-label" data-i18n="page.examples.label">示例：</span>
@@ -1861,11 +1892,17 @@ const TERMS = {
   },
 };
 
-/** 三个称谓按钮的标签（顺序固定：母系 → 中性 → 父系） */
+/** 三个称谓按钮的标签（顺序固定：母系 → 中性 → 父系）
+ *
+ *  中文就是原来的「母系 / 中性 / 父系」。
+ *  英文用 **Maternal / Neutral / Paternal** —— 这正是"母系 / 父系"的英文说法
+ *  （maternal line / paternal line），比 Mother / Father 准确：按钮选的是**术语体系**，
+ *  不是某个节点的称呼。（作者 2026-09-17 定）
+ */
 const TERM_KINDS = ["mother", "neutral", "father"];
 const TERM_LABELS = {
   zh: { mother: "母系", neutral: "中性", father: "父系" },
-  en: { mother: "Mother", neutral: "Neutral", father: "Father" },
+  en: { mother: "Maternal", neutral: "Neutral", father: "Paternal" },
 };
 
 const STRINGS = {

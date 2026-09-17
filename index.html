@@ -9,10 +9,19 @@
   </head>
   <body>
     <header>
-      <h1>Syntax Tree Editor Standalone</h1>
-      <p class="sub" data-i18n="page.subtitle">
-        简单而轻量化的句法树编辑器
-      </p>
+      <div class="head-bar">
+        <div class="head-text">
+          <h1>Syntax Tree Editor Standalone</h1>
+          <p class="sub" data-i18n="page.subtitle">
+            简单而轻量化的句法树编辑器
+          </p>
+        </div>
+        <!-- 语言切换放右上角：两个按钮，当前语言高亮（data-lang 的值来自 src/i18n.js 的 LANGS） -->
+        <div class="head-lang terms-group">
+          <button type="button" data-lang="zh" class="is-on">中文</button>
+          <button type="button" data-lang="en">English</button>
+        </div>
+      </div>
       <p class="sub note" data-i18n="page.note">
         这个页面用的是 ES Modules，必须通过 HTTP 打开（<code>http://127.0.0.1:8123/</code>）。
         直接双击本文件会被浏览器的 CORS 规则拦掉，编辑器不会出现 ——
@@ -22,15 +31,6 @@
 
     <main>
       <section class="card">
-        <!-- 语言：只换界面文字，不改文件内容；称谓的三套说法也跟着语言走 -->
-        <div class="terms">
-          <span class="terms-label" data-i18n="page.lang.label">语言</span>
-          <div class="terms-group">
-            <button type="button" data-lang="zh" class="is-on">中文</button>
-            <button type="button" data-lang="en">English</button>
-          </div>
-          <span class="terms-hint" data-i18n="page.terms.hint">只改界面上的说法，不影响树的任何行为</span>
-        </div>
         <div class="terms">
           <span class="terms-label" data-i18n="page.terms.label">称谓</span>
           <div class="terms-group">
@@ -38,6 +38,7 @@
             <button type="button" data-terms="neutral">中性</button>
             <button type="button" data-terms="father">父系</button>
           </div>
+          <span class="terms-hint" data-i18n="page.terms.hint">只改界面上的说法，不影响树的任何行为</span>
         </div>
         <div class="examples">
           <span class="examples-label" data-i18n="page.examples.label">示例：</span>
