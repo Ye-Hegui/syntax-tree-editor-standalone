@@ -8,8 +8,8 @@ const EXAMPLES = [
   // 2 三角例句：[NP generative grammar] 是含空格的多词叶子，会画成三角
   "[S [N Hinton] [TP [T does] [NegP [Neg not] [VP [V understand] [NP generative grammar]]]]]",
   // 3 移位例句：编号 = 节点第一次作为女儿节点出现的行号（根为 0）
-  //   what_i=3  is_j=6  所以 ->3 指 what_i，->6 指 is_j
-  "[CP [NP what_i] [C' [C is_j] [IP [NP a syntax tree] [I' [I t_j ->6] [VP [V t_j ->6] [NP t_i ->3]]]]]]",
+  //   箭头的数字是词序号：what_i 是第 1 个词、is_j 是第 2 个词
+  "[CP [NP what_i] [C' [C is_j] [IP [NP a syntax tree] [I' [I t_j ->2] [VP [V t_j ->2] [NP t_i ->1]]]]]]",
   // 4 空白画布 —— 没有任何节点，自己从零画
   "",
 ];

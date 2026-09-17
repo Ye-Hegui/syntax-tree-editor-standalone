@@ -68,7 +68,7 @@
                 <li><a href="#doc-level">下移</a></li>
                 <li><a href="#doc-up">上移</a></li>
                 <li><a href="#doc-move">左移和右移</a></li>
-                <li><a href="#doc-style">斜体</a></li>
+                <li><a href="#doc-style">字体与颜色</a></li>
               </ol>
             </li>
             <li>
@@ -167,52 +167,25 @@
           而 <code>[X word2 word4]</code> 是一个叶子节点。
         </p>
 
-        <h4 id="doc-arrow">6. 创建箭头</h4>
-        <p class="tip">在规则记法末尾添加一行表示移位关系的声明，可以创建移位箭头。</p>
-        <p>
-          图上没法直接画箭头，要在代码面板里写。还是从同一棵最普通的树出发：
-        </p>
+                <h4 id="doc-arrow">6. 创建箭头</h4>
+        <p class="tip">在叶子节点的标签后面写一个词序号，可以创建指向该词的移位箭头。</p>
+        <p>图上无法直接绘制箭头，需要在代码面板中写。还是从同一棵最普通的树出发：</p>
         <pre class="code-block">[XP [Z word1] [X' [X word2] [Y word3]]]</pre>
         <img class="doc-shot" src="example/base.svg" alt="改动之前：还没有箭头" />
-        <p>点代码面板上方的「规则记法」，编辑器会把这棵树按一条一条的边列出来，长这样：</p>
-        <pre class="code-block">0 XP -&gt; Z
-0 XP -&gt; X'
-1 Z -&gt; word1
-2 X' -&gt; X
-2 X' -&gt; Y
-4 X -&gt; word2
-5 Y -&gt; word3</pre>
-        <p>这就是<b>改动之前</b>的样子。如果想创建 <code>word3</code> 指向 <code>word1</code> 的移位箭头，那么：</p>
-        <ol>
-          <li>观察代码左侧存在带有行号的装订线。</li>
-          <li>
-            第一次引入这个节点的行号，就是这个节点的编号。
-            要查找节点的编号，只需要寻找左侧的行号。
-          </li>
-          <li>
-            读出要连起来的两个词：<code>word1</code> 在第 3 行，编号是 3；
-            <code>word3</code> 在第 7 行，编号是 7。
-          </li>
-          <li>
-            在最后单独加一行 <code>7 --&gt; 3</code>。
-            它的意思是「把编号 7 的那个词移到编号 3 那个词的位置」，
-            也就是把 <code>word3</code> 移到 <code>word1</code> 的位置。
-          </li>
-        </ol>
-        <pre class="code-block">0 XP -&gt; Z
-0 XP -&gt; X'
-1 Z -&gt; word1        &lt;- word1 在第 3 行，编号是 3
-2 X' -&gt; X
-2 X' -&gt; Y
-4 X -&gt; word2
-5 Y -&gt; word3       &lt;- word3 在第 7 行，编号是 7
-
-7 --&gt; 3</pre>
-        <p>写完这一行，图上就多出一条从 <code>word3</code> 指向 <code>word1</code> 的箭头：</p>
-        <img class="doc-shot" src="example/arrow.svg" alt="改动之后：多出一条 word3 指向 word1 的箭头" />
         <p>
-          箭头的起点必须是叶子节点（比如 <code>word3</code> 这样的词），
-          落点可以是任何节点，也包括根节点。
+          箭头里的数字是<b>词序号</b>：从左到右数，第几个词就写几。
+          这棵树里有三个词，<code>word1</code> 是第 1 个、<code>word2</code> 是第 2 个、
+          <code>word3</code> 是第 3 个。
+        </p>
+        <p>
+          把序号写在叶子节点后面，这个节点就带上箭头。例如让 <code>word3</code> 指向
+          <code>word1</code>，就在 <code>word3</code> 后面加上 <code>-&gt;1</code>：
+        </p>
+        <pre class="code-block">[XP [Z word1] [X' [X word2] [Y word3 ->1]]]</pre>
+        <img class="doc-shot" src="example/arrow.svg" alt="加上 ->1 之后出现的位移箭头" />
+        <p>
+          箭头的起点必须是叶子节点，落点也必须是叶子节点 —— 词序号只能定位到词。
+          这个编号方式与 jsSyntaxTree 一致，可以直接粘贴它的代码。
         </p>
 
 <h4 id="doc-export">7. 导出</h4>
@@ -361,32 +334,38 @@
           按快捷键也不会有任何改动。
         </p>
 
-                <h4 id="doc-style">7. 斜体</h4>
-        <p class="tip">在规则记法末尾添加一行表示字体的声明，可以将节点的标签改成斜体显示。</p>
+                        <h4 id="doc-style">7. 字体与颜色</h4>
+        <p class="tip">在末尾添加一行声明，可以修改节点标签的斜体、粗体、删除线或颜色。</p>
         <p>
           语言学里有些词习惯写成斜体（比如小 <i>v</i>、<i>pro</i>、语迹）。
-          在<b>末尾单独加一行声明</b>，括号里填节点编号，就可以把这些节点变成斜体：
+          在<b>末尾单独加一行声明</b>，括号里填节点编号，就可以修改这些节点的标签样式：
         </p>
-        <pre class="code-block">Italic(1, 3)</pre>
+        <pre class="code-block">Italic(1, 3)
+Bold(2)
+Strike(4)
+Color(5, red)</pre>
         <p>
-          这一行让编号 1 和编号 3 那两个节点的标签变成斜体。
-          编号怎么数参考 <a href="#doc-arrow">1.6 创建箭头</a>。
+          前三种一次可以列出多个编号，用逗号隔开，顺序随意；颜色一次只能指定一个节点，
+          多个节点需要多写几行。编号怎么数参考 <a href="#doc-arrow">1.6 创建箭头</a>。
         </p>
         <p>
           声明只能写在末尾、单独成行。规则记法里声明排在所有边和位移箭头之后；
           括号记法里声明排在整棵树之后：
         </p>
-        <pre class="code-block">[vP [v [V know]] [pro [N him]]]
-Italic(1, 2)</pre>
-        <img class="doc-shot" src="example/italic.svg" alt="v 和 pro 被渲染成斜体" />
+        <pre class="code-block">[vP [v [V know]] [pro [N him]] [NP syntax]]
+Italic(1, 2)
+Strike(3)
+Color(4, blue)</pre>
+        <img class="doc-shot" src="example/style.svg" alt="v 和 pro 是斜体，NP 带删除线，V 是蓝色" />
         <p>
-          这棵树里 <code>vP=0</code>，三个女儿依次是 <code>v=1</code>、<code>pro=2</code>、
-          <code>NP=3</code>，所以这一行让 <code>v</code> 和 <code>pro</code> 变成斜体。
-          多个编号用逗号隔开，顺序随意。
+          这棵树里 <code>vP=0</code>，它的三个女儿依次是 <code>v=1</code>、<code>pro=2</code>、
+          <code>NP=3</code>，而 <code>v</code> 的女儿 <code>V=4</code>。
+          所以 <code>v</code> 和 <code>pro</code> 变成斜体，<code>NP</code> 带上删除线，
+          <code>V</code> 染成蓝色。
         </p>
-        <p>编号随结构自动重算，增删节点不会让斜体跟错节点。</p>
+        <p>编号随结构自动重算，增删节点不会让样式跟错节点。</p>
 
-        <h3 id="doc-source">三、源代码说明</h3>
+<h3 id="doc-source">三、源代码说明</h3>
         <p>
           在代码框里直接输入源代码，效果和图形化编辑完全一致，两边始终同步。
           代码框上方有两个按钮，可以在这两套等价的记法之间切换。切换的时候树不会改变，只是换一种写法。
@@ -445,7 +424,7 @@ Italic(1, 2)</pre>
             <tr><td><b>格式</b></td><td><code>起点编号 --&gt; 落点编号</code>，放在所有边的后面。</td></tr>
             <tr><td><b>起点</b></td><td>必须是叶子节点，因为记法里箭头挂在叶子上。</td></tr>
             <tr><td><b>落点</b></td><td>可以是任何节点，也包括根节点（写成 <code>--&gt; 0</code>）。</td></tr>
-            <tr><td><b>编号</b></td><td>两套记法共用同一套，所以同一个箭头在两边的数字一样。</td></tr>
+            <tr><td><b>编号</b></td><td><b>两套记法不一样</b>：括号记法用词序号（第几个词，从 1 开始），规则记法用节点编号（根为 0，其余为行号）。</td></tr>
           </tbody>
         </table>
 

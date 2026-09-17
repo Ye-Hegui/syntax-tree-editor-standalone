@@ -1,3 +1,4 @@
+import { parseRules, toRulesText } from "../src/rules.js";
 // 纯逻辑层冒烟测试（不需要浏览器）
 //   node test/smoke.mjs
 import assert from "node:assert/strict";
@@ -115,12 +116,12 @@ t("位移箭头", () => {
 });
 t("箭头目标会跟着结构变化重新编号", () => {
   // 编号 = 第一次作为 daughter 出现的行号，根 0：
-  // A=0 B=1 D=2 F=3 C=4 E=5 G=6，所以 ->4 指向 C
-  const root = parse("[A [B C][D E][F G ->4]]");
+  // 词序号从 1 开始数叶子：C=1 E=2 G=3，所以 ->1 指向 C
+  const root = parse("[A [B C][D E][F G ->1]]");
   const b = root.children[0];
   addChild(b, node("Z"), 0); // B 底下插一个 Z，C 的编号从 4 变成 5
   const out = serialize(root).text;
-  assert.ok(out.includes("->5"), `期望 ->5，实际 ${out}`);
+  assert.ok(out.includes("->2"), `期望 ->2，实际 ${out}`);
   const trace = preorder(parse(out)).find((n) => n.arrow);
   assert.equal(trace.arrow.target.label, "C", "箭头应该仍然指向 C");
 });
@@ -279,8 +280,8 @@ t("删除节点连子树一起删，根节点删不掉", () => {
 });
 
 t("删除会清掉指向被删叶子的箭头", () => {
-  // A=0 B=1 D=2 F=3 C=4 E=5 G=6，->4 指向 B 子树里的 C
-  const root = parse("[A [B C][D E][F G ->4]]");
+  // 词序号 C=1，->1 指向 C（它在 B 的子树里）
+  const root = parse("[A [B C][D E][F G ->1]]");
   const target = root.children[0].children[0];
   assert.equal(target.label, "C");
   removeNode(root, root.children[0]);
@@ -498,6 +499,65 @@ t("以 -> 开头的标签必须加引号", () => {
   // 唯一的女儿节点叶子写成裸标签，但它以 -> 开头，所以必须加引号
   assert.equal(toText(root), '[A "->x"]');
   assert.equal(toText(parse(toText(root))), '[A "->x"]');
+});
+
+console.log("\n[斜体 / 粗体 / 删除线]");
+
+t("三种字体样式都能声明，互相独立", () => {
+  const root = parse("[vP [v [V know]] [pro [N him]]]\nItalic(1)\nStrike(2)");
+  const byLabel = (l) => preorder(root).find((x) => x.label === l);
+  assert.equal(byLabel("v").italic, true);
+  assert.equal(byLabel("v").strike, false);
+  assert.equal(byLabel("pro").strike, true);
+  assert.equal(byLabel("pro").italic, false);
+});
+
+t("删除线在括号记法和规则记法里都能往返", () => {
+  const src = "[vP [v [V know]]]\nStrike(1)";
+  assert.equal(toText(parse(src)), src);
+  const rules = "0 vP -> v\n1 v -> V\n\nStrike(1)";
+  assert.equal(toRulesText(parseRules(rules)), rules);
+});
+
+t("三种样式按 Italic / Bold / Strike 的顺序导出", () => {
+  const root = parse("[XP [A] [B]]\nStrike(1)\nBold(2)\nItalic(2)");
+  assert.ok(toText(root).endsWith("Italic(2)\nBold(2)\nStrike(1)"), toText(root));
+});
+
+console.log("\n[颜色声明]");
+
+t("Color(节点号, 颜色) 能设置颜色，且在两套记法里往返", () => {
+  const src = "[CP [NP what_i] [C' [C is_j]]]\nStop".replace("Stop", "Color(3, red)\nColor(4, blue)");
+  const root = parse(src);
+  assert.equal(preorder(root).find((n) => n.label === "what").color, "red");
+  assert.equal(preorder(root).find((n) => n.label === "C").color, "blue");
+  assert.equal(toText(root), src);
+  const rules = "0 CP -> NP\n0 CP -> C'\n1 NP -> what_i\n2 C' -> C\n\nColor(3, red)";
+  assert.equal(toRulesText(parseRules(rules)), rules);
+});
+
+t("九种颜色名都被接受，写大写也能认", () => {
+  const names = ["red","yellow","blue","green","orange","magenta","purple","black","white"];
+  for (const name of names) {
+    const root = parse(`[XP [A] [B]]\nColor(1, ${name.toUpperCase()})`);
+    assert.equal(preorder(root).find((n) => n.label === "A").color, name, name);
+  }
+});
+
+t("颜色名不认识时忽略，不报错", () => {
+  const root = parse("[XP [A] [B]]\nColor(1, chartreuse)");
+  assert.equal(preorder(root).find((n) => n.label === "A").color, null);
+});
+
+t("一个节点可以同时有颜色和字体样式", () => {
+  const root = parse("[XP [A] [B]]\nItalic(1)\nStrike(1)\nColor(1, green)");
+  const a = preorder(root).find((n) => n.label === "A");
+  assert.equal(a.italic, true); assert.equal(a.strike, true); assert.equal(a.color, "green");
+});
+
+t("Color 行按节点编号排序导出，排在字体声明之后", () => {
+  const root = parse("[XP [A] [B] [C]]\nColor(3, blue)\nColor(1, red)\nItalic(2)");
+  assert.ok(toText(root).endsWith("Italic(2)\nColor(1, red)\nColor(3, blue)"), toText(root));
 });
 
 console.log("\n[水平位置：母亲节点居中]");

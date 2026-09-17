@@ -14,8 +14,8 @@
 let SEQ = 1;
 
 export function node(label = "", children = []) {
-  // italic / bold 由记法末尾的 Italic(...) / Bold(...) 声明来设置，见 style.js
-  return { id: SEQ++, label, sub: null, sup: null, arrow: null, italic: false, bold: false, children };
+  // italic / bold / strike 由记法末尾的 Italic(...) / Bold(...) / Strike(...) 声明设置，见 style.js
+  return { id: SEQ++, label, sub: null, sup: null, arrow: null, italic: false, bold: false, strike: false, color: null, children };
 }
 
 export function walk(n, fn, parent = null) {

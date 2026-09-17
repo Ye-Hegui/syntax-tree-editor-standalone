@@ -370,7 +370,9 @@ export class SyntaxTreeEditor {
         this.setAlign(value);
         this.scroller.focus();
       });
-      segGroup.appendChild(b);
+      this.#term(b, "textContent", label);
+this.#term(b, "title", hint);
+segGroup.appendChild(b);
       this.alignButtons[value] = b;
     }
     alignRow.appendChild(segGroup);
@@ -388,7 +390,9 @@ export class SyntaxTreeEditor {
         this.setCenter(value);
         this.scroller.focus();
       });
-      centerGroup.appendChild(b);
+      this.#term(b, "textContent", label);
+this.#term(b, "title", hint);
+centerGroup.appendChild(b);
       this.centerButtons[value] = b;
     }
     centerRow.appendChild(centerGroup);
@@ -429,13 +433,12 @@ export class SyntaxTreeEditor {
       ev.preventDefault();
       this.createRoot();
     });
+    // 这行提示里也有亲属称谓，所以要登记进 termNodes —— 只过一遍 #t() 是不够的，
+    // 因为这里只在建 DOM 时求值一次，切换称谓时不会重新生成。
+    const blankHint = "点画布任意处创建根节点。然后按 Enter 增加女儿节点、按 Shift+Enter 增加姊妹节点、按 Tab 增加一层投射层。";
     this.placeholder.append(
       mk("div", "ste-placeholder-title", "空白画布"),
-      mk(
-        "div",
-        "ste-placeholder-sub",
-        "点画布任意处创建根节点。然后按 Enter 增加女儿节点、按 Shift+Enter 增加姊妹节点、按 Tab 增加一层投射层。",
-      ),
+      this.#term(mk("div", "ste-placeholder-sub", blankHint), "textContent", blankHint),
       newRootBtn,
     );
 

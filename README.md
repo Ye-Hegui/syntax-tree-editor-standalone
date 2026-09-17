@@ -65,8 +65,8 @@ Rule notation is a recording method designed by this project. It writes one edge
 5 Y -> w3
 ```
 
-两套记法读写同一棵树，编号也共用一套：根为 0，其余按它第一次出现在箭头右边的那一行的行号。规则记法左侧装订线显示行号，行号不在文本里，框选复制不会带上。
-Both notations read and write the same tree and share one numbering: the root is 0, the rest follow the line on which they first appear to the right of an arrow. The gutter shows those line numbers; they are not part of the text, so copying does not pick them up.
+两套记法读写同一棵树，但**位移箭头的编号方式不同**：括号记法用**词序号**（从左到右第几个词，从 1 开始，与 jsSyntaxTree 一致），规则记法用**节点编号**（根为 0，其余按首次出现在箭头右边的那一行的行号）。样式声明两套记法都用节点编号。
+Both notations read and write the same tree, but **arrows are numbered differently**: bracket notation uses **word order** (the Nth word from the left, 1-based, matching jsSyntaxTree), while rule notation uses **node numbers** (root 0, then the line on which a node first appears right of an arrow). Style declarations use node numbers in both.
 
 ## 当组件用 / Using it as a component
 
@@ -99,9 +99,9 @@ npm.cmd test         四套测试 + 一致性自检 / four test suites plus the 
 
 | 测试套件 / Test suite | 负责 / Responsibility |
 | --- | --- |
-| `test/smoke.mjs`（74 项） | 纯逻辑：模型、两套记法、布局、箭头，不需要浏览器<br>Pure logic: model, both notations, layout, arrows; no browser needed |
+| `test/smoke.mjs`（82 项） | 纯逻辑：模型、两套记法、布局、箭头，不需要浏览器<br>Pure logic: model, both notations, layout, arrows; no browser needed |
 | `test/rules.test.mjs`（31 项） | 规则记法的解析、序列化、错误信息<br>Rule notation parsing, serialisation and errors |
-| `test/editor.test.mjs`（126 项） | 交互层，跑在最小 DOM 垫片上<br>Interaction layer, on a minimal DOM shim |
+| `test/editor.test.mjs`（130 项） | 交互层，跑在最小 DOM 垫片上<br>Interaction layer, on a minimal DOM shim |
 | `test/standalone.test.mjs`（13 项） | 单文件版：模块没有遗漏、内联后可以运行<br>Standalone file: nothing missing, still runnable after inlining |
 
 修改 `src/`、`index.html` 或 `style.css` 之后必须重新构建。`npm.cmd test` 会将磁盘上的构建产物与重新构建的结果逐字节比对，缺少重新构建将直接报错。

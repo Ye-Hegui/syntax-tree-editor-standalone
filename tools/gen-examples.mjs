@@ -17,7 +17,7 @@ const OUT_DIR = join(ROOT, "example");
 const CASES = [
   { name: "base", value: "[XP [Z word1] [X' [X word2] [Y word3]]]" },
   { name: "triangle", value: "[XP [Z word1] [X' [X word2 word4] [Y word3]]]" },
-  { name: "arrow", value: "[XP [Z word1] [X' [X word2] [Y word3 ->3]]]" },
+  { name: "arrow", value: "[XP [Z word1] [X' [X word2] [Y word3 ->1]]]" },
   // 2.2 下移：对 X 下移之后
   { name: "down", value: "[XP [Z word1] [X'' [X' [X word2]] [Y word3]]]" },
   // 2.4 左移右移的三个结果
@@ -25,7 +25,7 @@ const CASES = [
   { name: "left-x", value: "[XP [Z [word1] [X word2]] [X' [Y word3]]]" },
   { name: "right-x", value: "[XP [Z word1] [X' [Y word3] [X word2]]]" },
   // 2.5 斜体
-  { name: "italic", value: "[vP [v [V know]] [pro [N him]]]\nItalic(1, 2)" },
+  { name: "style", value: "[vP [v [V know]] [pro [N him]] [NP syntax]]\nItalic(1, 2)\nStrike(3)\nColor(4, blue)" },
 ];
 
 installDom();

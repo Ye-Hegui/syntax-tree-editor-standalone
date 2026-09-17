@@ -42,7 +42,7 @@ const PURPOSE = {
 
 const NOTES = {
   "src/model.js": "术语统一用**母亲节点 / 姊妹节点 / 女儿节点**。节点结构 `{ id, label, sub, sup, arrow, children }`。",
-  "src/notation.js": "箭头 `-->N` 里的 N 和规则记法共用同一套编号。",
+  "src/notation.js": "括号记法的箭头用**词序号**（从左到右第几个词，从 1 开始，与 jsSyntaxTree 一致），样式声明用**节点编号**。",
   "src/rules.js": "编号 = 行号，所以插行/删行会让下面引用错位；编辑器会自动改回去。",
   "src/editor.js": "私有方法以 `#` 开头，只在类内部使用。",
 };

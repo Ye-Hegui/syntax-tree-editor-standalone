@@ -1078,7 +1078,7 @@ await t("位移箭头在两种记法之间保持一致", async () => {
   assert.equal(trace.arrow.target.label, "w2");
 
   ed.setTextMode("bracket");
-  assert.equal(ed.textarea.value, "[XP [D w1] [X' [X w2] [Y w3 ->6]]]");
+  assert.equal(ed.textarea.value, "[XP [D w1] [X' [X w2] [Y w3 ->2]]]");
 });
 
 await t("getRules / setRules", async () => {
@@ -1245,6 +1245,48 @@ await t("滚动文本框时装订线跟着滚", async () => {
   assert.equal(ed.gutterLines.style.transform, "translateY(-24px)");
 });
 
+console.log("\n[颜色渲染]");
+
+await t("Color 声明覆盖默认填色，没声明的仍是默认色", async () => {
+  const ed = mount("[CP [NP what_i] [C' [C is_j]]]\nColor(3, red)");
+  const fill = (l) => [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === l).getAttribute("fill");
+  assert.equal(fill("what"), "#d32f2f", "what_i 应该是红色");
+  assert.equal(fill("is"), "#CC0000", "没声明的词应该还是默认的叶子红");
+  assert.notEqual(fill("is"), "#d32f2f", "不该被 Color 声明影响");
+  assert.notEqual(fill("CP"), "#d32f2f", "没声明的非叶子也不受影响");
+});
+
+await t("九种颜色各自渲染成不同色值", async () => {
+  const names = ["red","yellow","blue","green","orange","magenta","purple","black","white"];
+  const seen = new Set();
+  for (const name of names) {
+    const ed = mount(`[XP [A] [B]]\nColor(1, ${name})`);
+    const fill = [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === "A").getAttribute("fill");
+    assert.ok(/^#[0-9a-f]{6}$/i.test(fill), `${name} 没渲染出色值：${fill}`);
+    seen.add(fill);
+  }
+  assert.equal(seen.size, 9, "九种颜色应该互不相同");
+});
+
+console.log("\n[删除线渲染]");
+
+await t("Strike 声明让标签带删除线，且不影响斜体", async () => {
+  const ed = mount("[vP [v [V know]] [pro [N him]]]\nStrike(1)\nItalic(2)");
+  const find = (l) => [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === l);
+  assert.equal(find("v").getAttribute("text-decoration"), "line-through");
+  assert.equal(find("v").getAttribute("font-style"), null);
+  assert.equal(find("pro").getAttribute("font-style"), "italic");
+  assert.equal(find("pro").getAttribute("text-decoration"), null);
+});
+
+await t("没有任何声明时不加任何样式", async () => {
+  const ed = mount("[vP [v [V know]]]");
+  const t = [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === "v");
+  assert.equal(t.getAttribute("text-decoration"), null);
+  assert.equal(t.getAttribute("font-style"), null);
+  assert.equal(t.getAttribute("font-weight"), null);
+});
+
 console.log("\n[称谓切换]");
 
 const NEUTRAL = [["母亲节点","上级节点"],["姊妹节点","同级节点"],["女儿节点","下级节点"],["母亲","上级"],["姊妹","同级"],["女儿","下级"]];
@@ -1365,7 +1407,7 @@ await t("改名框里按 Tab 提交后，焦点也在画布上", async () => {
 
 console.log("\n[位移箭头的纵向位置]");
 
-const ARROW_TREE = "[CP [NP what_i] [C' [C is_j] [IP [NP a syntax tree] [I' [I t_j ->6] [VP [V t_j ->6] [NP t_i ->3]]]]]]";
+const ARROW_TREE = "[CP [NP what_i] [C' [C is_j] [IP [NP a syntax tree] [I' [I t_j ->2] [VP [V t_j ->2] [NP t_i ->1]]]]]]";
 
 await t("箭头明显低于最底下一行（三种对齐模式都不许贴着词跑）", async () => {
   for (const align of ["depth", "leaves", "compact"]) {

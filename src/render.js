@@ -1,3 +1,4 @@
+import { COLOR_VALUES } from "./style.js";
 ﻿// 把 layout() 的结果画成【可交互】的 SVG。
 //
 // 两个刻意的设计：
@@ -161,7 +162,9 @@ export function drawTree(svg, lay, opts = {}) {
     const contentLeft = it.cx - contentW / 2;
     // 只有"词"染红：叶子节点、而且是母亲节点唯一的女儿节点（也就是记法里写成裸标签的那种）。
     // 方括号包起来的空节点是范畴，跟非叶子一样用蓝色。
-    const fill = o.colors ? (it.isWord ? COLORS.leaf : COLORS.branch) : COLORS.mono;
+    // 显式声明的颜色优先级最高，不受「关闭颜色」选项影响 —— 那是作者自己的选择
+    const declared = n.color ? COLOR_VALUES[n.color] : null;
+    const fill = declared || (o.colors ? (it.isWord ? COLORS.leaf : COLORS.branch) : COLORS.mono);
 
     const label = el("text", {
       x: contentLeft + it.textW / 2,
@@ -175,6 +178,7 @@ export function drawTree(svg, lay, opts = {}) {
     });
     if (n.italic) label.setAttribute("font-style", "italic");
     if (n.bold) label.setAttribute("font-weight", "bold");
+    if (n.strike) label.setAttribute("text-decoration", "line-through");
     label.textContent = n.label;
     g.appendChild(label);
 

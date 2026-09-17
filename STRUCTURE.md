@@ -56,7 +56,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/editor.js`
 > 核心组件 SyntaxTreeEditor：交互、快捷键、撤销、双向同步、空白画布、装订线。
-> 1409 行 / 48663 字节
+> 1412 行 / 49036 字节
 
 私有方法以 `#` 开头，只在类内部使用。
 
@@ -80,7 +80,7 @@ Syntax Tree Editor Standalone/
 | 103 | `stripUnsupported` | — |
 | 109 | `offsetToLineCol` | — |
 | 122 | `lineColToOffset` | — |
-| 1401 | `countSubtree` | — |
+| 1404 | `countSubtree` | — |
 
 **类**
 
@@ -103,60 +103,60 @@ Syntax Tree Editor Standalone/
 | 267 | `exportSvg` | — |
 | 271 | `exportPng` | — |
 | 297 | `#buildDom` | ------------------------------------------------------------ DOM 骨架 |
-| 559 | `#reindex` | ------------------------------------------------------------ 渲染管线 |
-| 563 | `#relayout` | — |
-| 608 | `#refresh` | — |
-| 620 | `#serializeCurrent` | — |
-| 625 | `#parseCurrent` | — |
-| 629 | `#syncTextModeButtons` | — |
-| 638 | `setTextMode` | — |
-| 653 | `#buildCodeBox` | 代码框 = 左边一条装订线（行号）+ 右边真正的 textarea。 |
-| 680 | `#syncGutter` | 按当前文本刷新装订线。 |
-| 694 | `#syncGutterScroll` | — |
-| 706 | `#repairRulesNumbers` | 规则记法里"编号就是行号"，所以在上面插一行、删一行都会让下面所有引用错位。 |
-| 754 | `#syncTextareaSize` | — |
-| 759 | `getRules` | — |
-| 764 | `setRules` | — |
-| 773 | `#syncCenterButtons` | — |
-| 782 | `setCenter` | — |
-| 789 | `#syncAlignButtons` | — |
-| 798 | `setAlign` | — |
-| 805 | `#writeText` | — |
-| 812 | `#emitChange` | — |
-| 823 | `#updateStatus` | — |
-| 868 | `#showError` | — |
-| 877 | `#clearError` | — |
-| 889 | `#select` | 切换选中态。 |
-| 905 | `#snapshot` | ------------------------------------------------------------ 历史 |
-| 913 | `#pushUndo` | — |
-| 920 | `#restore` | — |
-| 932 | `undo` | — |
-| 938 | `redo` | — |
-| 944 | `#mutate` | — |
-| 957 | `createRoot` | 在空白画布上创建根节点，并直接进入改名状态。 |
-| 975 | `addChild` | — |
-| 991 | `addSibling` | — |
-| 1013 | `addLevel` | 下移（Tab）：在投射链的最顶端之上插入一个新的投射层， |
-| 1026 | `collapseLevel` | 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、 |
-| 1036 | `#canMoveLeft` | — |
-| 1048 | `#canMoveRight` | — |
-| 1063 | `moveLeft` | 左移（Alt+← / Ctrl+←）：自己是最左边的女儿节点时，搬到母亲节点的左姊妹节点底下。 |
-| 1071 | `moveRight` | 右移（Alt+→ / Ctrl+→）：自己是最右边的女儿节点时，搬到母亲节点的右姊妹节点底下。 |
-| 1082 | `remove` | 删除选中的节点。 |
-| 1120 | `setLabel` | — |
-| 1135 | `#startEdit` | ------------------------------------------------------------ 内联改名 |
-| 1149 | `#positionEditor` | — |
-| 1168 | `#commitEdit` | 提交改名。 |
-| 1178 | `#cancelEdit` | — |
-| 1191 | `#onCanvasDown` | ------------------------------------------------------------ 事件 |
-| 1204 | `#onCanvasDblClick` | — |
-| 1215 | `setTerms` | 换一套亲属称谓。**只改界面上的文字**（按钮名、提示行、装订线说明）， |
-| 1222 | `#t` | — |
-| 1228 | `#term` | — |
-| 1233 | `#onKeyDown` | — |
-| 1335 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
-| 1365 | `#selectFromCaret` | — |
-| 1387 | `#selectByOffset` | — |
+| 562 | `#reindex` | ------------------------------------------------------------ 渲染管线 |
+| 566 | `#relayout` | — |
+| 611 | `#refresh` | — |
+| 623 | `#serializeCurrent` | — |
+| 628 | `#parseCurrent` | — |
+| 632 | `#syncTextModeButtons` | — |
+| 641 | `setTextMode` | — |
+| 656 | `#buildCodeBox` | 代码框 = 左边一条装订线（行号）+ 右边真正的 textarea。 |
+| 683 | `#syncGutter` | 按当前文本刷新装订线。 |
+| 697 | `#syncGutterScroll` | — |
+| 709 | `#repairRulesNumbers` | 规则记法里"编号就是行号"，所以在上面插一行、删一行都会让下面所有引用错位。 |
+| 757 | `#syncTextareaSize` | — |
+| 762 | `getRules` | — |
+| 767 | `setRules` | — |
+| 776 | `#syncCenterButtons` | — |
+| 785 | `setCenter` | — |
+| 792 | `#syncAlignButtons` | — |
+| 801 | `setAlign` | — |
+| 808 | `#writeText` | — |
+| 815 | `#emitChange` | — |
+| 826 | `#updateStatus` | — |
+| 871 | `#showError` | — |
+| 880 | `#clearError` | — |
+| 892 | `#select` | 切换选中态。 |
+| 908 | `#snapshot` | ------------------------------------------------------------ 历史 |
+| 916 | `#pushUndo` | — |
+| 923 | `#restore` | — |
+| 935 | `undo` | — |
+| 941 | `redo` | — |
+| 947 | `#mutate` | — |
+| 960 | `createRoot` | 在空白画布上创建根节点，并直接进入改名状态。 |
+| 978 | `addChild` | — |
+| 994 | `addSibling` | — |
+| 1016 | `addLevel` | 下移（Tab）：在投射链的最顶端之上插入一个新的投射层， |
+| 1029 | `collapseLevel` | 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、 |
+| 1039 | `#canMoveLeft` | — |
+| 1051 | `#canMoveRight` | — |
+| 1066 | `moveLeft` | 左移（Alt+← / Ctrl+←）：自己是最左边的女儿节点时，搬到母亲节点的左姊妹节点底下。 |
+| 1074 | `moveRight` | 右移（Alt+→ / Ctrl+→）：自己是最右边的女儿节点时，搬到母亲节点的右姊妹节点底下。 |
+| 1085 | `remove` | 删除选中的节点。 |
+| 1123 | `setLabel` | — |
+| 1138 | `#startEdit` | ------------------------------------------------------------ 内联改名 |
+| 1152 | `#positionEditor` | — |
+| 1171 | `#commitEdit` | 提交改名。 |
+| 1181 | `#cancelEdit` | — |
+| 1194 | `#onCanvasDown` | ------------------------------------------------------------ 事件 |
+| 1207 | `#onCanvasDblClick` | — |
+| 1218 | `setTerms` | 换一套亲属称谓。**只改界面上的文字**（按钮名、提示行、装订线说明）， |
+| 1225 | `#t` | — |
+| 1231 | `#term` | — |
+| 1236 | `#onKeyDown` | — |
+| 1338 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
+| 1368 | `#selectFromCaret` | — |
+| 1390 | `#selectByOffset` | — |
 
 ### `src/layout.js`
 > tidy tree 布局 + 三种垂直对齐。文字宽度靠注入的 measure()，不依赖 DOM。
@@ -172,7 +172,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/main.js`
 > 演示页引导：例句、URL 参数。
-> 115 行 / 4465 字节
+> 115 行 / 4486 字节
 
 **函数**
 
@@ -190,7 +190,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/model.js`
 > 数据模型 + 所有结构操作。不依赖 DOM，是唯一真相来源。
-> 273 行 / 10190 字节
+> 273 行 / 10238 字节
 
 术语统一用**母亲节点 / 姊妹节点 / 女儿节点**。节点结构 `{ id, label, sub, sup, arrow, children }`。
 
@@ -215,61 +215,62 @@ Syntax Tree Editor Standalone/
 
 ### `src/notation.js`
 > 括号记法 ↔ 模型：词法分析、递归下降解析、序列化、文本位置映射。
-> 341 行 / 11095 字节
+> 369 行 / 12199 字节
 
-箭头 `-->N` 里的 N 和规则记法共用同一套编号。
+括号记法的箭头用**词序号**（从左到右第几个词，从 1 开始，与 jsSyntaxTree 一致），样式声明用**节点编号**。
 
 **函数**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 27 | `WS` | — |
-| 28 | `CTRL` | — |
-| 30 | `OPEN` | — |
-| 31 | `CLOSE` | — |
-| 32 | `STRING` | — |
-| 33 | `QUOTED` | — |
-| 34 | `NUMBER` | — |
-| 35 | `SUB` | — |
-| 36 | `SUP` | — |
-| 37 | `MOVEMENT` | — |
-| 39 | `VALUE_TOKENS` | — |
-| 43 | `tokenize` | ---------------------------------------------------------------- 词法分析 |
-| 122 | `parseSubSup` | ---------------------------------------------------------------- 语法分析 |
-| 132 | `parseNode` | — |
-| 167 | `parseValue` | — |
-| 200 | `tokenText` | — |
-| 212 | `parse` | — |
-| 236 | `NO_SPACE_BARE` | ---------------------------------------------------------------- 序列化 |
-| 252 | `needsQuote` | 判断标签能不能不加引号地写出来。三种上下文规则不同： |
-| 276 | `quote` | — |
-| 292 | `serialize` | 模型 -> 括号记法。 |
-| 338 | `toText` | — |
+| 27 | `leafOrdinals` | 叶子节点的「词序号」：从左到右第几个词，从 1 开始。 |
+| 47 | `WS` | — |
+| 48 | `CTRL` | — |
+| 50 | `OPEN` | — |
+| 51 | `CLOSE` | — |
+| 52 | `STRING` | — |
+| 53 | `QUOTED` | — |
+| 54 | `NUMBER` | — |
+| 55 | `SUB` | — |
+| 56 | `SUP` | — |
+| 57 | `MOVEMENT` | — |
+| 59 | `VALUE_TOKENS` | — |
+| 63 | `tokenize` | ---------------------------------------------------------------- 词法分析 |
+| 142 | `parseSubSup` | ---------------------------------------------------------------- 语法分析 |
+| 152 | `parseNode` | — |
+| 187 | `parseValue` | — |
+| 220 | `tokenText` | — |
+| 232 | `parse` | — |
+| 263 | `NO_SPACE_BARE` | ---------------------------------------------------------------- 序列化 |
+| 279 | `needsQuote` | 判断标签能不能不加引号地写出来。三种上下文规则不同： |
+| 303 | `quote` | — |
+| 319 | `serialize` | 模型 -> 括号记法。 |
+| 366 | `toText` | — |
 
 **类**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 19 | `NotationError` | — |
+| 39 | `NotationError` | — |
 
 **方法与字段**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 20 | `constructor` | — |
+| 40 | `constructor` | — |
 
 ### `src/render.js`
 > 把布局结果画成可交互 SVG。视觉属性全部内联，导出的图脱离页面也能看。
-> 203 行 / 6656 字节
+> 207 行 / 6965 字节
 
 **函数**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 9 | `NS` | 命中区域。事件用委托挂在 <svg> 上，节点增删不需要重新绑定。 |
-| 11 | `el` | — |
-| 17 | `COLORS` | — |
-| 28 | `drawTree` | — |
+| 10 | `NS` | 命中区域。事件用委托挂在 <svg> 上，节点增删不需要重新绑定。 |
+| 12 | `el` | — |
+| 18 | `COLORS` | — |
+| 29 | `drawTree` | — |
 
 ### `src/rules.js`
 > 规则记法 ↔ 模型：一行一条「母亲节点 → 女儿节点」。
@@ -305,16 +306,19 @@ Syntax Tree Editor Standalone/
 
 ### `src/style.js`
 > —
-> 87 行 / 2508 字节
+> 132 行 / 4101 字节
 
 **函数**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 27 | `DECL` | — |
-| 33 | `splitStyleDecls` | 把尾部的样式声明切下来。 |
-| 57 | `applyStyleDecls` | — |
-| 73 | `styleDeclsText` | — |
+| 29 | `DECL` | — |
+| 33 | `COLOR_DECL` | Color(4, red) |
+| 36 | `COLOR_NAMES` | — |
+| 45 | `COLOR_VALUES` | 颜色名 -> 实际色值。 |
+| 61 | `splitStyleDecls` | 把尾部的样式声明切下来。 |
+| 92 | `applyStyleDecls` | — |
+| 111 | `styleDeclsText` | — |
 
 ---
 
@@ -379,7 +383,7 @@ Syntax Tree Editor Standalone/
 
 ### `test/editor.test.mjs`
 > 交互层测试（跑在 DOM 垫片上）。
-> 1454 行 / 55981 字节
+> 1496 行 / 58079 字节
 
 **函数**
 
@@ -403,9 +407,9 @@ Syntax Tree Editor Standalone/
 | 825 | `selectT` | — |
 | 958 | `fillOf` | — |
 | 1003 | `USER_RULES` | — |
-| 1250 | `NEUTRAL` | — |
-| 1251 | `FATHER` | — |
-| 1368 | `ARROW_TREE` | — |
+| 1292 | `NEUTRAL` | — |
+| 1293 | `FATHER` | — |
+| 1410 | `ARROW_TREE` | — |
 
 ### `test/rules.test.mjs`
 > 规则记法测试。
@@ -421,24 +425,24 @@ Syntax Tree Editor Standalone/
 
 ### `test/smoke.mjs`
 > 纯逻辑测试（不需要浏览器）。
-> 690 行 / 27382 字节
+> 750 行 / 30061 字节
 
 **函数**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 24 | `t` | — |
-| 35 | `roundtrip` | — |
-| 40 | `dump` | — |
-| 50 | `sameTree` | — |
-| 54 | `stable` | — |
-| 147 | `measure` | — |
-| 149 | `layoutOf` | — |
-| 201 | `ALIGN_TREE` | 深度：S0 A1 B2 C3 x4 D1 E2 y3 |
-| 203 | `rowsOf` | — |
-| 312 | `wordsOf` | 规则：叶子 + 母亲节点的唯一的女儿节点（也就是记法里写成裸标签的那种）才算"词" |
-| 364 | `MOVE_TREE` | ② 自己是最边上的女儿 -> 搬到母亲节点那一侧的姊妹底下 |
-| 366 | `moveFixture` | — |
+| 25 | `t` | — |
+| 36 | `roundtrip` | — |
+| 41 | `dump` | — |
+| 51 | `sameTree` | — |
+| 55 | `stable` | — |
+| 148 | `measure` | — |
+| 150 | `layoutOf` | — |
+| 202 | `ALIGN_TREE` | 深度：S0 A1 B2 C3 x4 D1 E2 y3 |
+| 204 | `rowsOf` | — |
+| 313 | `wordsOf` | 规则：叶子 + 母亲节点的唯一的女儿节点（也就是记法里写成裸标签的那种）才算"词" |
+| 365 | `MOVE_TREE` | ② 自己是最边上的女儿 -> 搬到母亲节点那一侧的姊妹底下 |
+| 367 | `moveFixture` | — |
 
 ### `test/standalone.test.mjs`
 > 单文件构建产物测试：模块没漏、内联后真的能跑。
@@ -481,7 +485,7 @@ Syntax Tree Editor Standalone/
 
 ### `tools/check-project.mjs`
 > 一致性自检：文档 / 文件结构 / 构建产物不许对不上。
-> 147 行 / 5961 字节
+> 147 行 / 6013 字节
 
 **函数**
 
@@ -501,7 +505,7 @@ Syntax Tree Editor Standalone/
 
 ### `tools/gen-examples.mjs`
 > —
-> 48 行 / 2144 字节
+> 48 行 / 2182 字节
 
 **函数**
 
@@ -513,7 +517,7 @@ Syntax Tree Editor Standalone/
 
 ### `tools/gen-structure.mjs`
 > 生成这份 STRUCTURE.md。
-> 184 行 / 8865 字节
+> 184 行 / 8948 字节
 
 **函数**
 

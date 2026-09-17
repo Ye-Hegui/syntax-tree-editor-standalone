@@ -16,6 +16,26 @@
 import { node, nodeIds, walk } from "./model.js";
 import { splitStyleDecls, applyStyleDecls, styleDeclsText } from "./style.js";
 
+/**
+ * 叶子节点的「词序号」：从左到右第几个词，从 1 开始。
+ *
+ * 这是 jsSyntaxTree 的箭头编号方式（它管这叫 column number），**只有括号记法的箭头用它**。
+ * 节点编号（根 0，见 model.js 的 nodeIds）仍然用于：
+ *   - 样式声明 Italic / Bold / Strike / Color（两套记法都用它）
+ *   - 规则记法的全部编号
+ */
+function leafOrdinals(root) {
+  const byNode = new Map();
+  const byIndex = new Map();
+  let n = 0;
+  walk(root, (x) => {
+    if (x.children.length) return;
+    byNode.set(x, ++n);
+    byIndex.set(n, x);
+  });
+  return { byNode, byIndex };
+}
+
 export class NotationError extends Error {
   constructor(message, index = 0) {
     super(message);
@@ -190,7 +210,7 @@ function parseValue(tokens, i) {
     const target = tokens[i + 1];
     if (!target || target.type !== NUMBER)
       throw new NotationError("位移箭头之后需要叶子序号（->1）", t.start);
-    n.arrow = { target: null, targetIndex: target.value };
+    n.arrow = { target: null, targetIndex: target.value, start: t.start };
     i += 2;
   }
 
@@ -220,11 +240,18 @@ export function parse(source) {
   if (i !== tokens.length)
     throw new NotationError(`位置 ${tokens[i].start} 之后有多余内容`, tokens[i].start);
 
-  const byId = new Map();
-  for (const [n, id] of nodeIds(root)) byId.set(id, n);
+  // 括号记法箭头里的数字是「词序号」（jsSyntaxTree 的 column number），不是节点编号
+  const leaves = leafOrdinals(root);
   walk(root, (n) => {
     if (!n.arrow) return;
-    n.arrow.target = byId.get(n.arrow.targetIndex) ?? null;
+    const target = leaves.byIndex.get(n.arrow.targetIndex);
+    if (!target)
+      throw new NotationError(
+        `位移箭头里的 ${n.arrow.targetIndex} 不是有效的词序号。词从 1 开始数，这棵树共有 ${leaves.byNode.size} 个词`,
+        n.arrow.start ?? 0,
+      );
+    n.arrow.target = target;
+    n.arrow.targetIndex = leaves.byNode.get(target);
   });
 
   applyStyleDecls(root, decls);
@@ -292,6 +319,7 @@ function quote(s, mode = "leaf") {
 export function serialize(root) {
   const spans = new Map();
   const ids = nodeIds(root);
+  const leafIdx = leafOrdinals(root); // 箭头的词序号表
 
   let out = "";
 
@@ -321,7 +349,7 @@ export function serialize(root) {
     if (bracketed) out += "]";
 
     if (isLeaf && n.arrow) {
-      const idx = n.arrow.target ? ids.get(n.arrow.target) : n.arrow.targetIndex;
+      const idx = n.arrow.target ? leafIdx.byNode.get(n.arrow.target) : n.arrow.targetIndex;
       if (idx != null) out += " ->" + idx;
     }
 

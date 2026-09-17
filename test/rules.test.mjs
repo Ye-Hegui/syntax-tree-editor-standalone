@@ -177,14 +177,14 @@ t("括号记法和规则记法用的是同一套编号", () => {
   const fromRules = parseRules(`${USER_RULES}\n\n7 --> 6`);
   const fromBracket = parse(toText(fromRules));
   // 箭头挂在 w3 上，编号 6 = w2，两套记法数字一致
-  assert.equal(toText(fromBracket), "[XP [D w1] [X' [X w2] [Y w3 ->6]]]");
+  assert.equal(toText(fromBracket), "[XP [D w1] [X' [X w2] [Y w3 ->2]]]");
   const pick = (root) => preorder(root).filter((n) => n.arrow).map((n) => n.arrow.target.label);
   assert.deepEqual(pick(fromBracket), ["w2"]);
   assert.deepEqual(pick(fromRules), ["w2"]);
 });
 
-t("括号记法里写 ->6 也能正确落到 w2", () => {
-  const root = parse("[XP [D w1] [X' [X w2] [Y w3 ->6]]]");
+t("括号记法里写 ->2 也能正确落到 w2", () => {
+  const root = parse("[XP [D w1] [X' [X w2] [Y w3 ->2]]]");
   const byId = new Map([...nodeIds(root)].map(([n, id]) => [id, n]));
   assert.equal(byId.get(6).label, "w2");
   assert.equal(preorder(root).find((n) => n.arrow).arrow.target, byId.get(6));
@@ -247,7 +247,7 @@ t("叶子不会被单独写成 mother", () => {
 });
 
 t("位移箭头单独放在最后", () => {
-  const out = toRulesText(parse("[A [B C] [D E] [F G -->6]]"));
+  const out = toRulesText(parse("[A [B C] [D E] [F G ->1]]"));
   const lines = out.split("\n");
   assert.ok(lines[lines.length - 1].includes("-->"), "箭头应该是最后一行");
   assert.ok(out.includes("\n\n"), "箭头前面应该空一行");
@@ -282,7 +282,7 @@ t("各种真实树都能往返", () => {
   const samples = [
     "[S [NP [D the][N dog]][VP [V barks]]]",
     "[CP [C that][TP [NP_1 [D the][N dog]][T' [T past][VP [V bark][NP the mailman]]]]]",
-    "[A [B C][D E][F G ->6]]",
+    "[A [B C][D E] [F G ->1]]",
     "[S [NP][VP]]",
     "[XP [D [X'' [X word] [Y]]] [X']]",
   ];
