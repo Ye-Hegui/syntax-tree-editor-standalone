@@ -129,6 +129,7 @@ new SyntaxTreeEditor(elOrSelector, {
   textMode,       // "bracket" | "rules"       默认 "bracket"
   align,          // "depth" | "leaves" | "compact"
   center,         // "mother" | "block"         默认 "mother"
+  lang,           // "zh" | "en"                默认 "zh"，只影响界面文字
   fontSize, fontFamily, vscale, colors, triangles, terminalLines, showText,
   onChange,       // ({ text, rules, mode, editor }) => void
 })
@@ -142,7 +143,7 @@ new SyntaxTreeEditor(elOrSelector, {
 | `setRules(text)` / `setTextMode(mode)` | 切换/写入规则记法 |
 | `clear()` | 清成空白画布 |
 | `setOptions(partial)` | 改选项后重绘 |
-| `setAlign(v)` / `setCenter(v)` / `setTerms(pairs)` / `setStyle({italic,bold,strike})` | 改对齐、水平位置、界面称谓、选中节点的字体样式 |
+| `setAlign(v)` / `setCenter(v)` / `setTerms(pairs)` / `setLanguage(lang)` / `setStyle({italic,bold,strike})` | 改对齐、水平位置、界面称谓、界面语言（`"zh"`/`"en"`）、选中节点的字体样式。**只动界面文字，对树没有任何影响** |
 | `createRoot()` `addChild()` `addSibling()` `addLevel()` `collapseLevel()` `moveLeft()` `moveRight()` `remove()` `setLabel(t)` | 结构编辑，都作用于当前选中节点 |
 | `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝。**不引入新的染色机制**，只是增删颜色声明：两个"标蓝"是**删掉**颜色声明（回到默认画法），两个"标红"是写上红色声明。都返回"是否真的改了东西"，没有变化时不压撤销历史 |
 | `toggleSelectedItalic()` `toggleSelectedStrike()` | 同一行右边的两个字体开关：给选中节点切换斜体 / 删除线（等价于加或删一行 `Italic(编号)` / `Strike(编号)` 声明），再按一次取消。粗体刻意没有按钮，只能用声明写 |
@@ -150,17 +151,29 @@ new SyntaxTreeEditor(elOrSelector, {
 | `toSvgString({background})` / `exportSvg()` / `exportPng()` | 导出 |
 | 属性：`root` `selected` `lay` `size` `opts` `undoStack` `redoStack` `isEmpty` | 只读访问用 |
 
-### ⚠️ 教程正文的术语不能随便写
+### ⚠️ 教程正文的术语与界面文案
 
-网页顶部的「称谓」切换（母系 / 中性 / 父系）是靠**对教程正文做全局字符串替换**实现的
-（`src/main.js` 的 `TERM_SETS` + `editor.js` 的 `setTerms()`）。替换表只认这几个词：
+界面文案（含教程正文里的亲属称谓）靠**字符串替换**切换，三套用词的表在 `src/i18n.js` 的 `TERMS`
+（中文与英文各三套），由 `main.js` 的 `setTerms()` + `editor.js` 的 `setTerms()` 应用。
+替换表认的就是这几个词：
 
-`母亲节点` `姊妹节点` `女儿节点` `母亲` `姊妹` `女儿`
+`母亲节点` `姊妹节点` `女儿节点` `母亲` `姊妹` `女儿`（英文对应 mother/sister/daughter）
 
-所以新写的教程文字**必须沿用这几个词**，否则切换到父系时它们不会被替换，和周围文字不一致。
+所以新写的教程文字**必须沿用这几个词**，否则切换到中性/父系时它们不会被替换，和周围文字不一致。
 这个错误**不会报错**，只会在用户点按钮时才看出来。
 
 另外：换称谓会重建文档 DOM，所以 `bindToc()` 每次都要重新绑定页内链接。
+
+### 🌐 语言与文案的两条硬规矩
+
+1. **界面文案一律从 `src/i18n.js` 的 `STRINGS` 里取**（`#t(key)` / `i18nText(lang, key)`），
+   不许在 `editor.js`、`main.js`、`index.html` 里写死中文或英文。
+   `check-project.mjs` 会核对中英 key 一一对应；`editor.test.mjs` 里还有一条
+   "英文界面里不许出现汉字"的扫描（含 tooltip 与空白画布那条路）。
+2. **文案里的亲属称谓一律先写成"母亲"那套**（中文「母亲节点/姊妹节点/女儿节点」，
+   英文 `mother node / sister node / daughter node`），再由 `TERMS` 往下替换 ——
+   三套说法只维护一张表。英文替换按整词边界、大小写不敏感且保留原文大小写，
+   并且**英文表里不写亲属词的复数**（写 `daughter nodes`，让长词规则去变 `child nodes`）。
 
 ---
 
