@@ -5,7 +5,8 @@ import assert from "node:assert/strict";
 import { installDom, makeEvent } from "./dom-shim.mjs";
 
 installDom();
-const { SyntaxTreeEditor } = await import("../src/editor.js");
+const { SyntaxTreeEditor, rulesToSvg } = await import("../src/editor.js");
+const { RuleError } = await import("../src/rules.js");
 const { preorder } = await import("../src/model.js");
 const { ALIGN_MODES } = await import("../src/layout.js");
 const { COLOR_NAMES } = await import("../src/style.js");
@@ -1677,6 +1678,25 @@ await t("把标签改成别的，就不再是转义节点", async () => {
   // 再改回 %Empty 又变回转义节点
   ed.setLabel("%Empty");
   assert.equal(esc.escape, true);
+});
+
+console.log("\n[一行出图：rulesToSvg()]");
+
+await t("规则记法文本直接出 SVG（给 AI / 脚本用的那条路）", async () => {
+  const svg = rulesToSvg("0 S -> NP\n0 S -> VP\n1 NP -> Dogs\n2 VP -> barks");
+  assert.ok(svg.startsWith("<svg"), "应该是完整的 SVG 字符串");
+  assert.ok(svg.includes(">NP</text>") && svg.includes(">Dogs</text>"), "标签都要画出来");
+  assert.ok(/viewBox="0 0 [\d.]+ [\d.]+"/.test(svg), "要有画布尺寸");
+});
+
+await t("rulesToSvg() 支持括号记法与选项", async () => {
+  const svg = rulesToSvg("[S [NP Dogs] [VP barks]]", { mode: "bracket", fontSize: 24, align: "leaves" });
+  assert.ok(svg.includes(">S</text>"), "树画出来了");
+  assert.ok(svg.includes('font-size="24"'), "字号选项要生效");
+});
+
+await t("rulesToSvg() 解析不了就抛错，错误带行号", async () => {
+  assert.throws(() => rulesToSvg("0 S -> NPC\n0 S ->"), RuleError);
 });
 
 console.log("\n[工具栏快捷键说明]");

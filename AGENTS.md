@@ -113,6 +113,13 @@
 - `drawTree(svg, lay, opts)` → `{ width, height, arrowBottoms }`。**会真的往 `svg` 里写节点**。
 - `wordNodes(root)` → 按前序排列的「词」节点数组，纯结构判定，不依赖 DOM。见「约定」第 6 条。
 
+### 一行出图：`rulesToSvg(text, options)`
+
+想只要一张图、不要界面时用它（`src/editor.js` 导出）：文本进、SVG 字符串出。
+`options.mode` 默认 `"rules"`（规则记法），传 `"bracket"` 走括号记法；其余选项直接转给编辑器。
+**需要 DOM** —— 浏览器里直接可用，Node 里先 `installDom()`（`test/dom-shim.mjs`），
+命令行封装见 `tools/render-rules.mjs`。给 AI 的说明文档是 [`AI-INTRO.md`](AI-INTRO.md)。
+
 ### `SyntaxTreeEditor`
 
 ```js

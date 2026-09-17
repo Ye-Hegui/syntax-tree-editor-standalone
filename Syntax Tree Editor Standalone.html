@@ -3120,6 +3120,36 @@ function lineColToOffset(text, line, col) {
   return offset + Math.min(Math.max(col, 0), lines[at].length);
 }
 
+/**
+ * 一行出图：**文本 → SVG 字符串**，不需要页面上先有一个编辑器实例。
+ * 本模块导出它，用法：
+ *
+ *   const svg = rulesToSvg("0 S -> NP\n0 S -> VP\n1 NP -> Dogs\n2 VP -> barks");
+ *
+ * 默认按**规则记法**解析；传 `{ mode: "bracket" }` 就按括号记法解析。
+ * 解析不了会抛 `RuleError` / `NotationError`（信息里带行号或字符位置），
+ * 所以调用方可以把错误原样转给用户。
+ *
+ * 可用选项（都会转给编辑器，不传就用默认值）：
+ *   mode: "rules"（默认）| "bracket"
+ *   fontSize / fontFamily / vscale / align / center /
+ *   colors / triangles / terminalLines / background
+ *
+ * ⚠️ 需要一个 DOM：浏览器里直接可用；Node 里先 `installDom()`（`test/dom-shim.mjs` 那个最小垫片），
+ * 现成的命令行封装见 `tools/render-rules.mjs`。
+ */
+function rulesToSvg(text, options = {}) {
+  const mode = options.mode === "bracket" ? "bracket" : "rules";
+  const opts = { value: "", textMode: mode, showText: false };
+  for (const [k, v] of Object.entries(options)) {
+    if (v !== undefined && k !== "mode" && k !== "background") opts[k] = v;
+  }
+  const editor = new SyntaxTreeEditor(document.createElement("div"), opts);
+  if (mode === "rules") editor.setRules(text);
+  else editor.setValue(text);
+  return editor.toSvgString({ background: options.background !== false });
+}
+
 class SyntaxTreeEditor {
   constructor(host, options = {}) {
     this.opts = {

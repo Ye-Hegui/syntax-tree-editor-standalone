@@ -74,6 +74,18 @@ Both notations read and write the same tree, but **arrows are numbered different
 （尚未经过大量测试。）
 (Not yet extensively tested.)
 
+只要一张图、不要界面的话，一个函数就够（规则记法文本 → SVG 字符串，详见 [`AI-INTRO.md`](AI-INTRO.md)）：
+For a diagram without any UI, one call is enough (rules text in, SVG string out — see [`AI-INTRO.md`](AI-INTRO.md)):
+
+```js
+import { rulesToSvg } from "./src/editor.js";
+
+const svg = rulesToSvg("0 S -> NP\n0 S -> VP\n1 NP -> Dogs\n2 VP -> barks");
+```
+
+Node 里连浏览器都不需要：`node tools/render-rules.mjs 树.txt 树.svg`。
+No browser needed under Node either: `node tools/render-rules.mjs tree.txt tree.svg`.
+
 ```js
 import { SyntaxTreeEditor } from "./src/editor.js";
 
@@ -102,7 +114,7 @@ npm.cmd test         四套测试 + 一致性自检 / four test suites plus the 
 | --- | --- |
 | `test/smoke.mjs`（99 项） | 纯逻辑：模型、两套记法、布局、箭头，不需要浏览器<br>Pure logic: model, both notations, layout, arrows; no browser needed |
 | `test/rules.test.mjs`（31 项） | 规则记法的解析、序列化、错误信息<br>Rule notation parsing, serialisation and errors |
-| `test/editor.test.mjs`（149 项） | 交互层，跑在最小 DOM 垫片上<br>Interaction layer, on a minimal DOM shim |
+| `test/editor.test.mjs`（152 项） | 交互层，跑在最小 DOM 垫片上<br>Interaction layer, on a minimal DOM shim |
 | `test/standalone.test.mjs`（13 项） | 单文件版：模块没有遗漏、内联后可以运行<br>Standalone file: nothing missing, still runnable after inlining |
 
 修改 `src/`、`index.html` 或 `style.css` 之后必须重新构建。`npm.cmd test` 会将磁盘上的构建产物与重新构建的结果逐字节比对，缺少重新构建将直接报错。
@@ -119,6 +131,7 @@ index.html                           编辑器页面与使用方法 / editor pag
 style.css                            全部样式 / all styles
 package.json                         build / test / serve
 AGENTS.md                            给 AI agent 的项目说明 / project notes for AI agents
+AI-INTRO.md                          给 AI 的规则记法说明与出图入口 / rules-notation guide for AI
 STRUCTURE.md                         函数级行号索引 / function-level line index
 CHANGELOG.md                         更新日志 / changelog
 src/model.js                         数据模型与结构操作，不依赖 DOM / data model and tree ops, DOM-free
@@ -138,6 +151,7 @@ tools/build-standalone.mjs           内联成单文件版 / inlines the modules
 tools/check-project.mjs              一致性自检 / consistency self-check
 tools/gen-examples.mjs               生成示例图 / generates the example images
 tools/gen-structure.mjs              生成 STRUCTURE.md / generates STRUCTURE.md
+tools/render-rules.mjs               规则记法文本直接出 SVG / rules text to SVG, no browser
 docs/                                截图 / screenshots
 example/                             示例图，构建时内联 / example images, inlined at build time
 ```

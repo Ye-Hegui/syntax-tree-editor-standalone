@@ -11,6 +11,7 @@ Version numbers follow semantic versioning. `v1.2.1` is an **internal developmen
 - 「标色」一行的按钮：全部标蓝、单词标红、节点标红、节点标蓝 · A "标色" row of buttons: all blue, words red, node red, node blue
 - 同一行的「节点斜体」「节点删除线」开关：只作用于选中节点，按一下加上、再按一下取消（粗体不提供按钮）· "节点斜体" / "节点删除线" toggles on the same row, applying to the selected node only; bold has no button
 - 删除线声明 `Strike(N)` · Strikethrough declaration `Strike(N)`
+- 给 AI / 脚本的入口：`rulesToSvg(text)`（文本进、SVG 字符串出）与命令行 `node tools/render-rules.mjs 树.txt 树.svg`；配套说明文档 `AI-INTRO.md` · An entry point for AI and scripts: `rulesToSvg(text)` (text in, SVG string out) and the CLI `node tools/render-rules.mjs tree.txt tree.svg`, documented in `AI-INTRO.md`
 - 称谓切换补齐三处遗漏（水平位置按钮、空白画布提示、垂直对齐的说明文字）· Three omissions in term switching fixed (horizontal-position button, blank-canvas hint, vertical-alignment tooltip)
 
 ### 改动 / Changed
