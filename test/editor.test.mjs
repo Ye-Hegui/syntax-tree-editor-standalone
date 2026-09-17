@@ -1776,6 +1776,32 @@ await t("文案表的两个纯函数：占位符插值与整词替换", async ()
   assert.equal(applyTerms("zh", TERMS.zh.father, "母亲节点和母亲"), "父节点和父");
 });
 
+await t("英文界面里不许有残留中文（界面文案必须全部走表）", async () => {
+  const han = /[\u4e00-\u9fff]/;
+  // 收集一棵 DOM 里所有可见文字与 tooltip
+  const collect = (el, out = []) => {
+    for (const c of el.children || []) {
+      if (c.title) out.push(c.title);
+      if (!c.children || !c.children.length) out.push(c.textContent || "");
+      collect(c, out);
+    }
+    return out;
+  };
+
+  const ed = mount("[S [NP [D the] [N dog]] [VP [V barks]]]", { lang: "en" });
+  const bad = collect(ed.el).filter((s) => han.test(s));
+  assert.deepEqual(bad, [], `英文界面里还有中文：${bad.slice(0, 3).join(" | ")}`);
+
+  // 空白画布那条路（引导层、状态栏、按钮名）也要是英文
+  const blank = mount("", { lang: "en" });
+  const badBlank = collect(blank.el).filter((s) => han.test(s));
+  assert.deepEqual(badBlank, [], `空白画布还有中文：${badBlank.slice(0, 3).join(" | ")}`);
+
+  // 反向自检：中文界面当然能检出中文 —— 否则上面的检查可能是"什么都没看到"
+  const zh = mount("[S [NP [D the] [N dog]] [VP [V barks]]]");
+  assert.ok(collect(zh.el).some((s) => han.test(s)), "中文界面应该能检出中文");
+});
+
 console.log("\n[工具栏快捷键说明]");
 
 await t("每个工具栏按钮下边的快捷键说明都对", async () => {

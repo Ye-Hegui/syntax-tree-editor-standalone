@@ -3502,7 +3502,7 @@ class SyntaxTreeEditor {
     };
 
     this.host = typeof host === "string" ? document.querySelector(host) : host;
-    if (!this.host) throw new Error("SyntaxTreeEditor: 找不到挂载点");
+    if (!this.host) throw new Error(i18nText(this.lang || "zh", "err.mount"));
 
     this.undoStack = [];
     this.redoStack = [];
@@ -3717,7 +3717,7 @@ class SyntaxTreeEditor {
       const img = new Image();
       await new Promise((resolve, reject) => {
         img.onload = resolve;
-        img.onerror = () => reject(new Error("SVG 转 PNG 失败"));
+        img.onerror = () => reject(new Error(this.#t("err.png")));
         img.src = url;
       });
       const canvas = document.createElement("canvas");
@@ -3857,7 +3857,8 @@ class SyntaxTreeEditor {
       chip.type = "button";
       // 小 v 和 pro 习惯上写斜体，点这两个按钮时顺手把斜体位打开（斜体本身由记法决定）
       if (ITALIC_CHIPS.has(label)) chip.style.fontStyle = "italic";
-      chip.title = `把标签设为 ${label}`;
+      chip.title = this.#t("tip.chip", { label });
+      this.#term(chip, "title", "tip.chip", { label });
       chip.addEventListener("click", () => {
         this.setLabel(label);
         if (ITALIC_CHIPS.has(label)) this.setStyle({ italic: true });
@@ -3880,18 +3881,17 @@ class SyntaxTreeEditor {
     // 空白画布上的引导层。pointer-events:none，所以点它等于点底下的画布；
     // 只有按钮自己接收点击。
     this.placeholder = mk("div", "ste-placeholder");
-    const newRootBtn = mk("button", "ste-placeholder-btn", "＋ 创建根节点");
+    const newRootBtn = this.#term(mk("button", "ste-placeholder-btn", this.#t("canvas.blank.btn")), "textContent", "canvas.blank.btn");
     newRootBtn.type = "button";
     newRootBtn.addEventListener("click", (ev) => {
       ev.preventDefault();
       this.createRoot();
     });
-    // 这行提示里也有亲属称谓，所以要登记进 termNodes —— 只过一遍 #t() 是不够的，
-    // 因为这里只在建 DOM 时求值一次，切换称谓时不会重新生成。
-    const blankHint = "点画布任意处创建根节点。然后按 Enter 增加女儿节点、按 Shift+Enter 增加姊妹节点、按 Tab 增加一层投射层。";
+    // 这几处文案里有亲属称谓，所以都要登记进 termNodes —— 只在建 DOM 时求值一次是不够的，
+    // 切语言、切称谓时都得重新生成。
     this.placeholder.append(
-      mk("div", "ste-placeholder-title", "空白画布"),
-      this.#term(mk("div", "ste-placeholder-sub", blankHint), "textContent", blankHint),
+      this.#term(mk("div", "ste-placeholder-title", this.#t("canvas.blank.title")), "textContent", "canvas.blank.title"),
+      this.#term(mk("div", "ste-placeholder-sub", this.#t("canvas.blank.hint")), "textContent", "canvas.blank.hint"),
       newRootBtn,
     );
 
@@ -3947,15 +3947,19 @@ class SyntaxTreeEditor {
     // 刻意【不放进工具栏】：加上它们工具栏就排不成一行了（CSS 里明确要求一行）。
     // 按钮形状也刻意和下面的范畴快捷标签不同 —— 下边那一排是"套标签"，这一排是"改样式"。
     const colorRow = mk("div", "ste-align");
-    colorRow.appendChild(mk("span", "ste-align-label", "标色"));
-    const styleButton = (label, title, fn, parent) => {
-      const b = mk("button", "ste-style-btn", label);
+    colorRow.appendChild(this.#term(mk("span", "ste-align-label", this.#t("style.label")), "textContent", "style.label"));
+    // labelKey / titleKey 都是文案表的 key（原来传的是原文），登记在 #term 里，
+    // 所以切语言、切称谓时这一排按钮会跟着重刷
+    const styleButton = (labelKey, titleKey, fn, parent) => {
+      const b = mk("button", "ste-style-btn", this.#t(labelKey));
       b.type = "button";
-      b.title = title;
+      b.title = this.#t(titleKey);
       b.addEventListener("click", () => {
         fn();
         this.scroller.focus();
       });
+      this.#term(b, "textContent", labelKey);
+      this.#term(b, "title", titleKey);
       parent.appendChild(b);
       return b;
     };
@@ -3968,46 +3972,22 @@ class SyntaxTreeEditor {
 
     // 整棵树一起变的放一组
     const allGroup = mk("div", "ste-style-group");
-    this.btnAllBlue = swatch(
-      styleButton("全部标蓝", "删掉所有颜色声明，整棵树回到默认画法", () => this.markAllBlue(), allGroup),
-      "blue",
-    );
+    this.btnAllBlue = swatch(styleButton("style.allBlue", "style.allBlue.hint", () => this.markAllBlue(), allGroup), "blue");
     this.btnWordsRed = swatch(
-      styleButton(
-        "单词标红",
-        '把所有"词"标成红色（词 = 裸标签的叶子节点，或带位移箭头的叶子节点）',
-        () => this.markWordsRed(),
-        allGroup,
-      ),
+      styleButton("style.wordsRed", "style.wordsRed.hint", () => this.markWordsRed(), allGroup),
       "red",
     );
 
     // 只作用于当前选中节点的放一组
     const oneGroup = mk("div", "ste-style-group");
-    this.btnSelectedRed = swatch(
-      styleButton("节点标红", "把选中的节点标成红色（选中的是词或范畴都可以）", () => this.markSelectedRed(), oneGroup),
-      "red",
-    );
-    this.btnSelectedBlue = swatch(
-      styleButton("节点标蓝", "删掉选中节点的颜色声明，该节点回到默认画法", () => this.markSelectedBlue(), oneGroup),
-      "blue",
-    );
+    this.btnSelectedRed = swatch(styleButton("style.nodeRed", "style.nodeRed.hint", () => this.markSelectedRed(), oneGroup), "red");
+    this.btnSelectedBlue = swatch(styleButton("style.nodeBlue", "style.nodeBlue.hint", () => this.markSelectedBlue(), oneGroup), "blue");
 
     // 字体样式开关：只作用于当前选中节点，按一下切换。粗体刻意没有按钮，只能用声明写。
     const fontGroup = mk("div", "ste-style-group");
-    this.btnSelectedItalic = styleButton(
-      "节点斜体",
-      "给选中的节点切换斜体（等价于在末尾加或删一行 Italic(编号) 声明）",
-      () => this.toggleSelectedItalic(),
-      fontGroup,
-    );
+    this.btnSelectedItalic = styleButton("style.nodeItalic", "style.nodeItalic.hint", () => this.toggleSelectedItalic(), fontGroup);
     this.btnSelectedItalic.style.fontStyle = "italic";
-    this.btnSelectedStrike = styleButton(
-      "节点删除线",
-      "给选中的节点切换删除线（等价于在末尾加或删一行 Strike(编号) 声明）",
-      () => this.toggleSelectedStrike(),
-      fontGroup,
-    );
+    this.btnSelectedStrike = styleButton("style.nodeStrike", "style.nodeStrike.hint", () => this.toggleSelectedStrike(), fontGroup);
     this.btnSelectedStrike.style.textDecoration = "line-through";
 
     colorRow.append(allGroup, oneGroup, mk("span", "ste-sep"), fontGroup);
@@ -4203,8 +4183,8 @@ class SyntaxTreeEditor {
     this.gutter = mk("div", "ste-gutter");
     this.gutterLines = mk("div", "ste-gutter-lines");
     this.gutter.appendChild(this.gutterLines);
-    this.gutter.title = "行号 = 本行引入的女儿节点编号（根节点是 0）";
-    this.#term(this.gutter, "title", "行号 = 本行引入的女儿节点编号（根节点是 0）");
+    this.gutter.title = this.#t("code.gutter.title");
+    this.#term(this.gutter, "title", "code.gutter.title");
     this.gutter.addEventListener("pointerdown", (ev) => {
       ev.preventDefault(); // 别让装订线拿到选区或焦点
       this.textarea.focus();
@@ -4378,7 +4358,7 @@ class SyntaxTreeEditor {
     this.#syncStyleButtons();
 
     if (!this.root) {
-      this.status.textContent = "空白画布 —— 还没有任何节点";
+      this.status.textContent = this.#t("status.blank");
       for (const b of [
         this.btnDelete,
         this.btnSibling,
@@ -4395,7 +4375,7 @@ class SyntaxTreeEditor {
       ])
         b.disabled = true;
       this.btnChild.disabled = false; // 此时它是"创建根节点"
-      this.btnChild.labelEl.textContent = "＋根节点";
+      this.btnChild.labelEl.textContent = this.#t("btn.child.root");
       this.btnUndo.disabled = this.undoStack.length === 0;
       this.btnRedo.disabled = this.redoStack.length === 0;
       return;
@@ -4404,12 +4384,18 @@ class SyntaxTreeEditor {
 
     const ord = preorder(this.root);
     if (!n) {
-      this.status.textContent = "未选中任何节点";
+      this.status.textContent = this.#t("status.none");
     } else {
       const i = ord.indexOf(n);
-      const kind = n.children.length === 0 ? "叶子节点" : "非叶子节点";
-      const label = n.label === "" ? "(空标签)" : n.label;
-      this.status.textContent = `已选中第 ${i + 1} 个（共 ${ord.length} 个）：${label} · ${kind} · 子树共 ${countSubtree(n)} 个节点`;
+      const kind = this.#t(n.children.length === 0 ? "status.leaf" : "status.branch");
+      const label = n.label === "" ? this.#t("status.emptyLabel") : n.label;
+      this.status.textContent = this.#t("status.selected", {
+        i: i + 1,
+        n: ord.length,
+        label,
+        kind,
+        m: countSubtree(n),
+      });
     }
 
     // 根节点：没有女儿节点时可以删（回到空白画布）；只有一个女儿节点时可以删（把它提上来）；
@@ -4436,8 +4422,8 @@ class SyntaxTreeEditor {
 
   #showError(err) {
     let msg;
-    if (err instanceof NotationError) msg = `第 ${err.index} 个字符附近：${err.message}`;
-    else if (err instanceof RuleError) msg = `第 ${err.line} 行：${err.message}`;
+    if (err instanceof NotationError) msg = this.#t("err.atChar", { n: err.index, message: err.message });
+    else if (err instanceof RuleError) msg = this.#t("err.atLine", { n: err.line, message: err.message });
     else msg = err && err.message ? err.message : String(err);
     this.errBox.textContent = msg;
     this.errBox.classList.add("is-visible");
