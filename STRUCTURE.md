@@ -65,7 +65,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/editor.js`
 > 核心组件 SyntaxTreeEditor：交互、快捷键、撤销、双向同步、空白画布、装订线。
-> 1659 行 / 59418 字节
+> 1668 行 / 59980 字节
 
 私有方法以 `#` 开头，只在类内部使用。
 
@@ -89,93 +89,93 @@ Syntax Tree Editor Standalone/
 | 105 | `stripUnsupported` | — |
 | 111 | `offsetToLineCol` | — |
 | 124 | `lineColToOffset` | — |
-| 150 | `rulesToSvg` | 一行出图：**文本 → SVG 字符串**，不需要页面上先有一个编辑器实例。 |
-| 1651 | `countSubtree` | — |
+| 153 | `rulesToSvg` | 一行出图：**文本 → SVG 字符串**，不需要页面上先有一个编辑器实例。 |
+| 1660 | `countSubtree` | — |
 
 **类**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 162 | `SyntaxTreeEditor` | — |
+| 166 | `SyntaxTreeEditor` | — |
 
 **方法与字段**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 163 | `constructor` | — |
-| 224 | `setValue` | 用括号记法设置整棵树。 |
-| 238 | `setStyle` | 设置选中节点的字体样式。italic / bold / strike 会写进记法末尾的 |
-| 257 | `markAllBlue` | — |
-| 268 | `markWordsRed` | — |
-| 279 | `markSelectedRed` | — |
-| 289 | `markSelectedBlue` | — |
-| 302 | `toggleSelectedItalic` | 节点斜体：切换选中节点的斜体（再点一次取消）。 |
-| 310 | `toggleSelectedStrike` | — |
-| 318 | `getValue` | — |
-| 326 | `loadValue` | 载入一棵新树，但**保留撤销历史** —— 按 Ctrl+Z 可以退回载入之前的那棵树。 |
-| 340 | `clear` | — |
-| 345 | `setOptions` | — |
-| 351 | `toSvgString` | — |
-| 383 | `exportSvg` | — |
-| 387 | `exportPng` | — |
-| 413 | `#buildDom` | ------------------------------------------------------------ DOM 骨架 |
-| 750 | `#reindex` | ------------------------------------------------------------ 渲染管线 |
-| 758 | `#drawOptions` | drawTree 的选项。画布和导出共用这一份 —— 导出多传一个 `hideEscapes: true`， |
-| 770 | `#relayout` | — |
-| 808 | `#refresh` | — |
-| 820 | `#serializeCurrent` | — |
-| 825 | `#parseCurrent` | — |
-| 829 | `#syncTextModeButtons` | — |
-| 838 | `setTextMode` | — |
-| 853 | `#buildCodeBox` | 代码框 = 左边一条装订线（行号）+ 右边真正的 textarea。 |
-| 880 | `#syncGutter` | 按当前文本刷新装订线。 |
-| 894 | `#syncGutterScroll` | — |
-| 906 | `#repairRulesNumbers` | 规则记法里"编号就是行号"，所以在上面插一行、删一行都会让下面所有引用错位。 |
-| 954 | `#syncTextareaSize` | — |
-| 959 | `getRules` | — |
-| 964 | `setRules` | — |
-| 973 | `#syncCenterButtons` | — |
-| 982 | `setCenter` | — |
-| 989 | `#syncAlignButtons` | — |
-| 1001 | `#syncStyleButtons` | 斜体 / 删除线那两个按钮是开关，所以要反映选中节点的当前状态。 |
-| 1009 | `setAlign` | — |
-| 1016 | `#writeText` | — |
-| 1023 | `#emitChange` | — |
-| 1034 | `#updateStatus` | — |
-| 1095 | `#showError` | — |
-| 1104 | `#clearError` | — |
-| 1116 | `#select` | 切换选中态。 |
-| 1132 | `#snapshot` | ------------------------------------------------------------ 历史 |
-| 1140 | `#pushUndo` | — |
-| 1147 | `#restore` | — |
-| 1159 | `undo` | — |
-| 1165 | `redo` | — |
-| 1171 | `#mutate` | — |
-| 1184 | `createRoot` | 在空白画布上创建根节点，并直接进入改名状态。 |
-| 1202 | `addChild` | — |
-| 1220 | `addSibling` | — |
-| 1245 | `addLevel` | 下移（Tab）：给投射链增加一层投射层（详见 model.js 的 addPrimeLevel）。 |
-| 1266 | `collapseLevel` | 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、 |
-| 1276 | `#canMoveLeft` | — |
-| 1288 | `#canMoveRight` | — |
-| 1303 | `moveLeft` | 左移（Alt+← / Ctrl+←）：自己是最左边的女儿节点时，搬到母亲节点的左姊妹节点底下。 |
-| 1311 | `moveRight` | 右移（Alt+→ / Ctrl+→）：自己是最右边的女儿节点时，搬到母亲节点的右姊妹节点底下。 |
-| 1322 | `remove` | 删除选中的节点。 |
-| 1363 | `#setNodeLabel` | 改标签（并且同步转义标记）。规则只有一条：标签**正好**是 %Empty 就是转义节点， |
-| 1369 | `setLabel` | — |
-| 1384 | `#startEdit` | ------------------------------------------------------------ 内联改名 |
-| 1398 | `#positionEditor` | — |
-| 1417 | `#commitEdit` | 提交改名。 |
-| 1427 | `#cancelEdit` | — |
-| 1441 | `#onCanvasDown` | ------------------------------------------------------------ 事件 |
-| 1454 | `#onCanvasDblClick` | — |
-| 1465 | `setTerms` | 换一套亲属称谓。**只改界面上的文字**（按钮名、提示行、装订线说明）， |
-| 1472 | `#t` | — |
-| 1478 | `#term` | — |
-| 1483 | `#onKeyDown` | — |
-| 1585 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
-| 1615 | `#selectFromCaret` | — |
-| 1637 | `#selectByOffset` | — |
+| 167 | `constructor` | — |
+| 229 | `setValue` | 用括号记法设置整棵树。 |
+| 243 | `setStyle` | 设置选中节点的字体样式。italic / bold / strike 会写进记法末尾的 |
+| 265 | `markAllBlue` | 全蓝：给**每个**节点写上蓝色声明（所以"全蓝"就是真的全蓝，不是"清掉颜色"）。 |
+| 276 | `markWordsRed` | — |
+| 287 | `markSelectedRed` | — |
+| 297 | `markSelectedBlue` | — |
+| 310 | `toggleSelectedItalic` | 节点斜体：切换选中节点的斜体（再点一次取消）。 |
+| 318 | `toggleSelectedStrike` | — |
+| 326 | `getValue` | — |
+| 334 | `loadValue` | 载入一棵新树，但**保留撤销历史** —— 按 Ctrl+Z 可以退回载入之前的那棵树。 |
+| 348 | `clear` | — |
+| 353 | `setOptions` | — |
+| 359 | `toSvgString` | — |
+| 391 | `exportSvg` | — |
+| 395 | `exportPng` | — |
+| 421 | `#buildDom` | ------------------------------------------------------------ DOM 骨架 |
+| 758 | `#reindex` | ------------------------------------------------------------ 渲染管线 |
+| 766 | `#drawOptions` | drawTree 的选项。画布和导出共用这一份 —— 导出多传一个 `hideEscapes: true`， |
+| 779 | `#relayout` | — |
+| 817 | `#refresh` | — |
+| 829 | `#serializeCurrent` | — |
+| 834 | `#parseCurrent` | — |
+| 838 | `#syncTextModeButtons` | — |
+| 847 | `setTextMode` | — |
+| 862 | `#buildCodeBox` | 代码框 = 左边一条装订线（行号）+ 右边真正的 textarea。 |
+| 889 | `#syncGutter` | 按当前文本刷新装订线。 |
+| 903 | `#syncGutterScroll` | — |
+| 915 | `#repairRulesNumbers` | 规则记法里"编号就是行号"，所以在上面插一行、删一行都会让下面所有引用错位。 |
+| 963 | `#syncTextareaSize` | — |
+| 968 | `getRules` | — |
+| 973 | `setRules` | — |
+| 982 | `#syncCenterButtons` | — |
+| 991 | `setCenter` | — |
+| 998 | `#syncAlignButtons` | — |
+| 1010 | `#syncStyleButtons` | 斜体 / 删除线那两个按钮是开关，所以要反映选中节点的当前状态。 |
+| 1018 | `setAlign` | — |
+| 1025 | `#writeText` | — |
+| 1032 | `#emitChange` | — |
+| 1043 | `#updateStatus` | — |
+| 1104 | `#showError` | — |
+| 1113 | `#clearError` | — |
+| 1125 | `#select` | 切换选中态。 |
+| 1141 | `#snapshot` | ------------------------------------------------------------ 历史 |
+| 1149 | `#pushUndo` | — |
+| 1156 | `#restore` | — |
+| 1168 | `undo` | — |
+| 1174 | `redo` | — |
+| 1180 | `#mutate` | — |
+| 1193 | `createRoot` | 在空白画布上创建根节点，并直接进入改名状态。 |
+| 1211 | `addChild` | — |
+| 1229 | `addSibling` | — |
+| 1254 | `addLevel` | 下移（Tab）：给投射链增加一层投射层（详见 model.js 的 addPrimeLevel）。 |
+| 1275 | `collapseLevel` | 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、 |
+| 1285 | `#canMoveLeft` | — |
+| 1297 | `#canMoveRight` | — |
+| 1312 | `moveLeft` | 左移（Alt+← / Ctrl+←）：自己是最左边的女儿节点时，搬到母亲节点的左姊妹节点底下。 |
+| 1320 | `moveRight` | 右移（Alt+→ / Ctrl+→）：自己是最右边的女儿节点时，搬到母亲节点的右姊妹节点底下。 |
+| 1331 | `remove` | 删除选中的节点。 |
+| 1372 | `#setNodeLabel` | 改标签（并且同步转义标记）。规则只有一条：标签**正好**是 %Empty 就是转义节点， |
+| 1378 | `setLabel` | — |
+| 1393 | `#startEdit` | ------------------------------------------------------------ 内联改名 |
+| 1407 | `#positionEditor` | — |
+| 1426 | `#commitEdit` | 提交改名。 |
+| 1436 | `#cancelEdit` | — |
+| 1450 | `#onCanvasDown` | ------------------------------------------------------------ 事件 |
+| 1463 | `#onCanvasDblClick` | — |
+| 1474 | `setTerms` | 换一套亲属称谓。**只改界面上的文字**（按钮名、提示行、装订线说明）， |
+| 1481 | `#t` | — |
+| 1487 | `#term` | — |
+| 1492 | `#onKeyDown` | — |
+| 1594 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
+| 1624 | `#selectFromCaret` | — |
+| 1646 | `#selectByOffset` | — |
 
 ### `src/layout.js`
 > tidy tree 布局 + 三种垂直对齐。文字宽度靠注入的 measure()，不依赖 DOM。
@@ -284,7 +284,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/render.js`
 > 把布局结果画成可交互 SVG。视觉属性全部内联，导出的图脱离页面也能看。
-> 286 行 / 10726 字节
+> 290 行 / 11086 字节
 
 **函数**
 
@@ -293,7 +293,7 @@ Syntax Tree Editor Standalone/
 | 10 | `NS` | 命中区域。事件用委托挂在 <svg> 上，节点增删不需要重新绑定。 |
 | 12 | `el` | — |
 | 18 | `COLORS` | — |
-| 28 | `drawTree` | — |
+| 29 | `drawTree` | — |
 
 ### `src/rules.js`
 > 规则记法 ↔ 模型：一行一条「母亲节点 → 女儿节点」。
@@ -411,7 +411,7 @@ Syntax Tree Editor Standalone/
 
 ### `test/editor.test.mjs`
 > 交互层测试（跑在 DOM 垫片上）。
-> 1808 行 / 73489 字节
+> 1818 行 / 74059 字节
 
 **函数**
 
@@ -436,9 +436,9 @@ Syntax Tree Editor Standalone/
 | 992 | `fillOf` | — |
 | 999 | `declLines` | — |
 | 1138 | `USER_RULES` | — |
-| 1446 | `NEUTRAL` | — |
-| 1447 | `FATHER` | — |
-| 1564 | `ARROW_TREE` | — |
+| 1447 | `NEUTRAL` | — |
+| 1448 | `FATHER` | — |
+| 1565 | `ARROW_TREE` | — |
 
 ### `test/rules.test.mjs`
 > 规则记法测试。
@@ -568,17 +568,17 @@ Syntax Tree Editor Standalone/
 
 ### `tools/render-rules.mjs`
 > —
-> 57 行 / 2279 字节
+> 59 行 / 2442 字节
 
 **函数**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 22 | `argv` | — |
-| 23 | `positional` | — |
-| 24 | `options` | — |
-| 44 | `text` | — |
-| 55 | `size` | — |
+| 23 | `argv` | — |
+| 24 | `positional` | — |
+| 25 | `options` | — |
+| 46 | `text` | — |
+| 57 | `size` | — |
 
 ---
 

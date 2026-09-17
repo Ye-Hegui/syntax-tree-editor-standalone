@@ -143,7 +143,7 @@ new SyntaxTreeEditor(elOrSelector, {
 | `setOptions(partial)` | 改选项后重绘 |
 | `setAlign(v)` / `setCenter(v)` / `setTerms(pairs)` / `setStyle({italic,bold,strike})` | 改对齐、水平位置、界面称谓、选中节点的字体样式 |
 | `createRoot()` `addChild()` `addSibling()` `addLevel()` `collapseLevel()` `moveLeft()` `moveRight()` `remove()` `setLabel(t)` | 结构编辑，都作用于当前选中节点 |
-| `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝。**不引入新的染色机制**，只是增删颜色声明。都返回"是否真的改了东西"，没有变化时不压撤销历史 |
+| `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝。**不引入新的染色机制**，只是增删颜色声明：两个"标蓝"是**写上**蓝色声明（词默认是红的，所以"标蓝"必须显式写出来），两个"标红"是写上红色声明。都返回"是否真的改了东西"，没有变化时不压撤销历史 |
 | `toggleSelectedItalic()` `toggleSelectedStrike()` | 同一行右边的两个字体开关：给选中节点切换斜体 / 删除线（等价于加或删一行 `Italic(编号)` / `Strike(编号)` 声明），再按一次取消。粗体刻意没有按钮，只能用声明写 |
 | `undo()` / `redo()` | 撤销 / 重做 |
 | `toSvgString({background})` / `exportSvg()` / `exportPng()` | 导出 |
@@ -173,8 +173,10 @@ new SyntaxTreeEditor(elOrSelector, {
 4. **撤销是文本快照**，不是操作日志。`#startEdit()` 会压一条，若标签没变则在提交时弹掉。
 5. **编号有两个来源，别搞混**：节点编号一律来自 `nodeIds()`，词序号一律来自 `leafOrdinals()`。
    两者的用途见「编号体系」一节 —— 它们**不是一回事**。
-6. **默认【全部蓝色】** —— 没有任何颜色声明时，词和范畴同色。需求⑥ 取消了"自动染红"，
-   红色等颜色只能来自声明，「标色」那一行的按钮只是替用户生成或删掉那些声明。
+6. **词默认染红、范畴默认蓝**（`drawTree` 的 `opts.redWords`，默认开）。
+   ⚠️ 这只是**默认画法**，模型里**没有**"隐式颜色声明"：没有任何声明时节点上就是没有颜色，
+   只是编辑器画布把它画成词红。**函数式入口 `rulesToSvg()` 与命令行默认 `redWords: false`**
+   （出全蓝的图）—— 作者定的：界面好看优先，机器出的图干净优先。
    「词」= 叶子节点 **且**（是母亲节点唯一的女儿节点 **或** 带位移箭头），纯结构判定，
    不认任何词类；**唯一来源是 `layout.js` 的 `wordNodes(root)`**（"单词标红"按钮用它）。
    ⚠️ 它和箭头用的「词序号」（`notation.js` 的 `leafOrdinals`，数**所有**叶子，

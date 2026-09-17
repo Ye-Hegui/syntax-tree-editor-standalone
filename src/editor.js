@@ -139,19 +139,23 @@ function lineColToOffset(text, line, col) {
  * 解析不了会抛 `RuleError` / `NotationError`（信息里带行号或字符位置），
  * 所以调用方可以把错误原样转给用户。
  *
+ * ⚠️ 默认**不把词染红**（出一张全蓝的图）—— 编辑器画布默认是词红，这条函数式入口
+ * 刻意反过来；想要词红就传 `{ redWords: true }`。
+ *
  * 可用选项（都会转给编辑器，不传就用默认值）：
  *   mode: "rules"（默认）| "bracket"
  *   fontSize / fontFamily / vscale / align / center /
- *   colors / triangles / terminalLines / background
+ *   colors / redWords / triangles / terminalLines / background
  *
  * ⚠️ 需要一个 DOM：浏览器里直接可用；Node 里先 `installDom()`（`test/dom-shim.mjs` 那个最小垫片），
  * 现成的命令行封装见 `tools/render-rules.mjs`。
  */
 export function rulesToSvg(text, options = {}) {
   const mode = options.mode === "bracket" ? "bracket" : "rules";
-  const opts = { value: "", textMode: mode, showText: false };
+  // 函数式入口默认全蓝（redWords: false）；编辑器界面默认词红 —— 作者要求两边不一样
+  const opts = { value: "", textMode: mode, showText: false, redWords: options.redWords === true };
   for (const [k, v] of Object.entries(options)) {
-    if (v !== undefined && k !== "mode" && k !== "background") opts[k] = v;
+    if (v !== undefined && k !== "mode" && k !== "background" && k !== "redWords") opts[k] = v;
   }
   const editor = new SyntaxTreeEditor(document.createElement("div"), opts);
   if (mode === "rules") editor.setRules(text);
@@ -167,6 +171,7 @@ export class SyntaxTreeEditor {
       fontFamily: "sans-serif",
       vscale: 1,
       colors: true,
+      redWords: true,
       triangles: true,
       terminalLines: true,
       align: "depth",
@@ -253,13 +258,16 @@ export class SyntaxTreeEditor {
   // 颜色是"一个节点一个颜色"，所以标红对已经带别的颜色的节点是【覆盖】。
   // 没有任何变化时（例如对已经红的词再点一次"词红"）直接返回，不压撤销历史、不产生重复声明。
 
-  /** 全蓝：删掉所有颜色声明，整棵树回到默认的蓝色。返回是否真的改了东西 */
+  /**
+   * 全蓝：给**每个**节点写上蓝色声明（所以"全蓝"就是真的全蓝，不是"清掉颜色"）。
+   * 返回是否真的改了东西
+   */
   markAllBlue() {
     if (!this.root) return false;
-    const colored = preorder(this.root).filter((n) => n.color);
-    if (!colored.length) return false;
+    const nodes = preorder(this.root).filter((n) => n.color !== "blue");
+    if (!nodes.length) return false;
     this.#mutate(() => {
-      for (const n of colored) n.color = null;
+      for (const n of nodes) n.color = "blue";
     });
     return true;
   }
@@ -285,12 +293,12 @@ export class SyntaxTreeEditor {
     return true;
   }
 
-  /** 单个标蓝：删掉选中节点的颜色声明。默认就是蓝色，所以"删掉"就是"标蓝" */
+  /** 单个标蓝：给选中节点写上蓝色声明（词默认是红的，所以"标蓝"要显式写出来） */
   markSelectedBlue() {
     const n = this.selected;
-    if (!this.root || !n || !n.color) return false;
+    if (!this.root || !n || n.color === "blue") return false;
     this.#mutate(() => {
-      n.color = null;
+      n.color = "blue";
     });
     return true;
   }
@@ -628,7 +636,7 @@ export class SyntaxTreeEditor {
     // 整棵树一起变的放一组
     const allGroup = mk("div", "ste-style-group");
     this.btnAllBlue = swatch(
-      styleButton("全部标蓝", "删掉所有颜色声明，整棵树回到默认的蓝色", () => this.markAllBlue(), allGroup),
+      styleButton("全部标蓝", "给每个节点写上蓝色声明，整棵树变成蓝色", () => this.markAllBlue(), allGroup),
       "blue",
     );
     this.btnWordsRed = swatch(
@@ -648,7 +656,7 @@ export class SyntaxTreeEditor {
       "red",
     );
     this.btnSelectedBlue = swatch(
-      styleButton("节点标蓝", "删掉选中节点的颜色声明，该节点回到默认的蓝色", () => this.markSelectedBlue(), oneGroup),
+      styleButton("节点标蓝", "给选中的节点写上蓝色声明（词默认是红的，所以标蓝要显式写）", () => this.markSelectedBlue(), oneGroup),
       "blue",
     );
 
@@ -761,6 +769,7 @@ export class SyntaxTreeEditor {
       triangles: this.opts.triangles,
       terminalLines: this.opts.terminalLines,
       colors: this.opts.colors,
+      redWords: this.opts.redWords,
       fontFamily: this.opts.fontFamily,
       fontSize: this.opts.fontSize,
       ...extra,
@@ -1082,11 +1091,11 @@ export class SyntaxTreeEditor {
     this.btnUndo.disabled = this.undoStack.length === 0;
     this.btnRedo.disabled = this.redoStack.length === 0;
 
-    // 颜色按钮：没有可做的改动时（例如整棵树已经全红）就灰掉，免得点下去没有反应
-    this.btnAllBlue.disabled = !ord.some((x) => x.color);
+    // 颜色按钮：没有可做的改动时（例如整棵树已经是全蓝）就灰掉，免得点下去没有反应
+    this.btnAllBlue.disabled = ord.every((x) => x.color === "blue");
     this.btnWordsRed.disabled = !wordNodes(this.root).some((x) => x.color !== "red");
     this.btnSelectedRed.disabled = !n || n.color === "red";
-    this.btnSelectedBlue.disabled = !n || !n.color;
+    this.btnSelectedBlue.disabled = !n || n.color === "blue";
     // 字体样式那两个是开关，选中了节点就总能切换
     this.btnSelectedItalic.disabled = !n;
     this.btnSelectedStrike.disabled = !n;

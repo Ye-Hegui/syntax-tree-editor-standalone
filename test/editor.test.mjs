@@ -1000,10 +1000,10 @@ function declLines(ed, word) {
   return ed.getValue().split("\n").filter((l) => l.startsWith(word + "("));
 }
 
-await t("没有任何颜色声明时，词和范畴一样都是蓝色（不再自动染红）", async () => {
+await t("编辑器画布默认：词红、范畴蓝（隐式声明不变，只是默认画法）", async () => {
   const ed = mount("[XP [D [X'' [X word] [Y]]] [X']]");
-  assert.equal(fillOf(ed, "word"), "#0000CC", "词也应该是默认的蓝色");
-  assert.equal(fillOf(ed, "Y"), "#0000CC");
+  assert.equal(fillOf(ed, "word"), "#CC0000", "词默认是红的");
+  assert.equal(fillOf(ed, "Y"), "#0000CC", "范畴是蓝的");
   assert.equal(fillOf(ed, "X'"), "#0000CC");
   assert.equal(fillOf(ed, "X"), "#0000CC");
 });
@@ -1051,7 +1051,7 @@ await t("单个标红：选中的是范畴也照做，不受'词'的限制", asy
   clickNode(ed, np);
   assert.equal(ed.markSelectedRed(), true);
   assert.equal(fillOf(ed, "NP"), "#d32f2f", "范畴也能标红");
-  assert.equal(fillOf(ed, "dog"), "#0000CC", "没选中的词不受影响");
+  assert.equal(fillOf(ed, "dog"), "#CC0000", "没选中的词仍然是默认的红");
 });
 
 await t("单个标红：没选中节点时什么也不做", async () => {
@@ -1062,33 +1062,33 @@ await t("单个标红：没选中节点时什么也不做", async () => {
   assert.equal(ed.getValue(), "[S [NP Dogs]]");
 });
 
-await t("单个标蓝：删掉该节点的颜色声明，回到默认蓝", async () => {
+await t("单个标蓝：给该节点写上蓝色声明（词默认红，所以标蓝要显式写）", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]\nRed(3, 4)");
   const dogs = preorder(ed.root).find((x) => x.label === "Dogs");
   clickNode(ed, dogs);
   assert.equal(ed.markSelectedBlue(), true);
-  assert.equal(fillOf(ed, "Dogs"), "#0000CC", "应该回到默认蓝");
+  assert.equal(fillOf(ed, "Dogs"), "#1565c0", "变成显式声明的蓝");
   assert.equal(fillOf(ed, "barks"), "#d32f2f", "别的词不受影响");
   assert.equal(declLines(ed, "Red")[0], "Red(4)", ed.getValue());
-  assert.equal(ed.markSelectedBlue(), false, "本来就没有颜色声明，应该报告没改动");
+  assert.equal(ed.markSelectedBlue(), false, "已经是蓝的，应该报告没改动");
 });
 
-await t("全蓝：一次删掉所有颜色声明", async () => {
+await t("全蓝：给每个节点写上蓝色声明", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]\nRed(3, 4)\nGreen(0)\nBold(1)");
   assert.equal(ed.markAllBlue(), true);
-  assert.equal(fillOf(ed, "Dogs"), "#0000CC");
-  assert.equal(fillOf(ed, "S"), "#0000CC");
-  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nBold(1)", "字体声明不该被一起删掉");
-  assert.equal(ed.markAllBlue(), false, "已经没有颜色声明了");
+  assert.equal(fillOf(ed, "Dogs"), "#1565c0");
+  assert.equal(fillOf(ed, "S"), "#1565c0");
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nBold(1)\nBlue(0, 1, 2, 3, 4)", "字体声明要留着");
+  assert.equal(ed.markAllBlue(), false, "已经全蓝了");
 });
 
 await t("四个颜色按钮跟着有无可做的改动灰掉", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]");
   // 构造完默认选中根节点，所以两个"单个"按钮一开始是可用的
-  assert.equal(ed.btnAllBlue.disabled, true, "没有任何颜色声明，全蓝无事可做");
+  assert.equal(ed.btnAllBlue.disabled, false, "还不是全蓝，全蓝有事可做");
   assert.equal(ed.btnWordsRed.disabled, false, "还有词没标红");
   assert.equal(ed.btnSelectedRed.disabled, false, "根节点还没标红");
-  assert.equal(ed.btnSelectedBlue.disabled, true, "根节点没有颜色声明");
+  assert.equal(ed.btnSelectedBlue.disabled, false, "根节点还没显式标蓝");
 
   ed.markWordsRed();
   assert.equal(ed.btnAllBlue.disabled, false);
@@ -1102,7 +1102,7 @@ await t("四个颜色按钮跟着有无可做的改动灰掉", async () => {
   const np = preorder(ed.root).find((x) => x.label === "NP");
   clickNode(ed, np);
   assert.equal(ed.btnSelectedRed.disabled, false, "NP 还没标红");
-  assert.equal(ed.btnSelectedBlue.disabled, true, "NP 没有颜色声明");
+  assert.equal(ed.btnSelectedBlue.disabled, false, "NP 也还没显式标蓝");
 
   // 取消选中后，两个"单个"按钮都该灰掉
   ed.svg.dispatchEvent(makeEvent("pointerdown"));
@@ -1117,7 +1117,7 @@ await t("颜色按钮只用声明体系，颜色声明能手工改回文本再�
   const hand = ed.getValue().replace("Red(3, 4)", "Red(3)");
   ed.setValue(hand);
   assert.equal(fillOf(ed, "Dogs"), "#d32f2f");
-  assert.equal(fillOf(ed, "barks"), "#0000CC", "手工删掉的编号不该还红着");
+  assert.equal(fillOf(ed, "barks"), "#CC0000", "手工删掉声明后回到默认的词红");
 });
 
 console.log("\n[位移箭头 -->]");
@@ -1382,13 +1382,14 @@ await t("滚动文本框时装订线跟着滚", async () => {
 
 console.log("\n[颜色渲染]");
 
-await t("颜色声明覆盖默认的蓝，没声明的仍是默认蓝", async () => {
+await t("颜色声明覆盖默认填色，没声明的仍是默认色", async () => {
   const ed = mount("[CP [NP what_i] [C' [C is_j]]]\nRed(3)");
   const fill = (l) => [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === l).getAttribute("fill");
   assert.equal(fill("what"), "#d32f2f", "what_i 应该是红色");
-  assert.equal(fill("is"), "#0000CC", "没声明的词是默认蓝");
+  assert.equal(fill("is"), "#CC0000", "没声明的词还是默认的词红");
   assert.notEqual(fill("is"), "#d32f2f", "不该被颜色声明影响");
   assert.notEqual(fill("CP"), "#d32f2f", "没声明的非叶子也不受影响");
+  assert.equal(fill("CP"), "#0000CC", "非叶子是默认的蓝");
 });
 
 await t("显式声明的颜色优先于「关闭颜色」选项", async () => {
@@ -1693,6 +1694,15 @@ await t("rulesToSvg() 支持括号记法与选项", async () => {
   const svg = rulesToSvg("[S [NP Dogs] [VP barks]]", { mode: "bracket", fontSize: 24, align: "leaves" });
   assert.ok(svg.includes(">S</text>"), "树画出来了");
   assert.ok(svg.includes('font-size="24"'), "字号选项要生效");
+});
+
+await t("rulesToSvg() 默认不染红（函数式入口出全蓝的图）", async () => {
+  const svg = rulesToSvg("0 S -> NP\n1 NP -> Dogs");
+  assert.ok(!svg.includes("#CC0000"), "默认不该出现词红");
+  assert.ok(svg.includes("#0000CC"), "应该是蓝的");
+  // 想要词红就显式传
+  const red = rulesToSvg("0 S -> NP\n1 NP -> Dogs", { redWords: true });
+  assert.ok(red.includes("#CC0000"), "传 redWords 之后词应该是红的");
 });
 
 await t("rulesToSvg() 解析不了就抛错，错误带行号", async () => {

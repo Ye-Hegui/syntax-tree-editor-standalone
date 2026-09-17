@@ -9,6 +9,7 @@
 //   --align <值>       depth（默认）| leaves | compact
 //   --center <值>      mother（默认）| block
 //   --font-size <数>   默认 16
+//   --red-words        把词染红（默认关：出一条全蓝的图，和编辑器画布不一样）
 //   --no-background    不要白底（默认带白底，便于直接贴进文档）
 //
 // 出错时把解析错误原样打出来并以退出码 1 结束（错误信息带行号，方便改正）。
@@ -25,6 +26,7 @@ const options = {};
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === "--bracket") options.mode = "bracket";
+  else if (a === "--red-words") options.redWords = true;
   else if (a === "--no-background") options.background = false;
   else if (a === "--align") options.align = argv[++i];
   else if (a === "--center") options.center = argv[++i];

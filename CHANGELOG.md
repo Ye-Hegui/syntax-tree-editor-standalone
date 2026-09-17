@@ -16,7 +16,7 @@ Version numbers follow semantic versioning. `v1.2.1` is an **internal developmen
 
 ### 改动 / Changed
 
-- 整棵树默认绘制成蓝色，「只有词才染红」的自动判定取消；红色等颜色只能来自声明 · The tree is blue by default and the automatic "only words are red" rule is gone, so colour comes from declarations only
+- 默认画法：编辑器画布上词染红、范畴用蓝（`redWords` 选项，默认开）；函数式入口 `rulesToSvg()` 与命令行默认全蓝。模型里没有隐式颜色声明 · Default rendering: words red and categories blue on the editor canvas (the `redWords` option, on by default), while the functional entry point and the CLI default to all blue; the model still carries no implicit colour declarations
 - 括号记法的位移箭头 `->N` 改用**词序号**（与 jsSyntaxTree 的 column number 一致）；规则记法的 `-->N` 仍用节点编号 · Bracket-notation arrows now take a **word ordinal** (matching jsSyntaxTree's column number), while rule-notation arrows keep node numbers
 - 下移改为给投射链顶端套一层自己的副本：整棵子树原样下沉一层，链顶其余的女儿节点不再被提到新层；上移按同一套语义调整 · Move-down now wraps the top of the projection chain in a copy of itself, so the whole subtree sinks one level and other daughters are no longer lifted; move-up follows the same semantics
 - 声明词一律**大小写不敏感**（`ITALIC(1)` 与 `italic(1)` 等效，以前只有颜色名不敏感），导出统一成首字母大写 · Declaration words are case-insensitive (`ITALIC(1)` equals `italic(1)`; previously only colour names were), exported capitalised
