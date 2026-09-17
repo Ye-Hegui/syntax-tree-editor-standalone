@@ -1905,6 +1905,17 @@ const TERM_LABELS = {
   en: { mother: "Maternal", neutral: "Neutral", father: "Paternal" },
 };
 
+/**
+ * 每种语言**默认**用哪套称谓（作者 2026-09-17 定）：
+ *
+ *   · 中文默认「母系」—— 中文语法教学里最常用的说法；
+ *   · 英文默认「中性」（parent / sibling / child）—— 这是当代英语语言学里的通行说法，
+ *     mother / daughter / sister 那套偏生成语法传统，留给需要的人自己选。
+ *
+ * 切换语言时会把称谓重置成该语言的默认值（见 `main.js` 的 `setLang()`）。
+ */
+const DEFAULT_TERM = { zh: "mother", en: "neutral" };
+
 const STRINGS = {
   zh: {
     // ---- 工具栏按钮（label 是按钮上的字，key 是按钮右下角那行快捷键小字）----
@@ -5135,7 +5146,8 @@ for (const button of document.querySelectorAll("[data-example]")) {
 // 所以三套说法只需要维护一张表，而且中英各自的三套用词都在 `src/i18n.js` 里。
 
 let lang = initialLang();
-let termsKind = "mother";
+// 每种语言各有自己的默认称谓：中文「母系」、英文「中性」（见 src/i18n.js 的 DEFAULT_TERM）
+let termsKind = DEFAULT_TERM[lang];
 
 /** 教程正文目前只有中文版（英文版见工作区 i18n/README.md），所以正文的替换一直用中文那套 */
 const DOCS_LANG = "zh";
@@ -5199,6 +5211,8 @@ function setTerms(kind) {
 function setLang(next) {
   if (!LANGS.includes(next)) return;
   lang = next;
+  // 换语言就把称谓重置成该语言的默认套（中文母系、英文中性）
+  termsKind = DEFAULT_TERM[lang];
   editor.setLanguage(lang);
   applyPageText();
   applyTermsAndLanguage();

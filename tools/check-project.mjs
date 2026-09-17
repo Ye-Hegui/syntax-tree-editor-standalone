@@ -104,7 +104,7 @@ for (const f of readdirSync(join(ROOT, "src"))) {
 section("中英文案表的 key 一一对应");
 
 {
-  const { STRINGS, TERMS, TERM_KINDS, LANGS } = await import("../src/i18n.js");
+  const { STRINGS, TERMS, TERM_KINDS, LANGS, DEFAULT_TERM } = await import("../src/i18n.js");
 
   const zhKeys = Object.keys(STRINGS.zh).sort();
   const enKeys = Object.keys(STRINGS.en).sort();
@@ -115,6 +115,10 @@ section("中英文案表的 key 一一对应");
   else pass(`${zhKeys.length} 条文案 key，中英完全一致`);
 
   for (const lang of LANGS) {
+    const def = (DEFAULT_TERM || {})[lang];
+    if (!TERM_KINDS.includes(def)) fail(`${lang} 的默认称谓 ${JSON.stringify(def)} 不是三套之一`);
+    else pass(`${lang} 的默认称谓是 ${def}`);
+
     for (const kind of TERM_KINDS) {
       const pairs = (TERMS[lang] || {})[kind];
       if (pairs == null) {

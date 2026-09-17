@@ -1,5 +1,5 @@
 import { SyntaxTreeEditor } from "./editor.js";
-import { LANGS, TERM_KINDS, TERM_LABELS, TERMS, i18nText } from "./i18n.js";
+import { LANGS, TERM_KINDS, TERM_LABELS, TERMS, DEFAULT_TERM, i18nText } from "./i18n.js";
 
 const EXAMPLES = [
   // 0 经典结构（首页默认）—— 最小的一棵完整树，后面讲操作都用它
@@ -72,7 +72,8 @@ for (const button of document.querySelectorAll("[data-example]")) {
 // 所以三套说法只需要维护一张表，而且中英各自的三套用词都在 `src/i18n.js` 里。
 
 let lang = initialLang();
-let termsKind = "mother";
+// 每种语言各有自己的默认称谓：中文「母系」、英文「中性」（见 src/i18n.js 的 DEFAULT_TERM）
+let termsKind = DEFAULT_TERM[lang];
 
 /** 教程正文目前只有中文版（英文版见工作区 i18n/README.md），所以正文的替换一直用中文那套 */
 const DOCS_LANG = "zh";
@@ -136,6 +137,8 @@ function setTerms(kind) {
 function setLang(next) {
   if (!LANGS.includes(next)) return;
   lang = next;
+  // 换语言就把称谓重置成该语言的默认套（中文母系、英文中性）
+  termsKind = DEFAULT_TERM[lang];
   editor.setLanguage(lang);
   applyPageText();
   applyTermsAndLanguage();

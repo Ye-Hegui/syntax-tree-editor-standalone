@@ -78,6 +78,17 @@ export const TERM_LABELS = {
   en: { mother: "Maternal", neutral: "Neutral", father: "Paternal" },
 };
 
+/**
+ * 每种语言**默认**用哪套称谓（作者 2026-09-17 定）：
+ *
+ *   · 中文默认「母系」—— 中文语法教学里最常用的说法；
+ *   · 英文默认「中性」（parent / sibling / child）—— 这是当代英语语言学里的通行说法，
+ *     mother / daughter / sister 那套偏生成语法传统，留给需要的人自己选。
+ *
+ * 切换语言时会把称谓重置成该语言的默认值（见 `main.js` 的 `setLang()`）。
+ */
+export const DEFAULT_TERM = { zh: "mother", en: "neutral" };
+
 export const STRINGS = {
   zh: {
     // ---- 工具栏按钮（label 是按钮上的字，key 是按钮右下角那行快捷键小字）----
