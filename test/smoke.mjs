@@ -636,14 +636,27 @@ t("未知的 center 值退回默认的母亲节点居中", () => {
 
 console.log("\n[投射层：下移 / 上移]");
 
-t("下移：给链顶套一层，返回的是复制出来的那个节点", () => {
+t("下移：返回选中节点的副本，它比原来深一层", () => {
   const root = parse("[XP [Z word1] [X'' [X' [X word2]]]]");
   const x = preorder(root).find((n) => n.label === "X");
   assert.equal(canAddPrimeLevel(root, x), true);
   const copy = addPrimeLevel(root, x);
-  assert.equal(copy.label, "X''", "副本就是链顶原来那棵子树，标签不变");
-  assert.equal(findParent(root, copy).label, "X'''", "套上去的那一层 = 链顶标签再加一个撇");
+  assert.equal(copy.label, "X", "副本保留原来的标签");
+  assert.notEqual(copy, x, "返回的是副本，不是原来那个节点对象");
+  assert.equal(preorder(root).filter((n) => n.label === "X").length, 1, "树里只有一个 X");
+  // 拷贝出来的那条链：X'''(套上去的) -> X''(副本) -> X'(副本) -> X(副本)
+  assert.equal(findParent(root, copy).label, "X'");
+  assert.equal(findParent(root, findParent(root, copy)).label, "X''");
+  assert.equal(root.children[1].label, "X'''", "套上去的那一层占着链顶原来的位置");
   assert.equal(toText(root), "[XP [Z word1] [X''' [X'' [X' [X word2]]]]]");
+});
+
+t("下移：选链顶时，返回的就是那一层的副本（新层里面那个）", () => {
+  const root = parse("[XP [Z word1] [X'' [X' [X word2]]]]");
+  const top = preorder(root).find((n) => n.label === "X''");
+  const copy = addPrimeLevel(root, top);
+  assert.equal(copy.label, "X''");
+  assert.equal(root.children[1].children[0], copy, "它就是新层唯一的女儿节点");
 });
 
 t("下移：整棵子树原样下沉，链顶其余的女儿节点不被提到新层", () => {
@@ -651,12 +664,12 @@ t("下移：整棵子树原样下沉，链顶其余的女儿节点不被提到�
   const x = preorder(root).find((n) => n.label === "X");
   const copy = addPrimeLevel(root, x);
   assert.equal(toText(root), "[XP [Z word1] [X'' [X' [X word2] [Y word3]]]]");
-  const wrapper = findParent(root, copy);
+  const wrapper = findParent(root, findParent(root, copy)); // copy -> X'(副本) -> X''(套上去的)
   assert.equal(wrapper.children.length, 1, "新层只有副本这一个女儿节点");
-  assert.equal(wrapper.children[0], copy);
-  assert.deepEqual(copy.children.map((c) => c.label), ["X", "Y"], "副本把 X 和 Y 都带走了");
+  assert.equal(wrapper.children[0].label, "X'");
+  assert.deepEqual(findParent(root, copy).children.map((c) => c.label), ["X", "Y"], "副本把 X 和 Y 都带走了");
   // Y 还在 X'（副本）底下，只是跟着整棵子树深了一层
-  const y = preorder(copy).find((n) => n.label === "Y");
+  const y = preorder(wrapper).find((n) => n.label === "Y");
   assert.equal(findParent(root, y).label, "X'");
 });
 
@@ -666,10 +679,10 @@ t("下移：新层顶替链顶的位置，而不是紧挨着选中节点", () =>
   const copy = addPrimeLevel(root, x);
   // 插入点是 XP 底下、原来 X'' 的位置
   assert.equal(root.children[1].label, "X'''");
-  assert.equal(root.children[1].children[0], copy);
+  assert.equal(root.children[1].children[0].label, "X''");
   // 副本内部原封不动：X'' -> X' -> X -> word2
-  assert.equal(copy.children[0].label, "X'");
-  assert.equal(copy.children[0].children[0].label, "X");
+  assert.equal(findParent(root, copy).label, "X'");
+  assert.equal(findParent(root, findParent(root, copy)).label, "X''");
 });
 
 t("下移：副本里的节点都是新 id，不会和原节点撞车", () => {

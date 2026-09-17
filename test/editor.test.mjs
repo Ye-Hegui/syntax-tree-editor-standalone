@@ -197,17 +197,34 @@ await t("标签里的双引号会被剔除（记法里无法转义）", async ()
 
 console.log("\n[键盘结构编辑]");
 
-await t("Tab 下移：加一层投射（用户给的例子），并选中复制出来的那个", async () => {
+await t("Tab 下移：选中的框跟着往下走一层（不是停在原地）", async () => {
   const ed = mount("[XP [Z word1] [X'' [X' [X word2]]]]");
   const x = preorder(ed.root).find((n) => n.label === "X");
+  const depthOf = (n) => ed.lay.info.get(n).depth;
   clickNode(ed, x);
+  assert.equal(depthOf(x), 3, "初始：X 在第 3 层");
+
   key(ed, "Tab");
   assert.equal(ed.getValue(), "[XP [Z word1] [X''' [X'' [X' [X word2]]]]]");
-  assert.equal(ed.selected.label, "X''", "选中的应该是复制出来的那个（新层里面的）");
-  assert.equal(ed.selected, ed.root.children[1].children[0], "就是新层唯一的女儿节点");
-  // 选中位置对了，所以紧接着 Shift+Tab 就能撤销
+  assert.equal(ed.selected.label, "X", "选中的还是 X 这个节点（它的副本）");
+  assert.equal(depthOf(ed.selected), 4, "按一次应该深一层");
+
+  key(ed, "Tab");
+  assert.equal(ed.getValue(), "[XP [Z word1] [X'''' [X''' [X'' [X' [X word2]]]]]]");
+  assert.equal(depthOf(ed.selected), 5, "连按第二次还要继续往下走");
+
+  key(ed, "Tab");
+  assert.equal(depthOf(ed.selected), 6, "第三次也一样，不会卡在中间");
+});
+
+await t("Tab 下移：只有一条链时，紧接着 Shift+Tab 就能撤销", async () => {
+  const original = "[XP [Z word1] [X'' [X' [X word2]]]]";
+  const ed = mount(original);
+  clickNode(ed, preorder(ed.root).find((n) => n.label === "X"));
+  key(ed, "Tab");
+  assert.equal(ed.btnCollapseLevel.disabled, false, "副本的母亲只有它一个女儿节点");
   key(ed, "Tab", { shiftKey: true });
-  assert.equal(ed.getValue(), "[XP [Z word1] [X'' [X' [X word2]]]]", "应该退回下移之前");
+  assert.equal(ed.getValue(), original, "应该退回下移之前");
 });
 
 await t("Tab 下移：其他女儿节点跟着一起下沉，不会被提到新层", async () => {

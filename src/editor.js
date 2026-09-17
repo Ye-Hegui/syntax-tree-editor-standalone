@@ -1109,8 +1109,8 @@ centerGroup.appendChild(b);
    * 选中的节点连同它支配的整棵子树一起下沉一层。例：
    *   [XP [Z word1] [X' [X word2] [Y word3]]]  ->  [XP [Z word1] [X'' [X' [X word2] [Y word3]]]]
    *
-   * 操作完成后选中的是**副本那个节点**（也就是深了一层、装着原来子树的那一个），
-   * 所以紧接着按 Shift+Tab 就能撤销回去。
+   * 操作完成后选中的是**原来那个节点的副本**（也就是深了一层的那个），
+   * 所以连续按 Tab 就是选中的节点一层一层往下走，不会停在原地。
    */
   addLevel() {
     if (!this.root || !this.selected) return;

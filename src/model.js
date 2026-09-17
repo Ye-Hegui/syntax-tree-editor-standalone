@@ -169,7 +169,9 @@ export function canAddPrimeLevel(root, n) {
  * 根节点不能下移：链顶上面必须还有一个母亲节点。
  * （给整棵树加一层是"加一个顶层"，不是下移，编辑器有别的入口。）
  *
- * @returns {object|null} 副本子树的根（编辑器会选中它，这样紧接着 Shift+Tab 就能撤销）
+ * @returns {object|null} **选中节点**的副本（它比原来深了一层）。
+ *   编辑器会把这个副本设为选中，于是连续按 Tab 就是选中的节点一层一层往下走；
+ *   如果改返回链顶的副本，选中的位置会固定在同一层，看着就像"卡在中间"。
  */
 export function addPrimeLevel(root, n) {
   const chain = primeChain(root, n);
@@ -182,7 +184,7 @@ export function addPrimeLevel(root, n) {
   // 链顶现在有女儿节点了，不再是叶子；记法表达不了"带箭头的非叶子"，所以箭头留给副本
   spineTop.arrow = null;
   remapArrowTargets(root, map);
-  return copy;
+  return map.get(n) || copy;
 }
 
 /**
