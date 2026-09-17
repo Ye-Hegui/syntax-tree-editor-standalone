@@ -207,15 +207,18 @@ cmd /c "npm run build"   ← 重新生成单文件版
 
 ### 发版流程
 
-1. 改 `package.json` 的 `version` 和 `index.html` 页脚的版本号
-2. `cmd /c "npm run build"` → `cmd /c "npm test"`
-3. `git add .` → `git commit -m "vX.Y.Z"` → `git push`
-4. 到 GitHub 的 Releases 新建 Release，tag 填 `vX.Y.Z`，把 `Syntax Tree Editor Standalone.html` 作为附件上传
+1. 在 `CHANGELOG.md` 顶部添加新版本一节（中英对照）
+2. 改 `package.json` 的 `version` 和 `index.html` 页脚的版本号（两者保持一致）
+3. `cmd /c "npm run build"` → `cmd /c "npm test"`
+4. `git add .` → `git commit -m "vX.Y.Z"` → `git push`
+5. 到 GitHub 的 Releases 新建 Release，tag 填 `vX.Y.Z`，把 `Syntax Tree Editor Standalone.html` 作为附件上传
 
+> 只改版本号、**不建 tag、不发 Release** 的版本是内部开发号（`CHANGELOG.md` 里要写明"未发布"）。
 > 推送前记得先开代理，Git 配了走 Clash 的本地端口。
 
 ### 不要做的事
 
 - **不要手改 `Syntax Tree Editor Standalone.html`** —— 它是构建产物，下次构建就没了
-- **不要把 `jssyntaxtree-master/`（GPL-2.0 的参考项目）提交进仓库** —— 根目录 `.gitignore` 已排除
+- **不要把 `reference/jssyntaxtree-master/`（GPL-2.0 的参考项目）拷进本项目** ——
+  它本来就在仓库之外，工作区根目录的 `.gitignore` 也已排除整个 `reference/`
 - 不要加第三方依赖，这个项目的卖点就是零依赖单文件

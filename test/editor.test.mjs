@@ -8,6 +8,7 @@ installDom();
 const { SyntaxTreeEditor } = await import("../src/editor.js");
 const { preorder } = await import("../src/model.js");
 const { ALIGN_MODES } = await import("../src/layout.js");
+const { COLOR_NAMES } = await import("../src/style.js");
 
 let pass = 0;
 let fail = 0;
@@ -1397,9 +1398,9 @@ await t("显式声明的颜色优先于「关闭颜色」选项", async () => {
 });
 
 await t("九种颜色各自渲染成不同色值", async () => {
-  const names = ["red","yellow","blue","green","orange","magenta","purple","black","white"];
+  // 颜色名单只有一份：src/style.js 的 COLOR_NAMES
   const seen = new Set();
-  for (const name of names) {
+  for (const name of COLOR_NAMES) {
     const canonical = name.charAt(0).toUpperCase() + name.slice(1);
     const ed = mount(`[XP [A] [B]]\n${canonical}(1)`);
     const fill = [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === "A").getAttribute("fill");

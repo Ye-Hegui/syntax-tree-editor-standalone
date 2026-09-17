@@ -100,7 +100,7 @@ npm.cmd test         四套测试 + 一致性自检 / four test suites plus the 
 
 | 测试套件 / Test suite | 负责 / Responsibility |
 | --- | --- |
-| `test/smoke.mjs`（92 项） | 纯逻辑：模型、两套记法、布局、箭头，不需要浏览器<br>Pure logic: model, both notations, layout, arrows; no browser needed |
+| `test/smoke.mjs`（93 项） | 纯逻辑：模型、两套记法、布局、箭头，不需要浏览器<br>Pure logic: model, both notations, layout, arrows; no browser needed |
 | `test/rules.test.mjs`（31 项） | 规则记法的解析、序列化、错误信息<br>Rule notation parsing, serialisation and errors |
 | `test/editor.test.mjs`（143 项） | 交互层，跑在最小 DOM 垫片上<br>Interaction layer, on a minimal DOM shim |
 | `test/standalone.test.mjs`（13 项） | 单文件版：模块没有遗漏、内联后可以运行<br>Standalone file: nothing missing, still runnable after inlining |
@@ -120,6 +120,7 @@ style.css                            全部样式 / all styles
 package.json                         build / test / serve
 AGENTS.md                            给 AI agent 的项目说明 / project notes for AI agents
 STRUCTURE.md                         函数级行号索引 / function-level line index
+CHANGELOG.md                         更新日志 / changelog
 src/model.js                         数据模型与结构操作，不依赖 DOM / data model and tree ops, DOM-free
 src/notation.js                      括号记法 ↔ 模型 / bracket notation to model
 src/rules.js                         规则记法 ↔ 模型 / rule notation to model

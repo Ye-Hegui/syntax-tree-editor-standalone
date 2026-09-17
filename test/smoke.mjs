@@ -15,9 +15,11 @@ import {
   canAddPrimeLevel,
   collapsePrimeLevel,
   canCollapsePrimeLevel,
+  cloneSubtree,
 } from "../src/model.js";
 import { parse, serialize, toText, NotationError } from "../src/notation.js";
 import { layout, wordNodes } from "../src/layout.js";
+import { COLOR_NAMES } from "../src/style.js";
 
 let pass = 0;
 let fail = 0;
@@ -562,8 +564,8 @@ t("一种颜色一行，多个编号收在同一对括号里，和 Italic(1, 3) 
 });
 
 t("九种颜色名都被接受，写大写也能认，导出统一成首字母大写", () => {
-  const names = ["red","yellow","blue","green","orange","magenta","purple","black","white"];
-  for (const name of names) {
+  // 颜色名单只有一份：src/style.js 的 COLOR_NAMES
+  for (const name of COLOR_NAMES) {
     const root = parse(`[XP [A] [B]]\n${name.toUpperCase()}(1)`);
     assert.equal(preorder(root).find((n) => n.label === "A").color, name, name);
     const canonical = name.charAt(0).toUpperCase() + name.slice(1) + "(1)";
@@ -805,6 +807,33 @@ t("不在加撇链上的节点：把自己套一层，副本成为唯一的女�
   assert.equal(copy.label, "Chomsky", "副本保留原来的标签");
   assert.equal(findParent(root, copy).label, "Chomsky'", "套上去的那一层加了撇");
   assert.equal(toText(root), "[S [N [Chomsky' Chomsky]] [V barks]]");
+});
+
+t("cloneSubtree()：深拷贝、发新 id、箭头另存一份", () => {
+  const root = parse("[S [N word1] [X' [X word2 ->1]]]");
+  const xp = preorder(root).find((n) => n.label === "X'");
+  const arrowNode = preorder(root).find((n) => n.arrow);
+  const { root: copy, map } = cloneSubtree(xp);
+
+  assert.deepEqual(
+    preorder(copy).map((n) => n.label),
+    preorder(xp).map((n) => n.label),
+    "结构应当一模一样",
+  );
+  assert.equal(map.get(xp), copy, "对照表要能查到自己");
+  const oldNodes = new Set(preorder(root));
+  const copies = [...map.values()];
+  for (const n of preorder(copy)) {
+    assert.ok(!oldNodes.has(n), "副本不该复用原来的节点对象");
+    assert.ok(copies.includes(n), "副本里的节点都该在对照表里");
+  }
+  const ids = preorder(copy).map((n) => n.id);
+  assert.equal(new Set(ids).size, ids.length, "副本内部 id 不能重复");
+
+  const arrowCopy = preorder(copy).find((n) => n.arrow);
+  assert.ok(arrowCopy, "箭头要跟着拷过来");
+  assert.notEqual(arrowCopy.arrow, arrowNode.arrow, "箭头对象要另存一份");
+  assert.equal(arrowCopy.arrow.target, arrowNode.arrow.target, "落点先原样带着，重挂交给调用方");
 });
 
 console.log("\n[文本 <-> 图的定位映射]");
