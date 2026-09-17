@@ -95,6 +95,71 @@ export function drawTree(svg, lay, opts = {}) {
   //   它和 B 的那一段与 A 的那一段夹角就是 180°（共线是这么构造出来的，不靠摆角度）。
   //   直线与"转义节点那一行的底"的交点 J，其余女儿从 J 出发。
   // 转义节点自己没有女儿时（作者允许编辑时删成那样）：什么都不画。
+  //
+  // 转义节点可能**一层套一层**（%Empty 的女儿还是 %Empty）。那种情况下要"从爷爷直接连到孙子"，
+  // 所以这里写成递归：沿着"相反那一侧"的女儿一路往下带，每一层的交点都落在同一条直线上，
+  // 侧枝再从各自的交点出发。
+  const drawEscape = (node, ax, ay) => {
+    const ni = info.get(node);
+    if (!ni || !node.children.length) return; // 空转义节点：没东西可画
+
+    // 母亲（或上一层交点）正好在正上方时挑中间那个，否则挑相反那一侧
+    const same = Math.abs(ax - ni.cx) < 0.5;
+    const idx = same ? Math.floor((node.children.length - 1) / 2) : ax < ni.cx ? node.children.length - 1 : 0;
+    const b = node.children[idx];
+    const bi = info.get(b);
+    const x1 = ax;
+    const y1 = ay;
+    const x2 = bi.cx;
+    const y2 = bi.y - 3;
+
+    // 交点 J：横坐标取"女儿节点的正中间"（ni.cx 就是居中模式算出来的中点），
+    // 纵坐标取那条直线在该处的值 —— 这样 J 既在正中间，又落在这条直线上（180° 不丢）。
+    // 直线竖直时，J 取转义节点那一行的底。
+    const vertical = Math.abs(x2 - x1) < 0.5;
+    const t = vertical ? 0 : (ni.cx - x1) / (x2 - x1);
+    const Jx = ni.cx;
+    const Jy = vertical ? ni.y + nodeH + 2 : y1 + t * (y2 - y1);
+
+    // 一条直线：母亲框底 -> 共线那个女儿框顶（共线是这么构造出来的）
+    gEdge.appendChild(el("line", { x1, y1, x2, y2, stroke: COLORS.edge, "stroke-width": 1.2 }));
+
+    node.children.forEach((d, di) => {
+      // ⚠️ 这个判断必须在"共线那一支"的提前返回【之前】：
+      // 内层转义节点往往正是共线的那一支，放后面就永远走不到，整支连线会丢失。
+      if (o.hideEscapes && d.escape && d.children.length) {
+        drawEscape(d, Jx, Jy);
+        return;
+      }
+      if (di === idx) return;
+      const didx = info.get(d);
+      const isTriangle = o.triangles && d.children.length === 0 && d.label.includes(" ");
+      if (isTriangle) {
+        const half = didx.textW / 2 + 4;
+        gEdge.appendChild(
+          el("polygon", {
+            points: `${Jx},${Jy} ${didx.cx + half},${didx.y - 3} ${didx.cx - half},${didx.y - 3}`,
+            fill: "none",
+            stroke: COLORS.edge,
+            "stroke-width": 1.2,
+            "stroke-linejoin": "round",
+          }),
+        );
+      } else if (o.terminalLines || d.children.length > 0) {
+        gEdge.appendChild(
+          el("line", {
+            x1: Jx,
+            y1: Jy,
+            x2: didx.cx,
+            y2: didx.y - 3,
+            stroke: COLORS.edge,
+            "stroke-width": 1.2,
+          }),
+        );
+      }
+    });
+  };
+
   for (const it of items) {
     const hiddenMother = o.hideEscapes && it.node.escape;
     // 被藏起来的转义节点，它的连线已经在"母亲那一次循环"里从交点画过了；
@@ -106,59 +171,8 @@ export function drawTree(svg, lay, opts = {}) {
       const hiddenChild = o.hideEscapes && c.escape;
 
       if (hiddenChild) {
-        if (!c.children.length) continue; // 空转义节点：没东西可画
-        const x1 = it.cx;
-        const y1 = it.y + nodeH + 2;
-        // 母亲正好在转义节点正上方时挑中间那个，否则挑相反那一侧
-        const same = Math.abs(it.cx - ci.cx) < 0.5;
-        const idx = same ? Math.floor((c.children.length - 1) / 2) : it.cx < ci.cx ? c.children.length - 1 : 0;
-        const b = c.children[idx];
-        const bi = info.get(b);
-        const x2 = bi.cx;
-        const y2 = bi.y - 3;
-
-        // 交点 J：横坐标取"女儿节点的正中间"（ci.cx 就是母亲节点居中模式算出来的中点，
-        // 所以分叉点正好落在最左和最右那个女儿中间），纵坐标取那条直线在该处的值 ——
-        // 这样 J 既在正中间，又落在这条直线上，上下两段仍然是一条直线（180° 不丢）。
-        // 直线是竖直的（母亲正好在正上方）时，J 就取转义节点那一行的底。
-        const vertical = Math.abs(x2 - x1) < 0.5;
-        const t = vertical ? 0 : (ci.cx - x1) / (x2 - x1);
-        const Jx = ci.cx;
-        const Jy = vertical ? ci.y + nodeH + 2 : y1 + t * (y2 - y1);
-
-        // 一条直线：母亲框底 -> 共线那个女儿框顶（共线是这么构造出来的）
-        gEdge.appendChild(
-          el("line", { x1, y1, x2, y2, stroke: COLORS.edge, "stroke-width": 1.2 }),
-        );
-
-        c.children.forEach((d, di) => {
-          if (di === idx) return;
-          const didx = info.get(d);
-          const isTriangle = o.triangles && d.children.length === 0 && d.label.includes(" ");
-          if (isTriangle) {
-            const half = didx.textW / 2 + 4;
-            gEdge.appendChild(
-              el("polygon", {
-                points: `${Jx},${Jy} ${didx.cx + half},${didx.y - 3} ${didx.cx - half},${didx.y - 3}`,
-                fill: "none",
-                stroke: COLORS.edge,
-                "stroke-width": 1.2,
-                "stroke-linejoin": "round",
-              }),
-            );
-          } else if (o.terminalLines || d.children.length > 0) {
-            gEdge.appendChild(
-              el("line", {
-                x1: Jx,
-                y1: Jy,
-                x2: didx.cx,
-                y2: didx.y - 3,
-                stroke: COLORS.edge,
-                "stroke-width": 1.2,
-              }),
-            );
-          }
-        });
+        // 交给递归函数画：它会处理"母亲那一侧"的挑边、交点，以及女儿也是转义节点的嵌套情形
+        drawEscape(c, it.cx, it.y + nodeH + 2);
         continue;
       }
 

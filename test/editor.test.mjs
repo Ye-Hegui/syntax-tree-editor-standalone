@@ -1802,6 +1802,38 @@ await t("英文界面里不许有残留中文（界面文案必须全部走表�
   assert.ok(collect(zh.el).some((s) => han.test(s)), "中文界面应该能检出中文");
 });
 
+await t("嵌套的转义节点：内层那一支的连线也要画出来（原来会整支丢掉）", async () => {
+  // %Empty 里面还有 %Empty —— 内层那支原来一条线都画不出来
+  const ed = mount("[XP [Z word1] [%Empty [X] [%Empty [X word2] [Y word3]]]]");
+  const svg = ed.toSvgString();
+  const lines = [...svg.matchAll(/<line x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)"/g)].map((m) => ({
+    x1: Number(m[1]),
+    y1: Number(m[2]),
+    x2: Number(m[3]),
+    y2: Number(m[4]),
+  }));
+  // 节点（含多词叶子）都要画出来，%Empty 本身在导出里不画
+  const labels = [...svg.matchAll(/<text[^>]*>([^<]+)<\/text>/g)].map((m) => m[1]);
+  for (const want of ["XP", "Z", "word1", "X", "word2", "Y", "word3"]) {
+    assert.ok(labels.includes(want), `导出的图里少了 ${want}`);
+  }
+  // 关键：内层 %Empty 的"侧枝女儿"（X -> word2）必须有一条线画到它框顶。
+  // 旧的跳过逻辑会让内层整支一条线都没有，所以这条断言正好卡住那个 bug。
+  const nodes = [];
+  (function walk(n) {
+    nodes.push(n);
+    n.children.forEach(walk);
+  })(ed.root);
+  const innerX = nodes.find((n) => n.label === "X" && n.children.length === 1 && n.children[0].label === "word2");
+  const Y = nodes.find((n) => n.label === "Y");
+  assert.ok(innerX && Y, "测试用的树没搭对");
+  const xTop = ed.lay.info.get(innerX);
+  const yTop = ed.lay.info.get(Y);
+  const endsAt = (it) => lines.some((l) => Math.abs(l.x2 - it.cx) < 0.01 && Math.abs(l.y2 - (it.y - 3)) < 0.01);
+  assert.ok(endsAt(xTop), "内层的侧枝（X -> word2）没有连线");
+  assert.ok(endsAt(yTop), "内层共线那一支（Y）没有连线");
+});
+
 console.log("\n[工具栏快捷键说明]");
 
 await t("每个工具栏按钮下边的快捷键说明都对", async () => {
