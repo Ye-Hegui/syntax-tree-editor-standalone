@@ -18,8 +18,8 @@ const CASES = [
   { name: "base", value: "[XP [Z word1] [X' [X word2] [Y word3]]]" },
   { name: "triangle", value: "[XP [Z word1] [X' [X word2 word4] [Y word3]]]" },
   { name: "arrow", value: "[XP [Z word1] [X' [X word2] [Y word3 ->1]]]" },
-  // 2.2 下移：对 X 下移之后
-  { name: "down", value: "[XP [Z word1] [X'' [X' [X word2]] [Y word3]]]" },
+  // 4 下移：对 X 下移之后（整条链连人带子树下沉一层，Y 跟着 X' 下去）
+  { name: "down", value: "[XP [Z word1] [X'' [X' [X word2] [Y word3]]]]" },
   // 2.4 左移右移的三个结果
   { name: "left-xp", value: "[XP [X' [X word2] [Y word3]] [Z word1]]" },
   { name: "left-x", value: "[XP [Z [word1] [X word2]] [X' [Y word3]]]" },

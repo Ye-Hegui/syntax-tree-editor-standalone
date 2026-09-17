@@ -253,39 +253,41 @@
         <p>
           X 所在的投射链是 <code>X</code> → <code>X'</code>，再往上到 <code>XP</code> 就断了，
           因为 <code>XP</code> 不是 <code>X''</code>。所以链顶是 <code>X'</code>。
-          编辑器会在链顶的<b>上面</b>插一层 <code>X''</code>，
-          并把 <code>X'</code> 除 X 以外的女儿节点（这里是 <code>Y</code>）留在原来的高度、
-          改挂到 <code>X''</code> 底下：
+          编辑器会给<b>链顶</b>套上一层：把链顶整棵子树原样复制一份，
+          链顶自己清空女儿节点、标签加一个撇，再把复制出来的那棵挂回它底下：
         </p>
         <img class="doc-shot" src="example/down.svg" alt="对 X 下移之后" />
         <p>
-          对着图看两个变化：<code>X''</code> 底下现在有 <code>X'</code> 和 <code>Y</code> 两个女儿节点，
-          而 <code>X'</code> 底下只剩下 <code>X</code>。
-          写成括号记法就是 <code>[XP [Z word1] [X'' [X' [X word2]] [Y word3]]]</code>。
+          对着图看两个变化：新的 <code>X''</code> 底下只有一个女儿节点，就是复制出来的 <code>X'</code>；
+          而 <code>X'</code> 底下原封不动，<code>X</code> 和 <code>Y</code> 都还在原处，
+          只是整棵子树深了一层。
+          写成括号记法就是 <code>[XP [Z word1] [X'' [X' [X word2] [Y word3]]]]</code>。
         </p>
-        <p>下移只作用于被选中节点及其支配的节点，链顶其余女儿节点的高度保持不变。</p>
+        <p>
+          下移之后选中的是复制出来的那个 <code>X'</code>，所以紧接着按 <kbd>Shift</kbd>+<kbd>Tab</kbd>
+          就能撤销回去。根节点不能下移，因为链顶上面必须还有一个母亲节点。
+        </p>
 
         <h4 id="doc-up">5. 上移</h4>
         <p class="tip">上移是撤销一层投射层的快捷操作。</p>
         <p>上移是下移的逆操作，但条件比较严格。这一次从下移之后的样子出发：</p>
         <img class="doc-shot" src="example/down.svg" alt="出发点：X 已经下移过一层" />
         <p>
-      选中 <code>X'</code> 不能进行上移。上移要求<b>母亲节点只有选中的唯一一个女儿节点</b>，
-          而 <code>X'</code> 的母亲节点是 <code>X''</code>，<code>X''</code> 底下有 <code>X'</code>
-          和 <code>Y</code> 两个女儿节点，不满足条件，
-          所以「上移」按钮这时是禁用的。
+          选中 <code>X</code> 不能进行上移。<code>X</code> 的母亲节点是 <code>X'</code>，
+          而 <code>X'</code> 底下有 <code>X</code> 和 <code>Y</code> 两个女儿节点，不满足
+          「母亲节点只有被选中的那一个女儿节点」，所以「上移」按钮这时是禁用的。
         </p>
         <p>
-      选中 <code>X</code> 可以进行上移。<code>X</code> 的母亲节点是 <code>X'</code>，
-          <code>X'</code> 底下确实只有 <code>X</code> 一个女儿节点，
-          且 <code>X'</code> 的标签正好是 <code>X</code> 加一个撇 —— 同时满足两个条件。
-          于是编辑器删掉 <code>X'</code>、让 <code>X</code> 顶替该节点的位置，
-          再把 <code>X'</code> 以上的每一层各减去一个撇（<code>X''</code> 就变回了 <code>X'</code>）：
+          选中 <code>X'</code>（也就是下移时复制出来的那个）可以进行上移。
+          <code>X'</code> 的母亲节点是 <code>X''</code>，<code>X''</code> 底下确实只有 <code>X'</code> 一个女儿节点，
+          且 <code>X''</code> 的标签正好是 <code>X'</code> 加一个撇 —— 同时满足两个条件。
+          于是编辑器删掉 <code>X''</code>、让 <code>X'</code> 顶替该节点的位置：
         </p>
-        <img class="doc-shot" src="example/base.svg" alt="对 X 上移之后：回到原来的样子" />
+        <img class="doc-shot" src="example/base.svg" alt="对 X' 上移之后：回到原来的样子" />
         <p>
           结果正好回到最开始的 <code>[XP [Z word1] [X' [X word2] [Y word3]]]</code>，
-          也就是下移之前的原样。注意 <code>Y</code> 又回到了 <code>X'</code> 底下。
+          也就是下移之前的原样。母亲节点以上的每一层，只要标签正好比下一层多一个撇，
+          就一起减一个撇，这样「第 k 层有 k 个撇」的规律才不会断。
         </p>
         <p>上移需要同时满足两个条件：母亲节点只有被选中的那一个女儿节点，且母亲节点的标签是选中节点名称加一个撇。</p>
 

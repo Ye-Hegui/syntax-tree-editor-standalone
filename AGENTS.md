@@ -93,7 +93,7 @@
 
 | 模块 | 导出 |
 | --- | --- |
-| `src/model.js` | `node` `walk` `preorder` `findParent` `nodeIds` `addChild` `removeNode` `canAddPrimeLevel` `addPrimeLevel` `canCollapsePrimeLevel` `collapsePrimeLevel` `moveNodeLeft` `moveNodeRight` |
+| `src/model.js` | `node` `walk` `preorder` `findParent` `nodeIds` `cloneSubtree` `addChild` `removeNode` `canAddPrimeLevel` `addPrimeLevel` `canCollapsePrimeLevel` `collapsePrimeLevel` `moveNodeLeft` `moveNodeRight` |
 | `src/notation.js` | `parse` `serialize` `toText` `NotationError` |
 | `src/rules.js` | `parseRules` `serializeRules` `toRulesText` `RuleError` |
 | `src/style.js` | `splitStyleDecls` `applyStyleDecls` `styleDeclsText` |

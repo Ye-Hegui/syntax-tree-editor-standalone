@@ -636,31 +636,79 @@ t("未知的 center 值退回默认的母亲节点居中", () => {
 
 console.log("\n[投射层：下移 / 上移]");
 
-t("下移（用户给的例子）：在投射链的最顶端之上插一层", () => {
+t("下移：给链顶套一层，返回的是复制出来的那个节点", () => {
   const root = parse("[XP [Z word1] [X'' [X' [X word2]]]]");
   const x = preorder(root).find((n) => n.label === "X");
   assert.equal(canAddPrimeLevel(root, x), true);
-  const created = addPrimeLevel(root, x);
-  assert.equal(created.label, "X'''", "新层的标签 = 链顶(X'') 再加一个撇");
+  const copy = addPrimeLevel(root, x);
+  assert.equal(copy.label, "X''", "副本就是链顶原来那棵子树，标签不变");
+  assert.equal(findParent(root, copy).label, "X'''", "套上去的那一层 = 链顶标签再加一个撇");
   assert.equal(toText(root), "[XP [Z word1] [X''' [X'' [X' [X word2]]]]]");
 });
 
-t("下移插在链顶之上，而不是紧挨着选中节点", () => {
-  const root = parse("[XP [Z word1] [X'' [X' [X word2]]]]");
+t("下移：整棵子树原样下沉，链顶其余的女儿节点不被提到新层", () => {
+  const root = parse("[XP [Z word1] [X' [X word2] [Y word3]]]");
   const x = preorder(root).find((n) => n.label === "X");
-  addPrimeLevel(root, x);
-  // X 还是挂在 X' 底下，没动
-  assert.equal(findParent(root, x).label, "X'");
-  // 插入点是 XP 底下、X'' 的位置
-  assert.equal(root.children[1].label, "X'''");
-  assert.equal(root.children[1].children[0].label, "X''");
+  const copy = addPrimeLevel(root, x);
+  assert.equal(toText(root), "[XP [Z word1] [X'' [X' [X word2] [Y word3]]]]");
+  const wrapper = findParent(root, copy);
+  assert.equal(wrapper.children.length, 1, "新层只有副本这一个女儿节点");
+  assert.equal(wrapper.children[0], copy);
+  assert.deepEqual(copy.children.map((c) => c.label), ["X", "Y"], "副本把 X 和 Y 都带走了");
+  // Y 还在 X'（副本）底下，只是跟着整棵子树深了一层
+  const y = preorder(copy).find((n) => n.label === "Y");
+  assert.equal(findParent(root, y).label, "X'");
 });
 
-t("连按两次会再加一层", () => {
+t("下移：新层顶替链顶的位置，而不是紧挨着选中节点", () => {
   const root = parse("[XP [Z word1] [X'' [X' [X word2]]]]");
   const x = preorder(root).find((n) => n.label === "X");
-  addPrimeLevel(root, x);
-  addPrimeLevel(root, x);
+  const copy = addPrimeLevel(root, x);
+  // 插入点是 XP 底下、原来 X'' 的位置
+  assert.equal(root.children[1].label, "X'''");
+  assert.equal(root.children[1].children[0], copy);
+  // 副本内部原封不动：X'' -> X' -> X -> word2
+  assert.equal(copy.children[0].label, "X'");
+  assert.equal(copy.children[0].children[0].label, "X");
+});
+
+t("下移：副本里的节点都是新 id，不会和原节点撞车", () => {
+  const root = parse("[XP [Z word1] [X' [X word2] [Y word3]]]");
+  const x = preorder(root).find((n) => n.label === "X");
+  const oldIds = new Set(preorder(root).map((n) => n.id));
+  const copy = addPrimeLevel(root, x);
+  const ids = preorder(root).map((n) => n.id);
+  assert.equal(new Set(ids).size, ids.length, "同一棵树里不该出现重复 id");
+  for (const n of preorder(copy)) assert.ok(!oldIds.has(n.id), `${n.label} 复用了旧 id`);
+});
+
+t("下移：箭头跟着副本（词）走，加了撇的原节点清掉箭头", () => {
+  const root = parse("[S [N Dogs] [V barks ->1]]");
+  const barks = preorder(root).find((n) => n.label === "barks");
+  const copy = addPrimeLevel(root, barks);
+  assert.equal(findParent(root, copy).label, "barks'");
+  assert.equal(findParent(root, copy).arrow, null, "有女儿节点了，记法表达不了带箭头的非叶子");
+  assert.ok(copy.arrow, "箭头应该跟着词走");
+  assert.equal(copy.arrow.target.label, "Dogs");
+  assert.equal(toText(root), "[S [N Dogs] [V [barks' barks ->1]]]");
+});
+
+t("下移：落点落在被复制子树里的箭头，会改指到副本上（不会丢箭头）", () => {
+  const root = parse("[XP [N word1 ->2] [X' [X word2] [Y word3]]]");
+  const x = preorder(root).find((n) => n.label === "X");
+  const copy = addPrimeLevel(root, x);
+  const withArrow = preorder(root).find((n) => n.arrow);
+  assert.ok(withArrow, "箭头不该被丢掉");
+  const leaf = preorder(copy).find((n) => n.label === "word2");
+  assert.equal(withArrow.arrow.target, leaf, "落点应该改指到副本里的那个 word2");
+  assert.equal(toText(root), "[XP [N word1 ->2] [X'' [X' [X word2] [Y word3]]]]");
+});
+
+t("连按两次会再加一层（每次作用在下移后选中的那个副本上）", () => {
+  const root = parse("[XP [Z word1] [X'' [X' [X word2]]]]");
+  let sel = preorder(root).find((n) => n.label === "X");
+  sel = addPrimeLevel(root, sel); // 返回副本，编辑器会选中它
+  sel = addPrimeLevel(root, sel);
   assert.equal(toText(root), "[XP [Z word1] [X'''' [X''' [X'' [X' [X word2]]]]]]");
 });
 
@@ -706,14 +754,14 @@ t("母亲节点标签对不上时也不能上移", () => {
   assert.equal(collapsePrimeLevel(root, x), null);
 });
 
-t("下移之后对链顶做上移，能回到原样", () => {
+t("下移之后对副本做上移，能回到原样", () => {
   const original = "[XP [Z word1] [X'' [X' [X word2]]]]";
   const root = parse(original);
   const x = preorder(root).find((n) => n.label === "X");
-  addPrimeLevel(root, x);
+  const copy = addPrimeLevel(root, x);
   assert.equal(toText(root), "[XP [Z word1] [X''' [X'' [X' [X word2]]]]]");
-  const chainTop = preorder(root).find((n) => n.label === "X''");
-  collapsePrimeLevel(root, chainTop);
+  // 该选谁很明确：副本的母亲正好是下移造出来的那一层
+  assert.equal(collapsePrimeLevel(root, copy), root);
   assert.equal(toText(root), original);
 });
 
@@ -735,13 +783,14 @@ t("链顶就是根时无法下移", () => {
   assert.equal(toText(root), "[X' [X word]]");
 });
 
-t("不在加 ' 链上的节点：下移只在自己上面插一层", () => {
+t("不在加撇链上的节点：把自己套一层，副本成为唯一的女儿", () => {
   // N 不是 Chomsky 的加撇形式，链就是 [Chomsky] 自己
   const root = parse("[S [N Chomsky] [V barks]]");
   const c = preorder(root).find((n) => n.label === "Chomsky");
   assert.equal(canAddPrimeLevel(root, c), true);
-  const created = addPrimeLevel(root, c);
-  assert.equal(created.label, "Chomsky'");
+  const copy = addPrimeLevel(root, c);
+  assert.equal(copy.label, "Chomsky", "副本保留原来的标签");
+  assert.equal(findParent(root, copy).label, "Chomsky'", "套上去的那一层加了撇");
   assert.equal(toText(root), "[S [N [Chomsky' Chomsky]] [V barks]]");
 });
 

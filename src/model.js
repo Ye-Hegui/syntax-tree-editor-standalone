@@ -85,6 +85,48 @@ export function removeNode(root, n) {
 // ------------------------------------------------------------ 投射层（加 ' ）
 
 /**
+ * 深拷贝一棵子树（含自己），每个节点都拿**新的 id**。
+ *
+ * id 必须换新：SVG 上每个节点挂 `data-id`，点击命中和选中都靠它，
+ * 两份子树共用一个 id 会让选中错乱。
+ *
+ * 箭头一起拷，但其中的落点引用只是原样带过来 —— 落点可能就在被复制的子树里，
+ * 那时它指向的还是原来那个节点，所以调用方拿到 map 之后要用 remapArrowTargets()
+ * 把落在复制区里的落点改指到副本上。
+ *
+ * @returns {{root: object, map: Map<object, object>}} 副本子树的根，以及 原节点 -> 副本节点 的对照表
+ */
+export function cloneSubtree(n) {
+  const map = new Map();
+  function copy(x) {
+    const c = node(x.label);
+    c.sub = x.sub;
+    c.sup = x.sup;
+    c.italic = x.italic;
+    c.bold = x.bold;
+    c.strike = x.strike;
+    c.color = x.color;
+    c.arrow = x.arrow ? { ...x.arrow } : null;
+    map.set(x, c);
+    c.children = x.children.map(copy);
+    return c;
+  }
+  return { root: copy(n), map };
+}
+
+/**
+ * 把落在 map 里的箭头落点改指到对应的副本上。
+ *
+ * 复制/摘除子树之后必须做这一步：箭头存的是**节点引用**，
+ * 子树一旦被换成副本，旧引用就指向树外的孤儿节点，那把箭头会被静默丢掉。
+ */
+function remapArrowTargets(root, map) {
+  walk(root, (x) => {
+    if (x.arrow && x.arrow.target && map.has(x.arrow.target)) x.arrow.target = map.get(x.arrow.target);
+  });
+}
+
+/**
  * 沿投射链往上走，返回 [n, n', n'', ...]（从下往上）。
  *
  * 链的规则：某一层的标签正好是它女儿节点的标签再加一个撇，它们就属于同一条链。
@@ -112,32 +154,35 @@ export function canAddPrimeLevel(root, n) {
 /**
  * 下移（Tab）：给投射链增加一层投射层。
  *
- * 只有**投射链这条脊柱**会下沉，链顶其余的女儿节点留在原来的高度，
- * 改挂到新层底下。具体做法：
- *   1. 找到投射链的最顶端（下称链顶）和链顶上那个"链上的女儿节点"
- *   2. 新建一层，标签 = 链顶标签再加一个撇
- *   3. 新层顶替链顶的位置；链顶成为新层的第一个女儿节点
- *   4. 链顶其余的女儿节点改挂到新层底下（它们的高度因此不变）
+ * 做法是拿**投射链的最顶端**（下称链顶）套一层"自己的副本"：
+ *   1. 把链顶整棵子树深拷贝一份
+ *   2. 链顶清空自己的女儿节点、标签加一个撇 —— 它自己就是新的那一层了
+ *   3. 副本挂回链顶底下，于是链顶只有副本这一个女儿节点
  *
- *   [CP [C that] [TP [N Chomsky] [T' [T will] [VP [V love] [N AI]]]]]   对 T 按 Tab
- *   -> [CP [C that] [TP [N Chomsky] [T'' [T' [T will]] [VP [V love] [N AI]]]]]
- *      新层 T'' 拿到了 T' 和 VP，T' 只留下 T
+ * 关键点：**整棵子树原样下沉一层，链顶其余的女儿节点不会被提到新层上**。
+ * （"只让投射链这条脊柱下沉、其余女儿节点留在原高度"是已废弃的旧行为。）
  *
- * @returns {object|null} 新建的节点
+ *   [XP [Z word1] [X' [X word2] [Y word3]]]     对 X 按 Tab（链顶是 X'）
+ *   -> [XP [Z word1] [X'' [X' [X word2] [Y word3]]]]
+ *      X'' 只带一个女儿 X'，X' 底下的 X 和 Y 都还在原处，只是整棵子树深了一层
+ *
+ * 根节点不能下移：链顶上面必须还有一个母亲节点。
+ * （给整棵树加一层是"加一个顶层"，不是下移，编辑器有别的入口。）
+ *
+ * @returns {object|null} 副本子树的根（编辑器会选中它，这样紧接着 Shift+Tab 就能撤销）
  */
 export function addPrimeLevel(root, n) {
   const chain = primeChain(root, n);
   const spineTop = chain[chain.length - 1];
-  const spineChild = chain.length >= 2 ? chain[chain.length - 2] : null;
-  const grandmother = findParent(root, spineTop);
-  if (!grandmother) return null;
+  if (!findParent(root, spineTop)) return null;
 
-  const created = node(spineTop.label + "'");
-  const others = spineTop.children.filter((c) => c !== spineChild);
-  spineTop.children = spineChild ? [spineChild] : [];
-  created.children = [spineTop, ...others];
-  grandmother.children[grandmother.children.indexOf(spineTop)] = created;
-  return created;
+  const { root: copy, map } = cloneSubtree(spineTop);
+  spineTop.children = [copy];
+  spineTop.label = spineTop.label + "'";
+  // 链顶现在有女儿节点了，不再是叶子；记法表达不了"带箭头的非叶子"，所以箭头留给副本
+  spineTop.arrow = null;
+  remapArrowTargets(root, map);
+  return copy;
 }
 
 /**
@@ -158,9 +203,12 @@ export function canCollapsePrimeLevel(root, n) {
  * 先删掉母亲节点、让 n 顶替它的位置；再把母亲节点以上的每一层各减一个撇，
  * 这样"第 k 层有 k 个撇"的规律才继续成立。
  *
- *   [CP [C that] [TP [N Chomsky] [T'' [T' [T will]] [V]]]]   对 T 上移
- *   -> [CP [C that] [TP [N Chomsky] [T' [T will] [V]]]]
- *      T' 被删掉、T 提上去，上面的 T'' 顺势改名成 T'
+ * 因为下移造出来的那一层只有一个女儿节点，所以**该选谁**很明确：
+ * 选下移时复制出来的那个（也就是新层里面的那个），它的母亲正好是那一层。
+ *
+ *   [XP [Z word1] [X'' [X' [X word2] [Y word3]]]]   对 X' 上移
+ *   -> [XP [Z word1] [X' [X word2] [Y word3]]]
+ *      X'' 被删掉、X' 提上去，正好退回下移之前的样子
  *
  * @returns {object|null} 新的根（母亲节点就是根时根会变），不适用时返回 null
  */

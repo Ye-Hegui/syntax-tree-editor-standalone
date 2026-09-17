@@ -197,13 +197,28 @@ await t("标签里的双引号会被剔除（记法里无法转义）", async ()
 
 console.log("\n[键盘结构编辑]");
 
-await t("Tab 下移：加一层投射（用户给的例子）", async () => {
+await t("Tab 下移：加一层投射（用户给的例子），并选中复制出来的那个", async () => {
   const ed = mount("[XP [Z word1] [X'' [X' [X word2]]]]");
   const x = preorder(ed.root).find((n) => n.label === "X");
   clickNode(ed, x);
   key(ed, "Tab");
   assert.equal(ed.getValue(), "[XP [Z word1] [X''' [X'' [X' [X word2]]]]]");
-  assert.equal(ed.selected, x, "选中不该变（还是原来那个 X）");
+  assert.equal(ed.selected.label, "X''", "选中的应该是复制出来的那个（新层里面的）");
+  assert.equal(ed.selected, ed.root.children[1].children[0], "就是新层唯一的女儿节点");
+  // 选中位置对了，所以紧接着 Shift+Tab 就能撤销
+  key(ed, "Tab", { shiftKey: true });
+  assert.equal(ed.getValue(), "[XP [Z word1] [X'' [X' [X word2]]]]", "应该退回下移之前");
+});
+
+await t("Tab 下移：其他女儿节点跟着一起下沉，不会被提到新层", async () => {
+  const ed = mount("[XP [Z word1] [X' [X word2] [Y word3]]]");
+  clickNode(ed, preorder(ed.root).find((n) => n.label === "X"));
+  key(ed, "Tab");
+  assert.equal(ed.getValue(), "[XP [Z word1] [X'' [X' [X word2] [Y word3]]]]");
+  // 画布上不该出现重复 id：副本要拿新 id，否则点击命中和选中都会错乱
+  const ids = [...nodeGroups(ed)].map((g) => Number(g.dataset.id));
+  assert.equal(ids.length, 9, "节点数不对");
+  assert.equal(new Set(ids).size, ids.length, "SVG 里出现了重复的 data-id");
 });
 
 await t("Tab 连按两次会再加一层", async () => {
@@ -234,13 +249,13 @@ await t("Shift+Tab 只在母亲节点是「唯一的女儿节点 + 加一个撇�
   assert.equal(ed.btnCollapseLevel.disabled, false);
 });
 
-await t("Tab 之后对链顶 Shift+Tab 能回到原样", async () => {
+await t("Tab 之后对副本 Shift+Tab 能回到原样", async () => {
   const original = "[XP [Z word1] [X'' [X' [X word2]]]]";
   const ed = mount(original);
   clickNode(ed, preorder(ed.root).find((n) => n.label === "X"));
   key(ed, "Tab");
   assert.equal(ed.getValue(), "[XP [Z word1] [X''' [X'' [X' [X word2]]]]]");
-  // 链顶现在是 X''（Tab 就是插在它上面的）
+  // 副本的标签还是 X''（加撇的是被套住的那一层），Shift+Tab 就作用在它上面
   clickNode(ed, preorder(ed.root).find((n) => n.label === "X''"));
   key(ed, "Tab", { shiftKey: true });
   assert.equal(ed.getValue(), original, "应该完全回到原样");

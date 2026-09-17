@@ -56,7 +56,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/editor.js`
 > 核心组件 SyntaxTreeEditor：交互、快捷键、撤销、双向同步、空白画布、装订线。
-> 1508 行 / 53133 字节
+> 1519 行 / 53482 字节
 
 私有方法以 `#` 开头，只在类内部使用。
 
@@ -80,7 +80,7 @@ Syntax Tree Editor Standalone/
 | 103 | `stripUnsupported` | — |
 | 109 | `offsetToLineCol` | — |
 | 122 | `lineColToOffset` | — |
-| 1500 | `countSubtree` | — |
+| 1511 | `countSubtree` | — |
 
 **类**
 
@@ -140,27 +140,27 @@ Syntax Tree Editor Standalone/
 | 1056 | `createRoot` | 在空白画布上创建根节点，并直接进入改名状态。 |
 | 1074 | `addChild` | — |
 | 1090 | `addSibling` | — |
-| 1112 | `addLevel` | 下移（Tab）：在投射链的最顶端之上插入一个新的投射层， |
-| 1125 | `collapseLevel` | 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、 |
-| 1135 | `#canMoveLeft` | — |
-| 1147 | `#canMoveRight` | — |
-| 1162 | `moveLeft` | 左移（Alt+← / Ctrl+←）：自己是最左边的女儿节点时，搬到母亲节点的左姊妹节点底下。 |
-| 1170 | `moveRight` | 右移（Alt+→ / Ctrl+→）：自己是最右边的女儿节点时，搬到母亲节点的右姊妹节点底下。 |
-| 1181 | `remove` | 删除选中的节点。 |
-| 1219 | `setLabel` | — |
-| 1234 | `#startEdit` | ------------------------------------------------------------ 内联改名 |
-| 1248 | `#positionEditor` | — |
-| 1267 | `#commitEdit` | 提交改名。 |
-| 1277 | `#cancelEdit` | — |
-| 1290 | `#onCanvasDown` | ------------------------------------------------------------ 事件 |
-| 1303 | `#onCanvasDblClick` | — |
-| 1314 | `setTerms` | 换一套亲属称谓。**只改界面上的文字**（按钮名、提示行、装订线说明）， |
-| 1321 | `#t` | — |
-| 1327 | `#term` | — |
-| 1332 | `#onKeyDown` | — |
-| 1434 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
-| 1464 | `#selectFromCaret` | — |
-| 1486 | `#selectByOffset` | — |
+| 1115 | `addLevel` | 下移（Tab）：给投射链增加一层投射层（详见 model.js 的 addPrimeLevel）。 |
+| 1136 | `collapseLevel` | 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、 |
+| 1146 | `#canMoveLeft` | — |
+| 1158 | `#canMoveRight` | — |
+| 1173 | `moveLeft` | 左移（Alt+← / Ctrl+←）：自己是最左边的女儿节点时，搬到母亲节点的左姊妹节点底下。 |
+| 1181 | `moveRight` | 右移（Alt+→ / Ctrl+→）：自己是最右边的女儿节点时，搬到母亲节点的右姊妹节点底下。 |
+| 1192 | `remove` | 删除选中的节点。 |
+| 1230 | `setLabel` | — |
+| 1245 | `#startEdit` | ------------------------------------------------------------ 内联改名 |
+| 1259 | `#positionEditor` | — |
+| 1278 | `#commitEdit` | 提交改名。 |
+| 1288 | `#cancelEdit` | — |
+| 1301 | `#onCanvasDown` | ------------------------------------------------------------ 事件 |
+| 1314 | `#onCanvasDblClick` | — |
+| 1325 | `setTerms` | 换一套亲属称谓。**只改界面上的文字**（按钮名、提示行、装订线说明）， |
+| 1332 | `#t` | — |
+| 1338 | `#term` | — |
+| 1343 | `#onKeyDown` | — |
+| 1445 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
+| 1475 | `#selectFromCaret` | — |
+| 1497 | `#selectByOffset` | — |
 
 ### `src/layout.js`
 > tidy tree 布局 + 三种垂直对齐。文字宽度靠注入的 measure()，不依赖 DOM。
@@ -195,7 +195,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/model.js`
 > 数据模型 + 所有结构操作。不依赖 DOM，是唯一真相来源。
-> 273 行 / 10257 字节
+> 321 行 / 12173 字节
 
 术语统一用**母亲节点 / 姊妹节点 / 女儿节点**。节点结构 `{ id, label, sub, sup, arrow, children }`。
 
@@ -210,13 +210,15 @@ Syntax Tree Editor Standalone/
 | 53 | `nodeIds` | 两套记法共用的节点编号。 |
 | 63 | `addChild` | — |
 | 72 | `removeNode` | — |
-| 93 | `primeChain` | 沿投射链往上走，返回 [n, n', n'', ...]（从下往上）。 |
-| 106 | `canAddPrimeLevel` | — |
-| 128 | `addPrimeLevel` | 下移（Tab）：给投射链增加一层投射层。 |
-| 148 | `canCollapsePrimeLevel` | 能不能减一层投射。要求同时满足： |
-| 167 | `collapsePrimeLevel` | 上移（Shift+Tab）：下移的逆。 |
-| 209 | `moveNodeLeft` | 左移（Alt+←）。两个分支，和右移对称： |
-| 248 | `moveNodeRight` | 右移（Alt+→）。和左移对称： |
+| 99 | `cloneSubtree` | 深拷贝一棵子树（含自己），每个节点都拿**新的 id**。 |
+| 123 | `remapArrowTargets` | 把落在 map 里的箭头落点改指到对应的副本上。 |
+| 135 | `primeChain` | 沿投射链往上走，返回 [n, n', n'', ...]（从下往上）。 |
+| 148 | `canAddPrimeLevel` | — |
+| 174 | `addPrimeLevel` | 下移（Tab）：给投射链增加一层投射层。 |
+| 193 | `canCollapsePrimeLevel` | 能不能减一层投射。要求同时满足： |
+| 215 | `collapsePrimeLevel` | 上移（Shift+Tab）：下移的逆。 |
+| 257 | `moveNodeLeft` | 左移（Alt+←）。两个分支，和右移对称： |
+| 296 | `moveNodeRight` | 右移（Alt+→）。和左移对称： |
 
 ### `src/notation.js`
 > 括号记法 ↔ 模型：词法分析、递归下降解析、序列化、文本位置映射。
@@ -391,7 +393,7 @@ Syntax Tree Editor Standalone/
 
 ### `test/editor.test.mjs`
 > 交互层测试（跑在 DOM 垫片上）。
-> 1632 行 / 64700 字节
+> 1647 行 / 65738 字节
 
 **函数**
 
@@ -407,18 +409,18 @@ Syntax Tree Editor Standalone/
 | 51 | `key` | — |
 | 55 | `typeText` | — |
 | 62 | `NODES_IN` | — |
-| 660 | `ALIGN_TREE` | S 底下挂两棵不等深的子树，用来区分三种对齐 |
-| 662 | `rowsOf` | 深度：S0 A1 B2 C3 x4 D1 E2 y3 |
-| 820 | `MOVE_TREE` | 用户给的例子 |
-| 821 | `AFTER_LEFT` | — |
-| 822 | `AFTER_RIGHT` | — |
-| 825 | `selectT` | — |
-| 958 | `fillOf` | — |
-| 965 | `declLines` | — |
-| 1104 | `USER_RULES` | — |
-| 1412 | `NEUTRAL` | — |
-| 1413 | `FATHER` | — |
-| 1530 | `ARROW_TREE` | — |
+| 675 | `ALIGN_TREE` | S 底下挂两棵不等深的子树，用来区分三种对齐 |
+| 677 | `rowsOf` | 深度：S0 A1 B2 C3 x4 D1 E2 y3 |
+| 835 | `MOVE_TREE` | 用户给的例子 |
+| 836 | `AFTER_LEFT` | — |
+| 837 | `AFTER_RIGHT` | — |
+| 840 | `selectT` | — |
+| 973 | `fillOf` | — |
+| 980 | `declLines` | — |
+| 1119 | `USER_RULES` | — |
+| 1427 | `NEUTRAL` | — |
+| 1428 | `FATHER` | — |
+| 1545 | `ARROW_TREE` | — |
 
 ### `test/rules.test.mjs`
 > 规则记法测试。
@@ -434,7 +436,7 @@ Syntax Tree Editor Standalone/
 
 ### `test/smoke.mjs`
 > 纯逻辑测试（不需要浏览器）。
-> 783 行 / 31893 字节
+> 832 行 / 34924 字节
 
 **函数**
 
@@ -515,7 +517,7 @@ Syntax Tree Editor Standalone/
 
 ### `tools/gen-examples.mjs`
 > —
-> 48 行 / 2213 字节
+> 48 行 / 2274 字节
 
 **函数**
 

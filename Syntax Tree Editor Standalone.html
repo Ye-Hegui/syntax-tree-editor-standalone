@@ -997,39 +997,41 @@ footer {
         <p>
           X 所在的投射链是 <code>X</code> → <code>X'</code>，再往上到 <code>XP</code> 就断了，
           因为 <code>XP</code> 不是 <code>X''</code>。所以链顶是 <code>X'</code>。
-          编辑器会在链顶的<b>上面</b>插一层 <code>X''</code>，
-          并把 <code>X'</code> 除 X 以外的女儿节点（这里是 <code>Y</code>）留在原来的高度、
-          改挂到 <code>X''</code> 底下：
+          编辑器会给<b>链顶</b>套上一层：把链顶整棵子树原样复制一份，
+          链顶自己清空女儿节点、标签加一个撇，再把复制出来的那棵挂回它底下：
         </p>
-        <img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDIwOCIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyMDgiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMjA4IiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxMjAiIHkxPSIxNjUiIHgyPSIxMjAiIHkyPSIxNzciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMjA2IiB5MT0iMTIwIiB4Mj0iMjA2IiB5Mj0iMTMyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PC9nPjxnPjwvZz48Zz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI1Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iNzcuNyIgeT0iMCIgd2lkdGg9IjQxLjYiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9Ijk4LjUiIHk9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YUDwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIyNiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMCIgeT0iOTAiIHdpZHRoPSI2OCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDE8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjgiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxMzcuOCIgeT0iNDUiIHdpZHRoPSI1MC40MDAwMDAwMDAwMDAwMDYiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjE2MyIgeT0iNTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlgnJzwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIyOSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijk5LjIiIHk9IjkwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTIwIiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlgnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMwIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTAzLjYiIHk9IjEzNSIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMxIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iODYiIHk9IjE4MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMjAiIHk9IjE5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDI8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMzIiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxODkuNiIgeT0iOTAiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyMDYiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIzMyI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3MiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PC9nPjwvc3ZnPg==" alt="对 X 下移之后" />
+        <img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDIwOCIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyMDgiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMjA4IiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxNjMiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSIxMjAiIHgyPSIxMjAiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iMTIwIiB4Mj0iMjA2IiB5Mj0iMTMyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjE2NSIgeDI9IjEyMCIgeTI9IjE3NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxNjUiIHgyPSIyMDYiIHkyPSIxNzciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjUiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI3Ny43IiB5PSIwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iOTguNSIgeT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlhQPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI2Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTcuNiIgeT0iNDUiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iNTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlo8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjciPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIyOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEzNy44IiB5PSI0NSIgd2lkdGg9IjUwLjQwMDAwMDAwMDAwMDAwNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCcnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI5Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjkwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlgnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMwIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTAzLjYiIHk9IjEzNSIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMxIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iODYiIHk9IjE4MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMjAiIHk9IjE5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDI8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMzIiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxODkuNiIgeT0iMTM1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxNDkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMzMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxNzIiIHk9IjE4MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyMDYiIHk9IjE5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDM8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" alt="对 X 下移之后" />
         <p>
-          对着图看两个变化：<code>X''</code> 底下现在有 <code>X'</code> 和 <code>Y</code> 两个女儿节点，
-          而 <code>X'</code> 底下只剩下 <code>X</code>。
-          写成括号记法就是 <code>[XP [Z word1] [X'' [X' [X word2]] [Y word3]]]</code>。
+          对着图看两个变化：新的 <code>X''</code> 底下只有一个女儿节点，就是复制出来的 <code>X'</code>；
+          而 <code>X'</code> 底下原封不动，<code>X</code> 和 <code>Y</code> 都还在原处，
+          只是整棵子树深了一层。
+          写成括号记法就是 <code>[XP [Z word1] [X'' [X' [X word2] [Y word3]]]]</code>。
         </p>
-        <p>下移只作用于被选中节点及其支配的节点，链顶其余女儿节点的高度保持不变。</p>
+        <p>
+          下移之后选中的是复制出来的那个 <code>X'</code>，所以紧接着按 <kbd>Shift</kbd>+<kbd>Tab</kbd>
+          就能撤销回去。根节点不能下移，因为链顶上面必须还有一个母亲节点。
+        </p>
 
         <h4 id="doc-up">5. 上移</h4>
         <p class="tip">上移是撤销一层投射层的快捷操作。</p>
         <p>上移是下移的逆操作，但条件比较严格。这一次从下移之后的样子出发：</p>
-        <img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDIwOCIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyMDgiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMjA4IiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxMjAiIHkxPSIxNjUiIHgyPSIxMjAiIHkyPSIxNzciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMjA2IiB5MT0iMTIwIiB4Mj0iMjA2IiB5Mj0iMTMyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PC9nPjxnPjwvZz48Zz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI1Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iNzcuNyIgeT0iMCIgd2lkdGg9IjQxLjYiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9Ijk4LjUiIHk9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YUDwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIyNiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMCIgeT0iOTAiIHdpZHRoPSI2OCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDE8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjgiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxMzcuOCIgeT0iNDUiIHdpZHRoPSI1MC40MDAwMDAwMDAwMDAwMDYiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjE2MyIgeT0iNTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlgnJzwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIyOSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijk5LjIiIHk9IjkwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTIwIiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlgnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMwIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTAzLjYiIHk9IjEzNSIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMxIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iODYiIHk9IjE4MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMjAiIHk9IjE5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDI8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMzIiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxODkuNiIgeT0iOTAiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyMDYiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIzMyI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3MiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PC9nPjwvc3ZnPg==" alt="出发点：X 已经下移过一层" />
+        <img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDIwOCIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyMDgiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMjA4IiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxNjMiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSIxMjAiIHgyPSIxMjAiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iMTIwIiB4Mj0iMjA2IiB5Mj0iMTMyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjE2NSIgeDI9IjEyMCIgeTI9IjE3NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxNjUiIHgyPSIyMDYiIHkyPSIxNzciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjUiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI3Ny43IiB5PSIwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iOTguNSIgeT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlhQPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI2Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTcuNiIgeT0iNDUiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iNTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlo8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjciPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIyOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEzNy44IiB5PSI0NSIgd2lkdGg9IjUwLjQwMDAwMDAwMDAwMDAwNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCcnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI5Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjkwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlgnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMwIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTAzLjYiIHk9IjEzNSIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMxIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iODYiIHk9IjE4MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMjAiIHk9IjE5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDI8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMzIiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxODkuNiIgeT0iMTM1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxNDkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMzMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxNzIiIHk9IjE4MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyMDYiIHk9IjE5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDM8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" alt="出发点：X 已经下移过一层" />
         <p>
-      选中 <code>X'</code> 不能进行上移。上移要求<b>母亲节点只有选中的唯一一个女儿节点</b>，
-          而 <code>X'</code> 的母亲节点是 <code>X''</code>，<code>X''</code> 底下有 <code>X'</code>
-          和 <code>Y</code> 两个女儿节点，不满足条件，
-          所以「上移」按钮这时是禁用的。
+          选中 <code>X</code> 不能进行上移。<code>X</code> 的母亲节点是 <code>X'</code>，
+          而 <code>X'</code> 底下有 <code>X</code> 和 <code>Y</code> 两个女儿节点，不满足
+          「母亲节点只有被选中的那一个女儿节点」，所以「上移」按钮这时是禁用的。
         </p>
         <p>
-      选中 <code>X</code> 可以进行上移。<code>X</code> 的母亲节点是 <code>X'</code>，
-          <code>X'</code> 底下确实只有 <code>X</code> 一个女儿节点，
-          且 <code>X'</code> 的标签正好是 <code>X</code> 加一个撇 —— 同时满足两个条件。
-          于是编辑器删掉 <code>X'</code>、让 <code>X</code> 顶替该节点的位置，
-          再把 <code>X'</code> 以上的每一层各减去一个撇（<code>X''</code> 就变回了 <code>X'</code>）：
+          选中 <code>X'</code>（也就是下移时复制出来的那个）可以进行上移。
+          <code>X'</code> 的母亲节点是 <code>X''</code>，<code>X''</code> 底下确实只有 <code>X'</code> 一个女儿节点，
+          且 <code>X''</code> 的标签正好是 <code>X'</code> 加一个撇 —— 同时满足两个条件。
+          于是编辑器删掉 <code>X''</code>、让 <code>X'</code> 顶替该节点的位置：
         </p>
-        <img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDE2MyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxMjAiIHgyPSIyMDYiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijc3LjciIHk9IjAiIHdpZHRoPSI0MS42IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSI5OC41IiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WFA8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI0Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjQ1IiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCc8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEwMy42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjYiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI4NiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMjwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTg5LjYiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3MiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PC9nPjwvc3ZnPg==" alt="对 X 上移之后：回到原来的样子" />
+        <img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDE2MyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxMjAiIHgyPSIyMDYiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijc3LjciIHk9IjAiIHdpZHRoPSI0MS42IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSI5OC41IiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WFA8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI0Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjQ1IiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCc8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEwMy42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjYiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI4NiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMjwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTg5LjYiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3MiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PC9nPjwvc3ZnPg==" alt="对 X' 上移之后：回到原来的样子" />
         <p>
           结果正好回到最开始的 <code>[XP [Z word1] [X' [X word2] [Y word3]]]</code>，
-          也就是下移之前的原样。注意 <code>Y</code> 又回到了 <code>X'</code> 底下。
+          也就是下移之前的原样。母亲节点以上的每一层，只要标签正好比下一层多一个撇，
+          就一起减一个撇，这样「第 k 层有 k 个撇」的规律才不会断。
         </p>
         <p>上移需要同时满足两个条件：母亲节点只有被选中的那一个女儿节点，且母亲节点的标签是选中节点名称加一个撇。</p>
 
@@ -1318,6 +1320,48 @@ function removeNode(root, n) {
 // ------------------------------------------------------------ 投射层（加 ' ）
 
 /**
+ * 深拷贝一棵子树（含自己），每个节点都拿**新的 id**。
+ *
+ * id 必须换新：SVG 上每个节点挂 `data-id`，点击命中和选中都靠它，
+ * 两份子树共用一个 id 会让选中错乱。
+ *
+ * 箭头一起拷，但其中的落点引用只是原样带过来 —— 落点可能就在被复制的子树里，
+ * 那时它指向的还是原来那个节点，所以调用方拿到 map 之后要用 remapArrowTargets()
+ * 把落在复制区里的落点改指到副本上。
+ *
+ * @returns {{root: object, map: Map<object, object>}} 副本子树的根，以及 原节点 -> 副本节点 的对照表
+ */
+function cloneSubtree(n) {
+  const map = new Map();
+  function copy(x) {
+    const c = node(x.label);
+    c.sub = x.sub;
+    c.sup = x.sup;
+    c.italic = x.italic;
+    c.bold = x.bold;
+    c.strike = x.strike;
+    c.color = x.color;
+    c.arrow = x.arrow ? { ...x.arrow } : null;
+    map.set(x, c);
+    c.children = x.children.map(copy);
+    return c;
+  }
+  return { root: copy(n), map };
+}
+
+/**
+ * 把落在 map 里的箭头落点改指到对应的副本上。
+ *
+ * 复制/摘除子树之后必须做这一步：箭头存的是**节点引用**，
+ * 子树一旦被换成副本，旧引用就指向树外的孤儿节点，那把箭头会被静默丢掉。
+ */
+function remapArrowTargets(root, map) {
+  walk(root, (x) => {
+    if (x.arrow && x.arrow.target && map.has(x.arrow.target)) x.arrow.target = map.get(x.arrow.target);
+  });
+}
+
+/**
  * 沿投射链往上走，返回 [n, n', n'', ...]（从下往上）。
  *
  * 链的规则：某一层的标签正好是它女儿节点的标签再加一个撇，它们就属于同一条链。
@@ -1345,32 +1389,35 @@ function canAddPrimeLevel(root, n) {
 /**
  * 下移（Tab）：给投射链增加一层投射层。
  *
- * 只有**投射链这条脊柱**会下沉，链顶其余的女儿节点留在原来的高度，
- * 改挂到新层底下。具体做法：
- *   1. 找到投射链的最顶端（下称链顶）和链顶上那个"链上的女儿节点"
- *   2. 新建一层，标签 = 链顶标签再加一个撇
- *   3. 新层顶替链顶的位置；链顶成为新层的第一个女儿节点
- *   4. 链顶其余的女儿节点改挂到新层底下（它们的高度因此不变）
+ * 做法是拿**投射链的最顶端**（下称链顶）套一层"自己的副本"：
+ *   1. 把链顶整棵子树深拷贝一份
+ *   2. 链顶清空自己的女儿节点、标签加一个撇 —— 它自己就是新的那一层了
+ *   3. 副本挂回链顶底下，于是链顶只有副本这一个女儿节点
  *
- *   [CP [C that] [TP [N Chomsky] [T' [T will] [VP [V love] [N AI]]]]]   对 T 按 Tab
- *   -> [CP [C that] [TP [N Chomsky] [T'' [T' [T will]] [VP [V love] [N AI]]]]]
- *      新层 T'' 拿到了 T' 和 VP，T' 只留下 T
+ * 关键点：**整棵子树原样下沉一层，链顶其余的女儿节点不会被提到新层上**。
+ * （"只让投射链这条脊柱下沉、其余女儿节点留在原高度"是已废弃的旧行为。）
  *
- * @returns {object|null} 新建的节点
+ *   [XP [Z word1] [X' [X word2] [Y word3]]]     对 X 按 Tab（链顶是 X'）
+ *   -> [XP [Z word1] [X'' [X' [X word2] [Y word3]]]]
+ *      X'' 只带一个女儿 X'，X' 底下的 X 和 Y 都还在原处，只是整棵子树深了一层
+ *
+ * 根节点不能下移：链顶上面必须还有一个母亲节点。
+ * （给整棵树加一层是"加一个顶层"，不是下移，编辑器有别的入口。）
+ *
+ * @returns {object|null} 副本子树的根（编辑器会选中它，这样紧接着 Shift+Tab 就能撤销）
  */
 function addPrimeLevel(root, n) {
   const chain = primeChain(root, n);
   const spineTop = chain[chain.length - 1];
-  const spineChild = chain.length >= 2 ? chain[chain.length - 2] : null;
-  const grandmother = findParent(root, spineTop);
-  if (!grandmother) return null;
+  if (!findParent(root, spineTop)) return null;
 
-  const created = node(spineTop.label + "'");
-  const others = spineTop.children.filter((c) => c !== spineChild);
-  spineTop.children = spineChild ? [spineChild] : [];
-  created.children = [spineTop, ...others];
-  grandmother.children[grandmother.children.indexOf(spineTop)] = created;
-  return created;
+  const { root: copy, map } = cloneSubtree(spineTop);
+  spineTop.children = [copy];
+  spineTop.label = spineTop.label + "'";
+  // 链顶现在有女儿节点了，不再是叶子；记法表达不了"带箭头的非叶子"，所以箭头留给副本
+  spineTop.arrow = null;
+  remapArrowTargets(root, map);
+  return copy;
 }
 
 /**
@@ -1391,9 +1438,12 @@ function canCollapsePrimeLevel(root, n) {
  * 先删掉母亲节点、让 n 顶替它的位置；再把母亲节点以上的每一层各减一个撇，
  * 这样"第 k 层有 k 个撇"的规律才继续成立。
  *
- *   [CP [C that] [TP [N Chomsky] [T'' [T' [T will]] [V]]]]   对 T 上移
- *   -> [CP [C that] [TP [N Chomsky] [T' [T will] [V]]]]
- *      T' 被删掉、T 提上去，上面的 T'' 顺势改名成 T'
+ * 因为下移造出来的那一层只有一个女儿节点，所以**该选谁**很明确：
+ * 选下移时复制出来的那个（也就是新层里面的那个），它的母亲正好是那一层。
+ *
+ *   [XP [Z word1] [X'' [X' [X word2] [Y word3]]]]   对 X' 上移
+ *   -> [XP [Z word1] [X' [X word2] [Y word3]]]
+ *      X'' 被删掉、X' 提上去，正好退回下移之前的样子
  *
  * @returns {object|null} 新的根（母亲节点就是根时根会变），不适用时返回 null
  */
@@ -3149,7 +3199,7 @@ class SyntaxTreeEditor {
     this.btnSibling = this.#term(button("＋姊妹节点", "Shift+Enter", "增加一个姊妹节点", () => this.addSibling()), "title", "增加一个姊妹节点");
     this.#term(this.btnSibling.labelEl, "textContent", "＋姊妹节点");
     toolbar.appendChild(mk("span", "ste-sep"));
-    this.btnAddLevel = button("下移", "Tab", "增加一层投射层，选中的节点连同整条投射链一起下移", () =>
+    this.btnAddLevel = button("下移", "Tab", "增加一层投射层，选中的节点连同它支配的整棵子树一起下沉一层", () =>
       this.addLevel(),
     );
     this.btnCollapseLevel = button("上移", "Shift+Tab", "去掉紧挨着自己上面的那一层投射层", () =>
@@ -3874,22 +3924,33 @@ centerGroup.appendChild(b);
   }
 
   /**
-   * 下移（Tab）：在投射链的最顶端之上插入一个新的投射层，
-   * 选中的节点连同整条链一起下移一层。例：
-   *   [XP [Z word1] [X'' [X' [X word2]]]]  ->  [XP [Z word1] [X''' [X'' [X' [X word2]]]]]
+   * 下移（Tab）：给投射链增加一层投射层（详见 model.js 的 addPrimeLevel）。
+   * 选中的节点连同它支配的整棵子树一起下沉一层。例：
+   *   [XP [Z word1] [X' [X word2] [Y word3]]]  ->  [XP [Z word1] [X'' [X' [X word2] [Y word3]]]]
+   *
+   * 操作完成后选中的是**副本那个节点**（也就是深了一层、装着原来子树的那一个），
+   * 所以紧接着按 Shift+Tab 就能撤销回去。
    */
   addLevel() {
     if (!this.root || !this.selected) return;
     if (!canAddPrimeLevel(this.root, this.selected)) return;
-    this.#mutate(() => addPrimeLevel(this.root, this.selected));
+    let created = null;
+    this.#mutate(
+      () => {
+        created = addPrimeLevel(this.root, this.selected);
+      },
+      () => {
+        if (created) this.selected = created;
+      },
+    );
   }
 
   /**
    * 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、
    * 并且母亲节点的标签正好是自己加一个撇。删掉母亲节点、自己顶替它的位置，
    * 再把母亲节点以上的每一层各减一个撇。例：
-   *   [CP [C that] [TP [N Chomsky] [T'' [T' [T will]] [V]]]]   对 T 上移
-   *   -> [CP [C that] [TP [N Chomsky] [T' [T will] [V]]]]
+   *   [XP [Z word1] [X'' [X' [X word2] [Y word3]]]]   对 X' 上移
+   *   -> [XP [Z word1] [X' [X word2] [Y word3]]]
    */
   collapseLevel() {
     if (!this.root || !this.selected) return;

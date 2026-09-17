@@ -380,7 +380,7 @@ export class SyntaxTreeEditor {
     this.btnSibling = this.#term(button("＋姊妹节点", "Shift+Enter", "增加一个姊妹节点", () => this.addSibling()), "title", "增加一个姊妹节点");
     this.#term(this.btnSibling.labelEl, "textContent", "＋姊妹节点");
     toolbar.appendChild(mk("span", "ste-sep"));
-    this.btnAddLevel = button("下移", "Tab", "增加一层投射层，选中的节点连同整条投射链一起下移", () =>
+    this.btnAddLevel = button("下移", "Tab", "增加一层投射层，选中的节点连同它支配的整棵子树一起下沉一层", () =>
       this.addLevel(),
     );
     this.btnCollapseLevel = button("上移", "Shift+Tab", "去掉紧挨着自己上面的那一层投射层", () =>
@@ -1105,22 +1105,33 @@ centerGroup.appendChild(b);
   }
 
   /**
-   * 下移（Tab）：在投射链的最顶端之上插入一个新的投射层，
-   * 选中的节点连同整条链一起下移一层。例：
-   *   [XP [Z word1] [X'' [X' [X word2]]]]  ->  [XP [Z word1] [X''' [X'' [X' [X word2]]]]]
+   * 下移（Tab）：给投射链增加一层投射层（详见 model.js 的 addPrimeLevel）。
+   * 选中的节点连同它支配的整棵子树一起下沉一层。例：
+   *   [XP [Z word1] [X' [X word2] [Y word3]]]  ->  [XP [Z word1] [X'' [X' [X word2] [Y word3]]]]
+   *
+   * 操作完成后选中的是**副本那个节点**（也就是深了一层、装着原来子树的那一个），
+   * 所以紧接着按 Shift+Tab 就能撤销回去。
    */
   addLevel() {
     if (!this.root || !this.selected) return;
     if (!canAddPrimeLevel(this.root, this.selected)) return;
-    this.#mutate(() => addPrimeLevel(this.root, this.selected));
+    let created = null;
+    this.#mutate(
+      () => {
+        created = addPrimeLevel(this.root, this.selected);
+      },
+      () => {
+        if (created) this.selected = created;
+      },
+    );
   }
 
   /**
    * 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、
    * 并且母亲节点的标签正好是自己加一个撇。删掉母亲节点、自己顶替它的位置，
    * 再把母亲节点以上的每一层各减一个撇。例：
-   *   [CP [C that] [TP [N Chomsky] [T'' [T' [T will]] [V]]]]   对 T 上移
-   *   -> [CP [C that] [TP [N Chomsky] [T' [T will] [V]]]]
+   *   [XP [Z word1] [X'' [X' [X word2] [Y word3]]]]   对 X' 上移
+   *   -> [XP [Z word1] [X' [X word2] [Y word3]]]
    */
   collapseLevel() {
     if (!this.root || !this.selected) return;
