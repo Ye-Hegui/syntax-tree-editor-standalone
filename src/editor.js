@@ -21,6 +21,7 @@ import {
   addPrimeLevel,
   canCollapsePrimeLevel,
   collapsePrimeLevel,
+  ESCAPE_LABEL,
 } from "./model.js";
 import { parse, serialize, NotationError } from "./notation.js";
 import { parseRules, serializeRules, RuleError } from "./rules.js";
@@ -318,18 +319,31 @@ export class SyntaxTreeEditor {
 
   /** 序列化成独立的 SVG 字符串（可脱离本页面使用） */
   toSvgString({ background = false } = {}) {
-    const clone = this.svg.cloneNode(true);
+    // 转义节点（裸写的 %Empty）在导出里要画成"交点"，所以这里不能直接克隆画布上的 SVG ——
+    // 画布上它仍然是 %Empty 方框（作者要求：这样才点得到、选得中）。有转义节点就另画一份。
+    let source = this.svg;
+    let size = this.size;
+    if (this.root && this.lay && preorder(this.root).some((n) => n.escape)) {
+      source = document.createElementNS(SVG_NS, "svg");
+      source.setAttribute("class", "ste-svg");
+      size = drawTree(source, this.lay, this.#drawOptions({ hideEscapes: true }));
+      source.setAttribute("viewBox", `0 0 ${size.width} ${size.height}`);
+      source.setAttribute("width", size.width);
+      source.setAttribute("height", size.height);
+    }
+
+    const clone = source.cloneNode(true);
     clone.setAttribute("xmlns", SVG_NS);
-    clone.setAttribute("viewBox", `0 0 ${this.size.width} ${this.size.height}`);
-    clone.setAttribute("width", this.size.width);
-    clone.setAttribute("height", this.size.height);
+    clone.setAttribute("viewBox", `0 0 ${size.width} ${size.height}`);
+    clone.setAttribute("width", size.width);
+    clone.setAttribute("height", size.height);
     clone.querySelectorAll(".is-selected").forEach((e) => e.classList.remove("is-selected"));
     if (background) {
       const rect = document.createElementNS(SVG_NS, "rect");
       rect.setAttribute("x", 0);
       rect.setAttribute("y", 0);
-      rect.setAttribute("width", this.size.width);
-      rect.setAttribute("height", this.size.height);
+      rect.setAttribute("width", size.width);
+      rect.setAttribute("height", size.height);
       rect.setAttribute("fill", "#ffffff");
       clone.insertBefore(rect, clone.firstChild);
     }
@@ -646,7 +660,7 @@ export class SyntaxTreeEditor {
       const raw = this.input.value;
       const clean = stripUnsupported(raw);
       if (clean !== raw) this.input.value = clean;
-      this.editing.label = clean;
+      this.#setNodeLabel(this.editing, clean);
       this.#relayout();
       this.#positionEditor();
     });
@@ -668,7 +682,7 @@ export class SyntaxTreeEditor {
         }
         if (this.input.value !== this.editBackup) {
           this.input.value = this.editBackup;
-          this.editing.label = this.editBackup;
+          this.#setNodeLabel(this.editing, this.editBackup);
           this.#relayout();
           this.#positionEditor();
           this.input.select();
@@ -707,6 +721,22 @@ export class SyntaxTreeEditor {
     this.byId = new Map(this.root ? preorder(this.root).map((n) => [n.id, n]) : []);
   }
 
+  /**
+   * drawTree 的选项。画布和导出共用这一份 —— 导出多传一个 `hideEscapes: true`，
+   * 那样转义节点会被画成"交点"而不是 %Empty 方框（见 toSvgString）。
+   */
+  #drawOptions(extra = {}) {
+    return {
+      selected: this.selected,
+      triangles: this.opts.triangles,
+      terminalLines: this.opts.terminalLines,
+      colors: this.opts.colors,
+      fontFamily: this.opts.fontFamily,
+      fontSize: this.opts.fontSize,
+      ...extra,
+    };
+  }
+
   #relayout() {
     // 空白画布：清空 SVG，显示引导层
     if (!this.root) {
@@ -734,14 +764,7 @@ export class SyntaxTreeEditor {
       align: this.opts.align,
       center: this.opts.center,
     });
-    this.size = drawTree(this.svg, this.lay, {
-      selected: this.selected,
-      triangles: this.opts.triangles,
-      terminalLines: this.opts.terminalLines,
-      colors: this.opts.colors,
-      fontFamily: this.opts.fontFamily,
-      fontSize: this.opts.fontSize,
-    });
+    this.size = drawTree(this.svg, this.lay, this.#drawOptions());
     this.surface.style.width = `${this.size.width}px`;
     this.surface.style.height = `${this.size.height}px`;
 
@@ -1020,7 +1043,7 @@ export class SyntaxTreeEditor {
     // 根节点：没有女儿节点时可以删（回到空白画布）；只有一个女儿节点时可以删（把它提上来）；
     // 有两个以上女儿节点时不允许删（删了没法安置其余分支）。
     this.btnDelete.disabled = !n || (n === this.root && n.children.length > 1);
-    this.btnChild.disabled = !n;
+    this.btnChild.disabled = !n || (n.escape === true && n.children.length >= 3);
     this.btnSibling.disabled = !n || n === this.root;
     this.btnMoveRight.disabled = !this.#canMoveRight();
     this.btnMoveLeft.disabled = !this.#canMoveLeft();
@@ -1150,6 +1173,8 @@ export class SyntaxTreeEditor {
     if (!this.root) return this.createRoot();
     const target = this.selected || this.root;
     if (!target) return;
+    // 转义节点最多三个女儿节点（作者定的）：到顶了就不加，按钮也会是灰的
+    if (target.escape && target.children.length >= 3) return;
     let created = null;
     this.#mutate(
       () => {
@@ -1301,6 +1326,15 @@ export class SyntaxTreeEditor {
     );
   }
 
+  /**
+   * 改标签（并且同步转义标记）。规则只有一条：标签**正好**是 %Empty 就是转义节点，
+   * 别的写法一律是普通标签 —— 想让 %Empty 只当普通标签，在代码框里写带引号的 "%Empty"。
+   */
+  #setNodeLabel(n, text) {
+    n.label = text;
+    n.escape = text === ESCAPE_LABEL;
+  }
+
   /** 套用标签（范畴快捷按钮 / 外部调用）。空白画布上会用它当根节点开一棵树 */
   setLabel(text) {
     const clean = stripUnsupported(text);
@@ -1311,7 +1345,7 @@ export class SyntaxTreeEditor {
     const n = this.selected || this.root;
     if (!n || n.label === clean) return;
     this.#mutate(() => {
-      n.label = clean;
+      this.#setNodeLabel(n, clean);
     });
   }
 
@@ -1366,6 +1400,7 @@ export class SyntaxTreeEditor {
     this.editing = null;
     this.input.hidden = true;
     n.label = this.editBackup;
+    n.escape = this.editBackup === ESCAPE_LABEL;
     this.undoStack.pop();
     this.#refresh({ syncText: true });
     if (refocus) this.scroller.focus();

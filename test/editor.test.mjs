@@ -1610,6 +1610,74 @@ await t("载入空白画布也能撤销回上一棵树", async () => {
   assert.equal(ed.getValue(), "[S [A] [B]]", "应该退回载入空白之前");
 });
 
+console.log("\n[转义节点 %Empty]");
+
+await t("画布上照常显示 %Empty（点得到），导出里不出现", async () => {
+  const ed = mount("[A [%Empty [B] [C]]]");
+  const esc = preorder(ed.root).find((n) => n.escape);
+  assert.ok(esc, "解析出来的节点该带 escape 标记");
+  const texts = [...ed.svg.querySelectorAll("text")].map((x) => x.textContent);
+  assert.ok(texts.includes("%Empty"), "画布上要显示 %Empty");
+  const g = [...ed.svg.querySelectorAll(".ste-node")].find((x) => Number(x.dataset.id) === esc.id);
+  assert.ok(g.querySelector("rect"), "画布上要留方框（这样才点得到）");
+  assert.ok(!ed.toSvgString({ background: true }).includes("%Empty"), "导出的图里不该出现 %Empty");
+});
+
+await t("导出时母亲连过来的那条线和某个女儿那条线共线（180°）", async () => {
+  const ed = mount("[A [%Empty [B] [C]]]");
+  const esc = preorder(ed.root).find((n) => n.escape);
+  const ei = ed.lay.info.get(esc);
+  const yJ = ei.y + ed.lay.nodeH + 2;
+  const svg = ed.toSvgString();
+  const lines = [...svg.matchAll(/<line x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)"/g)].map((m) => ({
+    x1: Number(m[1]),
+    y1: Number(m[2]),
+    x2: Number(m[3]),
+    y2: Number(m[4]),
+  }));
+  // 穿过转义节点那一层的长线：起点在它上面、终点在它下面。
+  // 它自己是"母亲 -> 共线那个女儿"的一条直线，所以上下两段必然共线；
+  // 其余女儿则必须从交点出发。
+  const long = lines.find((l) => l.y1 < yJ - 1 && l.y2 > yJ + 1);
+  assert.ok(long, "找不到那条长线");
+  const t = (yJ - long.y1) / (long.y2 - long.y1);
+  const Jx = long.x1 + (long.x2 - long.x1) * t;
+
+  const inX = Jx - long.x1;
+  const inY = yJ - long.y1;
+  const outX = long.x2 - Jx;
+  const outY = long.y2 - yJ;
+  const cross = inX * outY - inY * outX;
+  assert.ok(Math.abs(cross) < 1e-6, `上下段不共线，叉积 = ${cross}`);
+  assert.ok(inX * outX + inY * outY > 0, "上下段应该接成一条直线，而不是折回来");
+
+  const fan = lines.find((l) => Math.abs(l.y1 - yJ) < 0.01 && Math.abs(l.x1 - Jx) < 0.01);
+  assert.ok(fan, "其余女儿应该从交点出发");
+});
+
+await t("转义节点最多三个女儿：第四个加不进去，按钮灰掉", async () => {
+  const ed = mount("[A [%Empty [B] [C] [D]]]");
+  const esc = preorder(ed.root).find((n) => n.escape);
+  clickNode(ed, esc);
+  assert.equal(ed.btnChild.disabled, true, "已经三个了，按钮该灰掉");
+  const before = ed.getValue();
+  ed.addChild();
+  key(ed, "Enter");
+  assert.equal(ed.getValue(), before, "不该加进第四个");
+});
+
+await t("把标签改成别的，就不再是转义节点", async () => {
+  const ed = mount("[A [%Empty [B] [C]]]");
+  const esc = preorder(ed.root).find((n) => n.escape);
+  clickNode(ed, esc);
+  ed.setLabel("XP");
+  assert.equal(esc.escape, false);
+  assert.equal(ed.getValue(), "[A [XP [B] [C]]]");
+  // 再改回 %Empty 又变回转义节点
+  ed.setLabel("%Empty");
+  assert.equal(esc.escape, true);
+});
+
 console.log("\n[工具栏快捷键说明]");
 
 await t("每个工具栏按钮下边的快捷键说明都对", async () => {

@@ -1294,9 +1294,20 @@ Red(4)</pre>
 
 let SEQ = 1;
 
+/**
+ * 转义节点的标签。记法里**裸写**它（`%Empty`，精确大小写）表示"这一层不画方框"：
+ * 导出的图里，上面连过来的那条线会和它某个女儿的那条线画成**一条直线**（夹角 180°）。
+ * 想让它只当一个普通标签，写带引号的 `"%Empty"`。
+ *
+ * ⚠️ 这个功能作者确定**不公开**：不写进 README、教程和 CHANGELOG，只在 AGENTS.md 与
+ * HANDOVER.md 里留说明。
+ */
+const ESCAPE_LABEL = "%Empty";
+
 function node(label = "", children = []) {
   // italic / bold / strike / color 由记法末尾的 Italic(...) / Bold(...) / Strike(...) / Red(...) 声明设置，见 style.js
-  return { id: SEQ++, label, sub: null, sup: null, arrow: null, italic: false, bold: false, strike: false, color: null, children };
+  // escape 只由记法里裸写的 %Empty 设置（见 notation.js / rules.js），改名时会跟着标签同步
+  return { id: SEQ++, label, sub: null, sup: null, arrow: null, italic: false, bold: false, strike: false, color: null, escape: false, children };
 }
 
 function walk(n, fn, parent = null) {
@@ -1387,6 +1398,7 @@ function cloneSubtree(n) {
     c.bold = x.bold;
     c.strike = x.strike;
     c.color = x.color;
+    c.escape = x.escape;
     c.arrow = x.arrow ? { ...x.arrow } : null;
     map.set(x, c);
     c.children = x.children.map(copy);
@@ -1930,6 +1942,8 @@ function parseNode(tokens, i) {
   if (!labelTok || (labelTok.type !== STRING && labelTok.type !== QUOTED))
     throw new NotationError('"[" 之后需要节点标签', labelTok ? labelTok.start : tokens[i].end);
   n.label = labelTok.value;
+  // 裸写的 %Empty 是转义节点；写成 "%Empty"（带引号）只是一个普通标签
+  if (labelTok.type === STRING && n.label === ESCAPE_LABEL) n.escape = true;
   i += 2;
 
   const ss = parseSubSup(tokens, i);
@@ -1955,6 +1969,15 @@ function parseNode(tokens, i) {
   }
 
   if (i >= tokens.length) throw new NotationError('缺少闭合的 "]"', tokens[tokens.length - 1].end);
+
+  // 转义节点的两条限制（作者定的）：不能出现在树底，最多三个女儿节点
+  if (n.escape) {
+    if (!n.children.length)
+      throw new NotationError(`"${ESCAPE_LABEL}" 必须有女儿节点（转义节点不能出现在树底）`, labelTok.start);
+    if (n.children.length > 3)
+      throw new NotationError(`"${ESCAPE_LABEL}" 最多三个女儿节点，这里有 ${n.children.length} 个`, labelTok.start);
+  }
+
   return [i + 1, n];
 }
 
@@ -1967,6 +1990,9 @@ function parseValue(tokens, i) {
     const parts = [];
     while (i < tokens.length && tokens[i].type === STRING) parts.push(tokens[i++].value);
     n.label = parts.join(" ");
+    // 裸写的 %Empty 是转义节点，而裸标签一定是叶子 —— 叶子就是"在树底"，直接报错
+    if (n.label === ESCAPE_LABEL)
+      throw new NotationError(`"${ESCAPE_LABEL}" 必须有女儿节点（转义节点不能出现在树底）`, first.start);
   } else {
     n.label = String(first.value);
     i++;
@@ -2074,9 +2100,9 @@ function needsQuote(s, mode) {
   return /^\d/.test(str) && !/^\d+$/.test(str);
 }
 
-function quote(s, mode = "leaf") {
+function quote(s, mode = "leaf", force = false) {
   const str = s == null ? "" : String(s);
-  return needsQuote(str, mode) ? `"${str}"` : str;
+  return force || needsQuote(str, mode) ? `"${str}"` : str;
 }
 
 /**
@@ -2103,7 +2129,8 @@ function serialize(root) {
     const bracketed = !isLeaf || forceBracket;
 
     if (bracketed) out += "[";
-    out += quote(n.label, bracketed ? "node" : "leaf");
+    // 标签正好是 %Empty 又不是转义节点时，必须带引号写，否则再解析回来就变成转义节点了
+    out += quote(n.label, bracketed ? "node" : "leaf", n.label === ESCAPE_LABEL && !n.escape);
 
     const hasSub = n.sub != null && n.sub !== "";
     const ss = hasSub ? n.sub : n.sup != null && n.sup !== "" ? n.sup : null;
@@ -2191,10 +2218,12 @@ function parseLabelToken(text, lineNo) {
   if (i >= text.length) throw new RuleError("这里需要一个标签", lineNo);
 
   let label;
+  let quoted = false;
   if (text[i] === '"') {
     const end = text.indexOf('"', i + 1);
     if (end < 0) throw new RuleError("引号没有闭合", lineNo);
     label = text.slice(i + 1, end);
+    quoted = true;
     i = end + 1;
   } else {
     let j = i;
@@ -2233,13 +2262,15 @@ function parseLabelToken(text, lineNo) {
   if (i !== text.length)
     throw new RuleError("标签后面还有多余内容（含空格的标签要用双引号括起来）", lineNo);
 
-  return { label, sub, sup };
+  return { label, sub, sup, quoted };
 }
 
 function makeNode(spec) {
   const n = node(spec.label);
   n.sub = spec.sub ?? null;
   n.sup = spec.sup ?? null;
+  // 裸写的 %Empty 是转义节点；写成 "%Empty"（带引号）只是一个普通标签
+  if (!spec.quoted && spec.label === ESCAPE_LABEL) n.escape = true;
   return n;
 }
 
@@ -2378,13 +2409,24 @@ function parseRules(text) {
   }
 
   applyStyleDecls(root, decls);
+
+  // 转义节点的两条限制（作者定的）：不能出现在树底，最多三个女儿节点
+  for (const n of preorder(root)) {
+    if (!n.escape) continue;
+    if (!n.children.length)
+      throw new RuleError(`"${ESCAPE_LABEL}" 必须有女儿节点（转义节点不能出现在树底）`, n.line ?? 1);
+    if (n.children.length > 3)
+      throw new RuleError(`"${ESCAPE_LABEL}" 最多三个女儿节点，这里有 ${n.children.length} 个`, n.line ?? 1);
+  }
   return root;
 }
 
 /** 把一个标签（含下/上标）写成规则记法里的 token */
 function tokenOf(n) {
   const label = String(n.label ?? "");
-  const bare = label !== "" && !/[\s"^_]/.test(label) && !/-->|->/.test(label);
+  // 标签正好是 %Empty 又不是转义节点时，必须带引号写，否则再解析回来就变成转义节点了
+  const force = label === ESCAPE_LABEL && !n.escape;
+  const bare = !force && label !== "" && !/[\s"^_]/.test(label) && !/-->|->/.test(label);
   const head = bare ? label : `"${label.replace(/"/g, "")}"`;
 
   const ss = (v) => (/[\s"]/.test(String(v)) ? `"${String(v).replace(/"/g, "")}"` : String(v));
@@ -2766,9 +2808,76 @@ function drawTree(svg, lay, opts = {}) {
     });
 
   // ---- 父子连线 / 三角
+  //
+  // 一般情况：母亲框底中心 -> 女儿框顶中心，一条直线。
+  //
+  // 转义节点（标签裸写 %Empty）在导出里（o.hideEscapes）不画方框，连线这样处理：
+  //   挑"母亲相反那一侧"的女儿 B（母亲正好在正上方时挑中间那个），
+  //   把 母亲框底 A -> B框顶 画成**一条直线** —— 这条线穿过转义节点那一层，
+  //   它和 B 的那一段与 A 的那一段夹角就是 180°（共线是这么构造出来的，不靠摆角度）。
+  //   直线与"转义节点那一行的底"的交点 J，其余女儿从 J 出发。
+  // 转义节点自己没有女儿时（作者允许编辑时删成那样）：什么都不画。
   for (const it of items) {
+    const hiddenMother = o.hideEscapes && it.node.escape;
+    // 被藏起来的转义节点，它的连线已经在"母亲那一次循环"里从交点画过了；
+    // 根节点没有母亲，只能在这里照常画（没有上面那条线，也就没有交点这回事）。
+    if (hiddenMother && it !== items[0]) continue;
+
     for (const c of it.node.children) {
       const ci = info.get(c);
+      const hiddenChild = o.hideEscapes && c.escape;
+
+      if (hiddenChild) {
+        if (!c.children.length) continue; // 空转义节点：没东西可画
+        const x1 = it.cx;
+        const y1 = it.y + nodeH + 2;
+        const yJ = ci.y + nodeH + 2;
+        // 母亲正好在转义节点正上方时挑中间那个，否则挑相反那一侧
+        const same = Math.abs(it.cx - ci.cx) < 0.5;
+        const idx = same ? Math.floor((c.children.length - 1) / 2) : it.cx < ci.cx ? c.children.length - 1 : 0;
+        const b = c.children[idx];
+        const bi = info.get(b);
+        const x2 = bi.cx;
+        const y2 = bi.y - 3;
+
+        // 一条直线：共线（180°）由这条线自己保证
+        gEdge.appendChild(
+          el("line", { x1, y1, x2, y2, stroke: COLORS.edge, "stroke-width": 1.2 }),
+        );
+        const t = y2 === y1 ? 0 : (yJ - y1) / (y2 - y1);
+        const Jx = x1 + (x2 - x1) * t;
+
+        c.children.forEach((d, di) => {
+          if (di === idx) return;
+          const didx = info.get(d);
+          const isTriangle = o.triangles && d.children.length === 0 && d.label.includes(" ");
+          if (isTriangle) {
+            const half = didx.textW / 2 + 4;
+            gEdge.appendChild(
+              el("polygon", {
+                points: `${Jx},${yJ} ${didx.cx + half},${didx.y - 3} ${didx.cx - half},${didx.y - 3}`,
+                fill: "none",
+                stroke: COLORS.edge,
+                "stroke-width": 1.2,
+                "stroke-linejoin": "round",
+              }),
+            );
+          } else if (o.terminalLines || d.children.length > 0) {
+            gEdge.appendChild(
+              el("line", {
+                x1: Jx,
+                y1: yJ,
+                x2: didx.cx,
+                y2: didx.y - 3,
+                stroke: COLORS.edge,
+                "stroke-width": 1.2,
+              }),
+            );
+          }
+        });
+        continue;
+      }
+
       const isTriangle = o.triangles && c.children.length === 0 && c.label.includes(" ");
 
       if (isTriangle) {
@@ -2823,6 +2932,13 @@ function drawTree(svg, lay, opts = {}) {
       class: o.selected === n ? "ste-node is-selected" : "ste-node",
       "data-id": n.id,
     });
+
+    // 导出时转义节点不画方框和标签（画布上照常画，方便点选）—— 见 hideEscapes
+    const hiddenNode = o.hideEscapes && n.escape;
+    if (hiddenNode) {
+      gNode.appendChild(g);
+      continue;
+    }
 
     // 命中区域只覆盖标签本身，不覆盖整棵子树，否则命中会互相抢占
     g.appendChild(
@@ -3188,18 +3304,31 @@ class SyntaxTreeEditor {
 
   /** 序列化成独立的 SVG 字符串（可脱离本页面使用） */
   toSvgString({ background = false } = {}) {
-    const clone = this.svg.cloneNode(true);
+    // 转义节点（裸写的 %Empty）在导出里要画成"交点"，所以这里不能直接克隆画布上的 SVG ——
+    // 画布上它仍然是 %Empty 方框（作者要求：这样才点得到、选得中）。有转义节点就另画一份。
+    let source = this.svg;
+    let size = this.size;
+    if (this.root && this.lay && preorder(this.root).some((n) => n.escape)) {
+      source = document.createElementNS(SVG_NS, "svg");
+      source.setAttribute("class", "ste-svg");
+      size = drawTree(source, this.lay, this.#drawOptions({ hideEscapes: true }));
+      source.setAttribute("viewBox", `0 0 ${size.width} ${size.height}`);
+      source.setAttribute("width", size.width);
+      source.setAttribute("height", size.height);
+    }
+
+    const clone = source.cloneNode(true);
     clone.setAttribute("xmlns", SVG_NS);
-    clone.setAttribute("viewBox", `0 0 ${this.size.width} ${this.size.height}`);
-    clone.setAttribute("width", this.size.width);
-    clone.setAttribute("height", this.size.height);
+    clone.setAttribute("viewBox", `0 0 ${size.width} ${size.height}`);
+    clone.setAttribute("width", size.width);
+    clone.setAttribute("height", size.height);
     clone.querySelectorAll(".is-selected").forEach((e) => e.classList.remove("is-selected"));
     if (background) {
       const rect = document.createElementNS(SVG_NS, "rect");
       rect.setAttribute("x", 0);
       rect.setAttribute("y", 0);
-      rect.setAttribute("width", this.size.width);
-      rect.setAttribute("height", this.size.height);
+      rect.setAttribute("width", size.width);
+      rect.setAttribute("height", size.height);
       rect.setAttribute("fill", "#ffffff");
       clone.insertBefore(rect, clone.firstChild);
     }
@@ -3516,7 +3645,7 @@ class SyntaxTreeEditor {
       const raw = this.input.value;
       const clean = stripUnsupported(raw);
       if (clean !== raw) this.input.value = clean;
-      this.editing.label = clean;
+      this.#setNodeLabel(this.editing, clean);
       this.#relayout();
       this.#positionEditor();
     });
@@ -3538,7 +3667,7 @@ class SyntaxTreeEditor {
         }
         if (this.input.value !== this.editBackup) {
           this.input.value = this.editBackup;
-          this.editing.label = this.editBackup;
+          this.#setNodeLabel(this.editing, this.editBackup);
           this.#relayout();
           this.#positionEditor();
           this.input.select();
@@ -3577,6 +3706,22 @@ class SyntaxTreeEditor {
     this.byId = new Map(this.root ? preorder(this.root).map((n) => [n.id, n]) : []);
   }
 
+  /**
+   * drawTree 的选项。画布和导出共用这一份 —— 导出多传一个 `hideEscapes: true`，
+   * 那样转义节点会被画成"交点"而不是 %Empty 方框（见 toSvgString）。
+   */
+  #drawOptions(extra = {}) {
+    return {
+      selected: this.selected,
+      triangles: this.opts.triangles,
+      terminalLines: this.opts.terminalLines,
+      colors: this.opts.colors,
+      fontFamily: this.opts.fontFamily,
+      fontSize: this.opts.fontSize,
+      ...extra,
+    };
+  }
+
   #relayout() {
     // 空白画布：清空 SVG，显示引导层
     if (!this.root) {
@@ -3604,14 +3749,7 @@ class SyntaxTreeEditor {
       align: this.opts.align,
       center: this.opts.center,
     });
-    this.size = drawTree(this.svg, this.lay, {
-      selected: this.selected,
-      triangles: this.opts.triangles,
-      terminalLines: this.opts.terminalLines,
-      colors: this.opts.colors,
-      fontFamily: this.opts.fontFamily,
-      fontSize: this.opts.fontSize,
-    });
+    this.size = drawTree(this.svg, this.lay, this.#drawOptions());
     this.surface.style.width = `${this.size.width}px`;
     this.surface.style.height = `${this.size.height}px`;
 
@@ -3890,7 +4028,7 @@ class SyntaxTreeEditor {
     // 根节点：没有女儿节点时可以删（回到空白画布）；只有一个女儿节点时可以删（把它提上来）；
     // 有两个以上女儿节点时不允许删（删了没法安置其余分支）。
     this.btnDelete.disabled = !n || (n === this.root && n.children.length > 1);
-    this.btnChild.disabled = !n;
+    this.btnChild.disabled = !n || (n.escape === true && n.children.length >= 3);
     this.btnSibling.disabled = !n || n === this.root;
     this.btnMoveRight.disabled = !this.#canMoveRight();
     this.btnMoveLeft.disabled = !this.#canMoveLeft();
@@ -4020,6 +4158,8 @@ class SyntaxTreeEditor {
     if (!this.root) return this.createRoot();
     const target = this.selected || this.root;
     if (!target) return;
+    // 转义节点最多三个女儿节点（作者定的）：到顶了就不加，按钮也会是灰的
+    if (target.escape && target.children.length >= 3) return;
     let created = null;
     this.#mutate(
       () => {
@@ -4171,6 +4311,15 @@ class SyntaxTreeEditor {
     );
   }
 
+  /**
+   * 改标签（并且同步转义标记）。规则只有一条：标签**正好**是 %Empty 就是转义节点，
+   * 别的写法一律是普通标签 —— 想让 %Empty 只当普通标签，在代码框里写带引号的 "%Empty"。
+   */
+  #setNodeLabel(n, text) {
+    n.label = text;
+    n.escape = text === ESCAPE_LABEL;
+  }
+
   /** 套用标签（范畴快捷按钮 / 外部调用）。空白画布上会用它当根节点开一棵树 */
   setLabel(text) {
     const clean = stripUnsupported(text);
@@ -4181,7 +4330,7 @@ class SyntaxTreeEditor {
     const n = this.selected || this.root;
     if (!n || n.label === clean) return;
     this.#mutate(() => {
-      n.label = clean;
+      this.#setNodeLabel(n, clean);
     });
   }
 
@@ -4236,6 +4385,7 @@ class SyntaxTreeEditor {
     this.editing = null;
     this.input.hidden = true;
     n.label = this.editBackup;
+    n.escape = this.editBackup === ESCAPE_LABEL;
     this.undoStack.pop();
     this.#refresh({ syncText: true });
     if (refocus) this.scroller.focus();

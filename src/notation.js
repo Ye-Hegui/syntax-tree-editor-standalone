@@ -13,7 +13,7 @@
 //                               （见 model.js 的 nodeIds）
 //                               `-->` `<-` `<>` 是旧写法，仍然能读，但一律导出成 `->`
 
-import { node, nodeIds, walk } from "./model.js";
+import { node, nodeIds, walk, ESCAPE_LABEL } from "./model.js";
 import { splitStyleDecls, applyStyleDecls, styleDeclsText } from "./style.js";
 
 /**
@@ -156,6 +156,8 @@ function parseNode(tokens, i) {
   if (!labelTok || (labelTok.type !== STRING && labelTok.type !== QUOTED))
     throw new NotationError('"[" 之后需要节点标签', labelTok ? labelTok.start : tokens[i].end);
   n.label = labelTok.value;
+  // 裸写的 %Empty 是转义节点；写成 "%Empty"（带引号）只是一个普通标签
+  if (labelTok.type === STRING && n.label === ESCAPE_LABEL) n.escape = true;
   i += 2;
 
   const ss = parseSubSup(tokens, i);
@@ -181,6 +183,15 @@ function parseNode(tokens, i) {
   }
 
   if (i >= tokens.length) throw new NotationError('缺少闭合的 "]"', tokens[tokens.length - 1].end);
+
+  // 转义节点的两条限制（作者定的）：不能出现在树底，最多三个女儿节点
+  if (n.escape) {
+    if (!n.children.length)
+      throw new NotationError(`"${ESCAPE_LABEL}" 必须有女儿节点（转义节点不能出现在树底）`, labelTok.start);
+    if (n.children.length > 3)
+      throw new NotationError(`"${ESCAPE_LABEL}" 最多三个女儿节点，这里有 ${n.children.length} 个`, labelTok.start);
+  }
+
   return [i + 1, n];
 }
 
@@ -193,6 +204,9 @@ function parseValue(tokens, i) {
     const parts = [];
     while (i < tokens.length && tokens[i].type === STRING) parts.push(tokens[i++].value);
     n.label = parts.join(" ");
+    // 裸写的 %Empty 是转义节点，而裸标签一定是叶子 —— 叶子就是"在树底"，直接报错
+    if (n.label === ESCAPE_LABEL)
+      throw new NotationError(`"${ESCAPE_LABEL}" 必须有女儿节点（转义节点不能出现在树底）`, first.start);
   } else {
     n.label = String(first.value);
     i++;
@@ -300,9 +314,9 @@ function needsQuote(s, mode) {
   return /^\d/.test(str) && !/^\d+$/.test(str);
 }
 
-function quote(s, mode = "leaf") {
+function quote(s, mode = "leaf", force = false) {
   const str = s == null ? "" : String(s);
-  return needsQuote(str, mode) ? `"${str}"` : str;
+  return force || needsQuote(str, mode) ? `"${str}"` : str;
 }
 
 /**
@@ -329,7 +343,8 @@ export function serialize(root) {
     const bracketed = !isLeaf || forceBracket;
 
     if (bracketed) out += "[";
-    out += quote(n.label, bracketed ? "node" : "leaf");
+    // 标签正好是 %Empty 又不是转义节点时，必须带引号写，否则再解析回来就变成转义节点了
+    out += quote(n.label, bracketed ? "node" : "leaf", n.label === ESCAPE_LABEL && !n.escape);
 
     const hasSub = n.sub != null && n.sub !== "";
     const ss = hasSub ? n.sub : n.sup != null && n.sup !== "" ? n.sup : null;

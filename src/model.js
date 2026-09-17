@@ -13,9 +13,20 @@
 
 let SEQ = 1;
 
+/**
+ * 转义节点的标签。记法里**裸写**它（`%Empty`，精确大小写）表示"这一层不画方框"：
+ * 导出的图里，上面连过来的那条线会和它某个女儿的那条线画成**一条直线**（夹角 180°）。
+ * 想让它只当一个普通标签，写带引号的 `"%Empty"`。
+ *
+ * ⚠️ 这个功能作者确定**不公开**：不写进 README、教程和 CHANGELOG，只在 AGENTS.md 与
+ * HANDOVER.md 里留说明。
+ */
+export const ESCAPE_LABEL = "%Empty";
+
 export function node(label = "", children = []) {
   // italic / bold / strike / color 由记法末尾的 Italic(...) / Bold(...) / Strike(...) / Red(...) 声明设置，见 style.js
-  return { id: SEQ++, label, sub: null, sup: null, arrow: null, italic: false, bold: false, strike: false, color: null, children };
+  // escape 只由记法里裸写的 %Empty 设置（见 notation.js / rules.js），改名时会跟着标签同步
+  return { id: SEQ++, label, sub: null, sup: null, arrow: null, italic: false, bold: false, strike: false, color: null, escape: false, children };
 }
 
 export function walk(n, fn, parent = null) {
@@ -106,6 +117,7 @@ export function cloneSubtree(n) {
     c.bold = x.bold;
     c.strike = x.strike;
     c.color = x.color;
+    c.escape = x.escape;
     c.arrow = x.arrow ? { ...x.arrow } : null;
     map.set(x, c);
     c.children = x.children.map(copy);

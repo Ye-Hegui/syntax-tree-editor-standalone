@@ -1,4 +1,4 @@
-import { parseRules, toRulesText } from "../src/rules.js";
+import { parseRules, toRulesText, RuleError } from "../src/rules.js";
 // 纯逻辑层冒烟测试（不需要浏览器）
 //   node test/smoke.mjs
 import assert from "node:assert/strict";
@@ -843,6 +843,49 @@ t("cloneSubtree()：深拷贝、发新 id、箭头另存一份", () => {
   assert.ok(arrowCopy, "箭头要跟着拷过来");
   assert.notEqual(arrowCopy.arrow, arrowNode.arrow, "箭头对象要另存一份");
   assert.equal(arrowCopy.arrow.target, arrowNode.arrow.target, "落点先原样带着，重挂交给调用方");
+});
+
+console.log("\n[转义节点 %Empty]");
+
+t("裸写的 %Empty 是转义节点，能往返", () => {
+  const src = "[A [%Empty [B] [C]]]";
+  const root = parse(src);
+  const e = root.children[0];
+  assert.equal(e.label, "%Empty");
+  assert.equal(e.escape, true);
+  assert.equal(toText(root), src);
+  // 规则记法里也认，而且往返一致
+  const rules = "0 A -> %Empty\n1 %Empty -> B\n1 %Empty -> C";
+  const fromRules = parseRules(rules);
+  assert.equal(fromRules.children[0].escape, true);
+  assert.equal(toRulesText(fromRules), rules);
+});
+
+t("带引号的 \"%Empty\" 只是普通标签，往返不会被引号吃掉", () => {
+  const root = parse('["%Empty" [B] [C]]');
+  assert.equal(root.escape, false, "带引号的不是转义节点");
+  assert.equal(toText(root), '["%Empty" [B] [C]]', "导出必须带引号，否则再解析就变成转义节点了");
+  const back = parse(toText(root));
+  assert.equal(back.escape, false);
+});
+
+t("只认精确的 %Empty：大小写和 &Empty 都是普通标签", () => {
+  for (const label of ["%empty", "%EMPTY", "&Empty"]) {
+    const root = parse(`[A [${label} [B] [C]]]`);
+    assert.ok(!root.children[0].escape, `${label} 不该被当成转义节点`);
+  }
+});
+
+t("转义节点必须有女儿节点（不能出现在树底）", () => {
+  assert.throws(() => parse("[A [%Empty]]"), NotationError, "方括号里什么都不挂");
+  assert.throws(() => parse("[A %Empty]"), NotationError, "裸标签形式");
+  assert.throws(() => parseRules("0 A -> %Empty"), RuleError);
+});
+
+t("转义节点最多三个女儿节点", () => {
+  assert.equal(parse("[A [%Empty [B] [C] [D]]]").children[0].children.length, 3, "三个可以");
+  assert.throws(() => parse("[A [%Empty [B] [C] [D] [E]]]"), NotationError);
+  assert.throws(() => parseRules("0 A -> %Empty\n1 %Empty -> B\n1 %Empty -> C\n1 %Empty -> D\n1 %Empty -> E"), RuleError);
 });
 
 console.log("\n[文本 <-> 图的定位映射]");

@@ -41,6 +41,8 @@
    多词叶子渲染成**三角形**（`layout.js` 里 `triangles` 选项控制）。
 2. **`[X]` 表示"没有展开的范畴"，不是「词」** —— 默认和别的节点一样是蓝色，
    「单词标红」按钮也不会给它标红。判断依据见「约定」第 6 条。
+   （另有一个内部特性：裸写 `%Empty` 的"转义节点"在**导出**时不画方框、连线接成一条直线；
+   作者要求**不公开**，所以 README/教程/CHANGELOG 里都不写，细节见工作区 `HANDOVER.md` 第九部分 ⑤。）
 3. 标签里**不能有双引号**（记法没有转义），编辑器输入时自动去掉。
 4. 箭头只挂在**叶子**上，而且**起点和落点都必须是叶子** —— 词序号只能定位到词。
    这是对齐 jsSyntaxTree 的结果，它的箭头本来就只连词。要指向非叶子只能改用规则记法。
@@ -94,7 +96,7 @@
 
 | 模块 | 导出 |
 | --- | --- |
-| `src/model.js` | `node` `walk` `preorder` `findParent` `nodeIds` `cloneSubtree` `addChild` `removeNode` `canAddPrimeLevel` `addPrimeLevel` `canCollapsePrimeLevel` `collapsePrimeLevel` `moveNodeLeft` `moveNodeRight` |
+| `src/model.js` | `node` `walk` `preorder` `findParent` `nodeIds` `cloneSubtree` `ESCAPE_LABEL` `addChild` `removeNode` `canAddPrimeLevel` `addPrimeLevel` `canCollapsePrimeLevel` `collapsePrimeLevel` `moveNodeLeft` `moveNodeRight` |
 | `src/notation.js` | `parse` `serialize` `toText` `NotationError` |
 | `src/rules.js` | `parseRules` `serializeRules` `toRulesText` `RuleError` |
 | `src/style.js` | `splitStyleDecls` `applyStyleDecls` `styleDeclsText` |

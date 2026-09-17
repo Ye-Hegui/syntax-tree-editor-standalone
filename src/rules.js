@@ -25,7 +25,7 @@
 // （见 editor.js 的 #repairRulesNumbers），所以这里解析时做一次宽松处理：
 // 编号对不上就退回按标签找，这样编辑器才有机会把它修正。
 
-import { node, nodeIds, preorder } from "./model.js";
+import { node, nodeIds, preorder, ESCAPE_LABEL } from "./model.js";
 import { splitStyleDecls, applyStyleDecls, styleDeclsText } from "./style.js";
 
 export class RuleError extends Error {
@@ -49,10 +49,12 @@ function parseLabelToken(text, lineNo) {
   if (i >= text.length) throw new RuleError("这里需要一个标签", lineNo);
 
   let label;
+  let quoted = false;
   if (text[i] === '"') {
     const end = text.indexOf('"', i + 1);
     if (end < 0) throw new RuleError("引号没有闭合", lineNo);
     label = text.slice(i + 1, end);
+    quoted = true;
     i = end + 1;
   } else {
     let j = i;
@@ -91,13 +93,15 @@ function parseLabelToken(text, lineNo) {
   if (i !== text.length)
     throw new RuleError("标签后面还有多余内容（含空格的标签要用双引号括起来）", lineNo);
 
-  return { label, sub, sup };
+  return { label, sub, sup, quoted };
 }
 
 function makeNode(spec) {
   const n = node(spec.label);
   n.sub = spec.sub ?? null;
   n.sup = spec.sup ?? null;
+  // 裸写的 %Empty 是转义节点；写成 "%Empty"（带引号）只是一个普通标签
+  if (!spec.quoted && spec.label === ESCAPE_LABEL) n.escape = true;
   return n;
 }
 
@@ -236,13 +240,24 @@ export function parseRules(text) {
   }
 
   applyStyleDecls(root, decls);
+
+  // 转义节点的两条限制（作者定的）：不能出现在树底，最多三个女儿节点
+  for (const n of preorder(root)) {
+    if (!n.escape) continue;
+    if (!n.children.length)
+      throw new RuleError(`"${ESCAPE_LABEL}" 必须有女儿节点（转义节点不能出现在树底）`, n.line ?? 1);
+    if (n.children.length > 3)
+      throw new RuleError(`"${ESCAPE_LABEL}" 最多三个女儿节点，这里有 ${n.children.length} 个`, n.line ?? 1);
+  }
   return root;
 }
 
 /** 把一个标签（含下/上标）写成规则记法里的 token */
 function tokenOf(n) {
   const label = String(n.label ?? "");
-  const bare = label !== "" && !/[\s"^_]/.test(label) && !/-->|->/.test(label);
+  // 标签正好是 %Empty 又不是转义节点时，必须带引号写，否则再解析回来就变成转义节点了
+  const force = label === ESCAPE_LABEL && !n.escape;
+  const bare = !force && label !== "" && !/[\s"^_]/.test(label) && !/-->|->/.test(label);
   const head = bare ? label : `"${label.replace(/"/g, "")}"`;
 
   const ss = (v) => (/[\s"]/.test(String(v)) ? `"${String(v).replace(/"/g, "")}"` : String(v));

@@ -85,9 +85,76 @@ export function drawTree(svg, lay, opts = {}) {
     });
 
   // ---- 父子连线 / 三角
+  //
+  // 一般情况：母亲框底中心 -> 女儿框顶中心，一条直线。
+  //
+  // 转义节点（标签裸写 %Empty）在导出里（o.hideEscapes）不画方框，连线这样处理：
+  //   挑"母亲相反那一侧"的女儿 B（母亲正好在正上方时挑中间那个），
+  //   把 母亲框底 A -> B框顶 画成**一条直线** —— 这条线穿过转义节点那一层，
+  //   它和 B 的那一段与 A 的那一段夹角就是 180°（共线是这么构造出来的，不靠摆角度）。
+  //   直线与"转义节点那一行的底"的交点 J，其余女儿从 J 出发。
+  // 转义节点自己没有女儿时（作者允许编辑时删成那样）：什么都不画。
   for (const it of items) {
+    const hiddenMother = o.hideEscapes && it.node.escape;
+    // 被藏起来的转义节点，它的连线已经在"母亲那一次循环"里从交点画过了；
+    // 根节点没有母亲，只能在这里照常画（没有上面那条线，也就没有交点这回事）。
+    if (hiddenMother && it !== items[0]) continue;
+
     for (const c of it.node.children) {
       const ci = info.get(c);
+      const hiddenChild = o.hideEscapes && c.escape;
+
+      if (hiddenChild) {
+        if (!c.children.length) continue; // 空转义节点：没东西可画
+        const x1 = it.cx;
+        const y1 = it.y + nodeH + 2;
+        const yJ = ci.y + nodeH + 2;
+        // 母亲正好在转义节点正上方时挑中间那个，否则挑相反那一侧
+        const same = Math.abs(it.cx - ci.cx) < 0.5;
+        const idx = same ? Math.floor((c.children.length - 1) / 2) : it.cx < ci.cx ? c.children.length - 1 : 0;
+        const b = c.children[idx];
+        const bi = info.get(b);
+        const x2 = bi.cx;
+        const y2 = bi.y - 3;
+
+        // 一条直线：共线（180°）由这条线自己保证
+        gEdge.appendChild(
+          el("line", { x1, y1, x2, y2, stroke: COLORS.edge, "stroke-width": 1.2 }),
+        );
+        const t = y2 === y1 ? 0 : (yJ - y1) / (y2 - y1);
+        const Jx = x1 + (x2 - x1) * t;
+
+        c.children.forEach((d, di) => {
+          if (di === idx) return;
+          const didx = info.get(d);
+          const isTriangle = o.triangles && d.children.length === 0 && d.label.includes(" ");
+          if (isTriangle) {
+            const half = didx.textW / 2 + 4;
+            gEdge.appendChild(
+              el("polygon", {
+                points: `${Jx},${yJ} ${didx.cx + half},${didx.y - 3} ${didx.cx - half},${didx.y - 3}`,
+                fill: "none",
+                stroke: COLORS.edge,
+                "stroke-width": 1.2,
+                "stroke-linejoin": "round",
+              }),
+            );
+          } else if (o.terminalLines || d.children.length > 0) {
+            gEdge.appendChild(
+              el("line", {
+                x1: Jx,
+                y1: yJ,
+                x2: didx.cx,
+                y2: didx.y - 3,
+                stroke: COLORS.edge,
+                "stroke-width": 1.2,
+              }),
+            );
+          }
+        });
+        continue;
+      }
+
       const isTriangle = o.triangles && c.children.length === 0 && c.label.includes(" ");
 
       if (isTriangle) {
@@ -142,6 +209,13 @@ export function drawTree(svg, lay, opts = {}) {
       class: o.selected === n ? "ste-node is-selected" : "ste-node",
       "data-id": n.id,
     });
+
+    // 导出时转义节点不画方框和标签（画布上照常画，方便点选）—— 见 hideEscapes
+    const hiddenNode = o.hideEscapes && n.escape;
+    if (hiddenNode) {
+      gNode.appendChild(g);
+      continue;
+    }
 
     // 命中区域只覆盖标签本身，不覆盖整棵子树，否则命中会互相抢占
     g.appendChild(
