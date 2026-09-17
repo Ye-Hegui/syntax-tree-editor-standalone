@@ -128,6 +128,24 @@ section("中英文案表的 key 一一对应");
   }
 }
 
+section("版本号三处一致（package.json / 页脚 / CHANGELOG 顶部）");
+
+{
+  // 发版流程要求这三处同步，但以前全靠人记；忘一处读者就会看到两个版本号。
+  const pkg = JSON.parse(read("package.json"));
+  const want = String(pkg.version);
+  const footer = /v(\d+\.\d+\.\d+)\s*·/.exec(INDEX);
+  const changelog = /^##\s+v(\d+\.\d+\.\d+)/m.exec(read("CHANGELOG.md"));
+  const got = [
+    ["package.json", want],
+    ["index.html 页脚", footer ? footer[1] : "(找不到 vX.Y.Z)"],
+    ["CHANGELOG 顶部的一节", changelog ? changelog[1] : "(找不到 ## vX.Y.Z)"],
+  ];
+  const bad = got.filter(([, v]) => v !== want);
+  if (bad.length) fail(`版本号对不上：期望 ${want}，但 ${bad.map(([n, v]) => `${n} 是 ${v}`).join("；")}`);
+  else pass(`三处都是 v${want}`);
+}
+
 section("AGENTS.md 没有和源码脱节");
 
 {
