@@ -37,7 +37,7 @@ const PURPOSE = {
   "tools/build-standalone.mjs": "把 7 个模块内联成那个单文件版。",
   "tools/check-project.mjs": "一致性自检：文档 / 文件结构 / 构建产物不许对不上。",
   "tools/gen-structure.mjs": "生成这份 STRUCTURE.md。",
-  "docs/": "截图，被 README 引用。",
+  "screenshots/": "手工截的图，被 README 引用（和 example/ 不同：那边是生成的）。",
 };
 
 const NOTES = {
@@ -135,16 +135,16 @@ out.push(
     "改了源码之后跑 `node tools/gen-structure.mjs` 重新生成；`npm test` 会检查它是不是最新的。\n",
 );
 
-out.push("\n## 顶层\n\n```\nSyntax Tree Helper/\n├── README.md              工作区总览：哪部分是自己写的、哪部分是参考项目\n├── editor/                ⭐ 正式项目（下面详细展开）\n├── jssyntaxtree-master/   参考项目（jsSyntaxTree v1.4，GPL-2.0），一行没动\n└── jssyntaxtree-master.zip\n```\n");
+out.push("\n## 顶层（工作区）\n\n```\nSyntax Tree Helper/\n├── README.md              工作区说明：哪部分是自己写的、哪部分是参考项目\n├── Todolist.md            待办清单（简明版）\n├── HANDOVER.md            交接笔记（本地，不在仓库里）\n├── Syntax Tree Editor Standalone/    ⭐ 正式项目（下面详细展开）\n├── disk_v1.2.0/           网盘版 v1.2.0 快照（不要动）\n├── reference/             只读参考（jsSyntaxTree，GPL-2.0）\n└── archive/               过期与一次性产物\n```\n");
 
-out.push("\n## Syntax Tree Editor Standalone/\n\n```\nSyntax Tree Editor Standalone/\n├── Syntax Tree Editor Standalone.html   双击即用的单文件版（构建产物）\n├── index.html         演示页\n├── style.css          全部样式\n├── package.json       build / test / serve\n├── README.md          项目说明\n├── .gitignore\n├── src/               7 个模块\n├── test/              4 个测试套件 + DOM 垫片\n├── tools/             构建、自检、生成本文件\n└── docs/              截图\n```\n");
+out.push("\n## Syntax Tree Editor Standalone/\n\n```\nSyntax Tree Editor Standalone/\n├── Syntax Tree Editor Standalone.html   双击即用的单文件版（构建产物）\n├── index.html         演示页 + 使用教程\n├── style.css          全部样式\n├── package.json       build / test / serve\n├── README.md          项目说明（面向使用者，中英对照）\n├── AGENTS.md          给 AI agent 的项目说明\n├── AI-INTRO.md        给 AI 的规则记法说明与出图入口\n├── CHANGELOG.md       更新日志\n├── STRUCTURE.md       本文件（自动生成）\n├── LICENSE            MIT\n├── .gitignore / .gitattributes\n├── src/               8 个模块\n├── test/              4 个测试套件 + DOM 垫片\n├── tools/             构建、自检、生成示例图与索引、文本出图\n├── screenshots/       手工截图（README 用）\n└── example/           教程配图（生成，构建时内联）\n```\n");
 
 const groups = [
   ["入口与样式", ["index.html", "style.css", "package.json", "README.md", ".gitignore", "Syntax Tree Editor Standalone.html"]],
   ["src/ —— 源码", readdirSync(join(ROOT, "src")).filter((f) => f.endsWith(".js")).map((f) => `src/${f}`)],
   ["test/ —— 测试", readdirSync(join(ROOT, "test")).filter((f) => f.endsWith(".mjs")).map((f) => `test/${f}`)],
   ["tools/ —— 工具", readdirSync(join(ROOT, "tools")).filter((f) => f.endsWith(".mjs")).map((f) => `tools/${f}`)],
-  ["docs/ —— 截图", readdirSync(join(ROOT, "docs")).map((f) => `docs/${f}`)],
+  ["screenshots/ —— 手工截图（README 用）", readdirSync(join(ROOT, "screenshots")).map((f) => `screenshots/${f}`)],
 ];
 
 for (const [title, files] of groups) {

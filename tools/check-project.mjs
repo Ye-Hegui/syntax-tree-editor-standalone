@@ -28,17 +28,17 @@ const INDEX = read("index.html");
 
 section("文档里引用的图片都存在，且没有孤儿图");
 for (const [name, text] of [["README.md", README], ["index.html", INDEX]]) {
-  for (const m of text.matchAll(/(docs\/[\w.-]+\.png)/g)) {
+  for (const m of text.matchAll(/(screenshots\/[\w.-]+\.png)/g)) {
     if (existsSync(join(ROOT, m[1]))) pass(`${name} -> ${m[1]}`);
     else fail(`${name} 引用了不存在的 ${m[1]}`);
   }
 }
 const referenced = new Set();
 for (const text of [README, INDEX]) {
-  for (const m of text.matchAll(/(docs\/[\w.-]+\.png)/g)) referenced.add(m[1]);
+  for (const m of text.matchAll(/(screenshots\/[\w.-]+\.png)/g)) referenced.add(m[1]);
 }
-for (const f of readdirSync(join(ROOT, "docs"))) {
-  const p = `docs/${f}`;
+for (const f of readdirSync(join(ROOT, "screenshots"))) {
+  const p = `screenshots/${f}`;
   if (referenced.has(p)) pass(`${p} 有被引用`);
   else fail(`${p} 没有被任何文档引用（孤儿图）`);
 }

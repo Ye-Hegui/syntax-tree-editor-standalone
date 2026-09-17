@@ -6,7 +6,7 @@ A simple and lightweight syntax tree editor. Diagram and code stay in sync — j
 > 本项目由 deepseek 辅助开发。
 > This project is developed with the assistance of DeepSeek.
 
-![编辑器截图](docs/overview.png)
+![编辑器截图](screenshots/overview.png)
 
 ## 这是什么 / What this is
 
@@ -38,11 +38,11 @@ Detailed instructions for each operation are in the "使用方法" section at th
 
 | 按层级 / Depth | 词对齐底部 / Words bottom | 整树贴底 / Tree bottom |
 | --- | --- | --- |
-| ![按层级](docs/align-depth.png) | ![词对齐底部](docs/align-leaves.png) | ![整树贴底](docs/align-compact.png) |
+| ![按层级](screenshots/align-depth.png) | ![词对齐底部](screenshots/align-leaves.png) | ![整树贴底](screenshots/align-compact.png) |
 
 | 空白画布 / Blank canvas | 规则记法与装订线 / Rule notation and gutter |
 | --- | --- |
-| ![空白画布](docs/blank.png) | ![规则记法](docs/rules-gutter.png) |
+| ![空白画布](screenshots/blank.png) | ![规则记法](screenshots/rules-gutter.png) |
 
 ## 两套记法 / The two notations
 
@@ -152,9 +152,36 @@ tools/check-project.mjs              一致性自检 / consistency self-check
 tools/gen-examples.mjs               生成示例图 / generates the example images
 tools/gen-structure.mjs              生成 STRUCTURE.md / generates STRUCTURE.md
 tools/render-rules.mjs               规则记法文本直接出 SVG / rules text to SVG, no browser
-docs/                                截图 / screenshots
-example/                             示例图，构建时内联 / example images, inlined at build time
+screenshots/                         手工截图，被本文件引用 / hand-taken, referenced by this file
+example/                             教程配图，生成后在构建时内联 / tutorial figures, generated then inlined
 ```
+
+## 文档地图与生成物 / Docs map and generated files
+
+哪份文件是给谁看的、哪些是生成出来的：
+
+| 文件 / File | 给谁 / For | 手写还是生成 / Hand-written or generated |
+| --- | --- | --- |
+| `README.md` | 使用者 / users | 手写 / hand-written |
+| `index.html` 的教程 / tutorial | 使用者 / users | 手写 / hand-written |
+| `AGENTS.md` | AI agent（改代码前必读 / read before editing） | 手写 / hand-written |
+| `AI-INTRO.md` | AI agent（只讲规则记法与出图 / notation + rendering only） | 手写 / hand-written |
+| `CHANGELOG.md` | 发布记录 / release notes | 手写 / hand-written |
+| `STRUCTURE.md` | 查行号 / line-number index | **生成**：`node tools/gen-structure.mjs` |
+| `Syntax Tree Editor Standalone.html` | 交付物 / deliverable | **生成**：`npm run build` |
+| `example/*.svg` | 教程配图 / tutorial figures | **生成**：`node tools/gen-examples.mjs` |
+| `screenshots/*.png` | 本文件的截图 / screenshots for this README | 手工，界面一变要重拍 / manual, retake after UI changes |
+
+改哪一类文件、之后要跑什么：
+
+| 改了什么 / Changed | 之后必须跑 / Then run |
+| --- | --- |
+| `src/`、`index.html`、`style.css` | `npm run build` + `npm test` |
+| 测试用例数量 / number of test cases | 同步本文件里的 `（N 项）`，再 `npm test` |
+| 教程正文 / tutorial text | `npm test`（自检校锚点与图片引用） |
+| `example/` 的配图（改绘图逻辑 / drawing logic） | `node tools/gen-examples.mjs` + `npm run build` |
+| 界面外观 / UI appearance | 重拍 `screenshots/`，再 `npm test` |
+| `screenshots/` 里的图 / screenshots | `npm test`（自检查孤儿图与引用） |
 
 ## 已知限制 / Known limitations
 

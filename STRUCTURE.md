@@ -2,14 +2,17 @@
 这份文件由 `tools/gen-structure.mjs` 自动生成，行号取自源码。
 改了源码之后跑 `node tools/gen-structure.mjs` 重新生成；`npm test` 会检查它是不是最新的。
 
-## 顶层
+## 顶层（工作区）
 
 ```
 Syntax Tree Helper/
-├── README.md              工作区总览：哪部分是自己写的、哪部分是参考项目
-├── editor/                ⭐ 正式项目（下面详细展开）
-├── jssyntaxtree-master/   参考项目（jsSyntaxTree v1.4，GPL-2.0），一行没动
-└── jssyntaxtree-master.zip
+├── README.md              工作区说明：哪部分是自己写的、哪部分是参考项目
+├── Todolist.md            待办清单（简明版）
+├── HANDOVER.md            交接笔记（本地，不在仓库里）
+├── Syntax Tree Editor Standalone/    ⭐ 正式项目（下面详细展开）
+├── disk_v1.2.0/           网盘版 v1.2.0 快照（不要动）
+├── reference/             只读参考（jsSyntaxTree，GPL-2.0）
+└── archive/               过期与一次性产物
 ```
 
 ## Syntax Tree Editor Standalone/
@@ -17,15 +20,21 @@ Syntax Tree Helper/
 ```
 Syntax Tree Editor Standalone/
 ├── Syntax Tree Editor Standalone.html   双击即用的单文件版（构建产物）
-├── index.html         演示页
+├── index.html         演示页 + 使用教程
 ├── style.css          全部样式
 ├── package.json       build / test / serve
-├── README.md          项目说明
-├── .gitignore
-├── src/               7 个模块
+├── README.md          项目说明（面向使用者，中英对照）
+├── AGENTS.md          给 AI agent 的项目说明
+├── AI-INTRO.md        给 AI 的规则记法说明与出图入口
+├── CHANGELOG.md       更新日志
+├── STRUCTURE.md       本文件（自动生成）
+├── LICENSE            MIT
+├── .gitignore / .gitattributes
+├── src/               8 个模块
 ├── test/              4 个测试套件 + DOM 垫片
-├── tools/             构建、自检、生成本文件
-└── docs/              截图
+├── tools/             构建、自检、生成示例图与索引、文本出图
+├── screenshots/       手工截图（README 用）
+└── example/           教程配图（生成，构建时内联）
 ```
 
 ---
@@ -56,7 +65,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/editor.js`
 > 核心组件 SyntaxTreeEditor：交互、快捷键、撤销、双向同步、空白画布、装订线。
-> 1659 行 / 59435 字节
+> 1659 行 / 59418 字节
 
 私有方法以 `#` 开头，只在类内部使用。
 
@@ -506,7 +515,7 @@ Syntax Tree Editor Standalone/
 
 ### `tools/check-project.mjs`
 > 一致性自检：文档 / 文件结构 / 构建产物不许对不上。
-> 147 行 / 6013 字节
+> 147 行 / 6041 字节
 
 **函数**
 
@@ -538,7 +547,7 @@ Syntax Tree Editor Standalone/
 
 ### `tools/gen-structure.mjs`
 > 生成这份 STRUCTURE.md。
-> 184 行 / 8948 字节
+> 184 行 / 9750 字节
 
 **函数**
 
@@ -573,24 +582,24 @@ Syntax Tree Editor Standalone/
 
 ---
 
-## docs/ —— 截图
+## screenshots/ —— 手工截图（README 用）
 
-### `docs/align-compact.png`
+### `screenshots/align-compact.png`
 > —
 
-### `docs/align-depth.png`
+### `screenshots/align-depth.png`
 > —
 
-### `docs/align-leaves.png`
+### `screenshots/align-leaves.png`
 > —
 
-### `docs/blank.png`
+### `screenshots/blank.png`
 > —
 
-### `docs/overview.png`
+### `screenshots/overview.png`
 > —
 
-### `docs/rules-gutter.png`
+### `screenshots/rules-gutter.png`
 > —
 
 ---
