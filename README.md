@@ -140,6 +140,7 @@ src/rules.js                         规则记法 ↔ 模型 / rule notation to 
 src/style.js                         斜体 / 粗体 / 删除线 / 颜色声明 / italic, bold, strikethrough and colour declarations
 src/layout.js                        布局与对齐，不依赖 DOM / layout and alignment, DOM-free
 src/render.js                        渲染为可交互 SVG / renders an interactive SVG
+src/i18n.js                          界面文案表（中/英）与三套称谓用词 / UI strings (zh/en) and the term sets
 src/editor.js                        核心组件 SyntaxTreeEditor / the core component
 src/main.js                          演示页引导 / demo page bootstrap
 test/smoke.mjs                       纯逻辑测试 / pure logic tests

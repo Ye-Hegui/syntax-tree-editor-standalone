@@ -101,6 +101,33 @@ for (const f of readdirSync(join(ROOT, "src"))) {
 
 // ---------------------------------------------------------------- AGENTS.md 和源码对得上吗
 
+section("中英文案表的 key 一一对应");
+
+{
+  const { STRINGS, TERMS, TERM_KINDS, LANGS } = await import("../src/i18n.js");
+
+  const zhKeys = Object.keys(STRINGS.zh).sort();
+  const enKeys = Object.keys(STRINGS.en).sort();
+  const onlyZh = zhKeys.filter((k) => !(k in STRINGS.en));
+  const onlyEn = enKeys.filter((k) => !(k in STRINGS.zh));
+  if (onlyZh.length || onlyEn.length)
+    fail(`文案表两边对不上：中文多 [${onlyZh.join(", ")}]；英文多 [${onlyEn.join(", ")}]`);
+  else pass(`${zhKeys.length} 条文案 key，中英完全一致`);
+
+  for (const lang of LANGS) {
+    for (const kind of TERM_KINDS) {
+      const pairs = (TERMS[lang] || {})[kind];
+      if (pairs == null) {
+        pass(`${lang}/${kind} 是基准写法，不需要替换`);
+        continue;
+      }
+      const bad = pairs.filter((p) => !Array.isArray(p) || p.length !== 2 || !p[0] || !p[1]);
+      if (bad.length || !pairs.length) fail(`${lang}/${kind} 的替换表有问题：${JSON.stringify(bad)}`);
+      else pass(`${lang}/${kind}：${pairs.length} 条替换`);
+    }
+  }
+}
+
 section("AGENTS.md 没有和源码脱节");
 
 {

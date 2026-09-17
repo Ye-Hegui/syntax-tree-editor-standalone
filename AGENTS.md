@@ -7,7 +7,7 @@
 
 ## 这是什么
 
-一个**零依赖、免构建**的语法树编辑器。8 个原生 ES Module（`src/`），一个构建脚本把它们
+一个**零依赖、免构建**的语法树编辑器。9 个原生 ES Module（`src/`），一个构建脚本把它们
 连同 CSS、示例图一起内联成 `Syntax Tree Editor Standalone.html` —— 双击即用，不联网、不起服务器。
 
 图形和代码**双向同步**。没有框架、没有 bundler、没有 npm 依赖、没有测试框架（测试是手写的极简 runner）。
@@ -97,6 +97,7 @@
 | 模块 | 导出 |
 | --- | --- |
 | `src/model.js` | `node` `walk` `preorder` `findParent` `nodeIds` `cloneSubtree` `ESCAPE_LABEL` `addChild` `removeNode` `canAddPrimeLevel` `addPrimeLevel` `canCollapsePrimeLevel` `collapsePrimeLevel` `moveNodeLeft` `moveNodeRight` |
+| `src/i18n.js` | `STRINGS` `LANGS` `LANG_LABELS` `TERMS` `TERM_KINDS` `TERM_LABELS` `text` `applyTerms` —— 界面文案表与三套称谓用词，纯数据加两个纯函数，不依赖 DOM |
 | `src/notation.js` | `parse` `serialize` `toText` `NotationError` |
 | `src/rules.js` | `parseRules` `serializeRules` `toRulesText` `RuleError` |
 | `src/style.js` | `splitStyleDecls` `applyStyleDecls` `styleDeclsText` |

@@ -20,6 +20,7 @@ export const OUT_NAME = "Syntax Tree Editor Standalone.html";
 const MODULES = [
   "src/model.js",
   "src/style.js", // 依赖 model.js，排在它后面
+  "src/i18n.js", // 界面文案表（纯数据），editor.js 依赖它
   "src/notation.js",
   "src/rules.js",
   "src/layout.js",

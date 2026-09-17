@@ -30,7 +30,7 @@ Syntax Tree Editor Standalone/
 ├── STRUCTURE.md       本文件（自动生成）
 ├── LICENSE            MIT
 ├── .gitignore / .gitattributes
-├── src/               8 个模块
+├── src/               9 个模块
 ├── test/              4 个测试套件 + DOM 垫片
 ├── tools/             构建、自检、生成示例图与索引、文本出图
 ├── screenshots/       手工截图（README 用）
@@ -65,7 +65,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/editor.js`
 > 核心组件 SyntaxTreeEditor：交互、快捷键、撤销、双向同步、空白画布、装订线。
-> 1668 行 / 59980 字节
+> 1665 行 / 59838 字节
 
 私有方法以 `#` 开头，只在类内部使用。
 
@@ -90,7 +90,7 @@ Syntax Tree Editor Standalone/
 | 111 | `offsetToLineCol` | — |
 | 124 | `lineColToOffset` | — |
 | 153 | `rulesToSvg` | 一行出图：**文本 → SVG 字符串**，不需要页面上先有一个编辑器实例。 |
-| 1660 | `countSubtree` | — |
+| 1657 | `countSubtree` | — |
 
 **类**
 
@@ -105,77 +105,94 @@ Syntax Tree Editor Standalone/
 | 167 | `constructor` | — |
 | 229 | `setValue` | 用括号记法设置整棵树。 |
 | 243 | `setStyle` | 设置选中节点的字体样式。italic / bold / strike 会写进记法末尾的 |
-| 265 | `markAllBlue` | 全蓝：给**每个**节点写上蓝色声明（所以"全蓝"就是真的全蓝，不是"清掉颜色"）。 |
-| 276 | `markWordsRed` | — |
-| 287 | `markSelectedRed` | — |
-| 297 | `markSelectedBlue` | — |
-| 310 | `toggleSelectedItalic` | 节点斜体：切换选中节点的斜体（再点一次取消）。 |
-| 318 | `toggleSelectedStrike` | — |
-| 326 | `getValue` | — |
-| 334 | `loadValue` | 载入一棵新树，但**保留撤销历史** —— 按 Ctrl+Z 可以退回载入之前的那棵树。 |
-| 348 | `clear` | — |
-| 353 | `setOptions` | — |
-| 359 | `toSvgString` | — |
-| 391 | `exportSvg` | — |
-| 395 | `exportPng` | — |
-| 421 | `#buildDom` | ------------------------------------------------------------ DOM 骨架 |
-| 758 | `#reindex` | ------------------------------------------------------------ 渲染管线 |
-| 766 | `#drawOptions` | drawTree 的选项。画布和导出共用这一份 —— 导出多传一个 `hideEscapes: true`， |
-| 779 | `#relayout` | — |
-| 817 | `#refresh` | — |
-| 829 | `#serializeCurrent` | — |
-| 834 | `#parseCurrent` | — |
-| 838 | `#syncTextModeButtons` | — |
-| 847 | `setTextMode` | — |
-| 862 | `#buildCodeBox` | 代码框 = 左边一条装订线（行号）+ 右边真正的 textarea。 |
-| 889 | `#syncGutter` | 按当前文本刷新装订线。 |
-| 903 | `#syncGutterScroll` | — |
-| 915 | `#repairRulesNumbers` | 规则记法里"编号就是行号"，所以在上面插一行、删一行都会让下面所有引用错位。 |
-| 963 | `#syncTextareaSize` | — |
-| 968 | `getRules` | — |
-| 973 | `setRules` | — |
-| 982 | `#syncCenterButtons` | — |
-| 991 | `setCenter` | — |
-| 998 | `#syncAlignButtons` | — |
-| 1010 | `#syncStyleButtons` | 斜体 / 删除线那两个按钮是开关，所以要反映选中节点的当前状态。 |
-| 1018 | `setAlign` | — |
-| 1025 | `#writeText` | — |
-| 1032 | `#emitChange` | — |
-| 1043 | `#updateStatus` | — |
-| 1104 | `#showError` | — |
-| 1113 | `#clearError` | — |
-| 1125 | `#select` | 切换选中态。 |
-| 1141 | `#snapshot` | ------------------------------------------------------------ 历史 |
-| 1149 | `#pushUndo` | — |
-| 1156 | `#restore` | — |
-| 1168 | `undo` | — |
-| 1174 | `redo` | — |
-| 1180 | `#mutate` | — |
-| 1193 | `createRoot` | 在空白画布上创建根节点，并直接进入改名状态。 |
-| 1211 | `addChild` | — |
-| 1229 | `addSibling` | — |
-| 1254 | `addLevel` | 下移（Tab）：给投射链增加一层投射层（详见 model.js 的 addPrimeLevel）。 |
-| 1275 | `collapseLevel` | 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、 |
-| 1285 | `#canMoveLeft` | — |
-| 1297 | `#canMoveRight` | — |
-| 1312 | `moveLeft` | 左移（Alt+← / Ctrl+←）：自己是最左边的女儿节点时，搬到母亲节点的左姊妹节点底下。 |
-| 1320 | `moveRight` | 右移（Alt+→ / Ctrl+→）：自己是最右边的女儿节点时，搬到母亲节点的右姊妹节点底下。 |
-| 1331 | `remove` | 删除选中的节点。 |
-| 1372 | `#setNodeLabel` | 改标签（并且同步转义标记）。规则只有一条：标签**正好**是 %Empty 就是转义节点， |
-| 1378 | `setLabel` | — |
-| 1393 | `#startEdit` | ------------------------------------------------------------ 内联改名 |
-| 1407 | `#positionEditor` | — |
-| 1426 | `#commitEdit` | 提交改名。 |
-| 1436 | `#cancelEdit` | — |
-| 1450 | `#onCanvasDown` | ------------------------------------------------------------ 事件 |
-| 1463 | `#onCanvasDblClick` | — |
-| 1474 | `setTerms` | 换一套亲属称谓。**只改界面上的文字**（按钮名、提示行、装订线说明）， |
-| 1481 | `#t` | — |
-| 1487 | `#term` | — |
-| 1492 | `#onKeyDown` | — |
-| 1594 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
-| 1624 | `#selectFromCaret` | — |
-| 1646 | `#selectByOffset` | — |
+| 262 | `markAllBlue` | — |
+| 273 | `markWordsRed` | — |
+| 284 | `markSelectedRed` | — |
+| 294 | `markSelectedBlue` | — |
+| 307 | `toggleSelectedItalic` | 节点斜体：切换选中节点的斜体（再点一次取消）。 |
+| 315 | `toggleSelectedStrike` | — |
+| 323 | `getValue` | — |
+| 331 | `loadValue` | 载入一棵新树，但**保留撤销历史** —— 按 Ctrl+Z 可以退回载入之前的那棵树。 |
+| 345 | `clear` | — |
+| 350 | `setOptions` | — |
+| 356 | `toSvgString` | — |
+| 388 | `exportSvg` | — |
+| 392 | `exportPng` | — |
+| 418 | `#buildDom` | ------------------------------------------------------------ DOM 骨架 |
+| 755 | `#reindex` | ------------------------------------------------------------ 渲染管线 |
+| 763 | `#drawOptions` | drawTree 的选项。画布和导出共用这一份 —— 导出多传一个 `hideEscapes: true`， |
+| 776 | `#relayout` | — |
+| 814 | `#refresh` | — |
+| 826 | `#serializeCurrent` | — |
+| 831 | `#parseCurrent` | — |
+| 835 | `#syncTextModeButtons` | — |
+| 844 | `setTextMode` | — |
+| 859 | `#buildCodeBox` | 代码框 = 左边一条装订线（行号）+ 右边真正的 textarea。 |
+| 886 | `#syncGutter` | 按当前文本刷新装订线。 |
+| 900 | `#syncGutterScroll` | — |
+| 912 | `#repairRulesNumbers` | 规则记法里"编号就是行号"，所以在上面插一行、删一行都会让下面所有引用错位。 |
+| 960 | `#syncTextareaSize` | — |
+| 965 | `getRules` | — |
+| 970 | `setRules` | — |
+| 979 | `#syncCenterButtons` | — |
+| 988 | `setCenter` | — |
+| 995 | `#syncAlignButtons` | — |
+| 1007 | `#syncStyleButtons` | 斜体 / 删除线那两个按钮是开关，所以要反映选中节点的当前状态。 |
+| 1015 | `setAlign` | — |
+| 1022 | `#writeText` | — |
+| 1029 | `#emitChange` | — |
+| 1040 | `#updateStatus` | — |
+| 1101 | `#showError` | — |
+| 1110 | `#clearError` | — |
+| 1122 | `#select` | 切换选中态。 |
+| 1138 | `#snapshot` | ------------------------------------------------------------ 历史 |
+| 1146 | `#pushUndo` | — |
+| 1153 | `#restore` | — |
+| 1165 | `undo` | — |
+| 1171 | `redo` | — |
+| 1177 | `#mutate` | — |
+| 1190 | `createRoot` | 在空白画布上创建根节点，并直接进入改名状态。 |
+| 1208 | `addChild` | — |
+| 1226 | `addSibling` | — |
+| 1251 | `addLevel` | 下移（Tab）：给投射链增加一层投射层（详见 model.js 的 addPrimeLevel）。 |
+| 1272 | `collapseLevel` | 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、 |
+| 1282 | `#canMoveLeft` | — |
+| 1294 | `#canMoveRight` | — |
+| 1309 | `moveLeft` | 左移（Alt+← / Ctrl+←）：自己是最左边的女儿节点时，搬到母亲节点的左姊妹节点底下。 |
+| 1317 | `moveRight` | 右移（Alt+→ / Ctrl+→）：自己是最右边的女儿节点时，搬到母亲节点的右姊妹节点底下。 |
+| 1328 | `remove` | 删除选中的节点。 |
+| 1369 | `#setNodeLabel` | 改标签（并且同步转义标记）。规则只有一条：标签**正好**是 %Empty 就是转义节点， |
+| 1375 | `setLabel` | — |
+| 1390 | `#startEdit` | ------------------------------------------------------------ 内联改名 |
+| 1404 | `#positionEditor` | — |
+| 1423 | `#commitEdit` | 提交改名。 |
+| 1433 | `#cancelEdit` | — |
+| 1447 | `#onCanvasDown` | ------------------------------------------------------------ 事件 |
+| 1460 | `#onCanvasDblClick` | — |
+| 1471 | `setTerms` | 换一套亲属称谓。**只改界面上的文字**（按钮名、提示行、装订线说明）， |
+| 1478 | `#t` | — |
+| 1484 | `#term` | — |
+| 1489 | `#onKeyDown` | — |
+| 1591 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
+| 1621 | `#selectFromCaret` | — |
+| 1643 | `#selectByOffset` | — |
+
+### `src/i18n.js`
+> —
+> 318 行 / 14812 字节
+
+**函数**
+
+| 行 | 名称 | 说明 |
+| --- | --- | --- |
+| 18 | `LANGS` | 界面文案表 + 「称谓」用词表。 |
+| 21 | `LANG_LABELS` | — |
+| 27 | `TERMS` | 三套「称谓」。同一棵树、同一个界面，只是换一种叫法，对树本身没有任何影响。 |
+| 69 | `TERM_KINDS` | — |
+| 70 | `TERM_LABELS` | — |
+| 75 | `STRINGS` | — |
+| 291 | `text` | 取一条文案，并把 `{name}` 占位符换成实参。 |
+| 305 | `applyTerms` | 把称谓替换应用到一句话上。 |
 
 ### `src/layout.js`
 > tidy tree 布局 + 三种垂直对齐。文字宽度靠注入的 measure()，不依赖 DOM。
@@ -411,7 +428,7 @@ Syntax Tree Editor Standalone/
 
 ### `test/editor.test.mjs`
 > 交互层测试（跑在 DOM 垫片上）。
-> 1818 行 / 74059 字节
+> 1818 行 / 74097 字节
 
 **函数**
 
@@ -494,7 +511,7 @@ Syntax Tree Editor Standalone/
 
 ### `tools/build-standalone.mjs`
 > 把 7 个模块内联成那个单文件版。
-> 154 行 / 6371 字节
+> 155 行 / 6444 字节
 
 **函数**
 
@@ -503,19 +520,19 @@ Syntax Tree Editor Standalone/
 | 13 | `ROOT` | — |
 | 16 | `OUT_NAME` | — |
 | 20 | `MODULES` | 唯一会立刻跑的是 main.js，所以扁平拼接是安全的。 |
-| 31 | `read` | — |
-| 34 | `stripImports` | — |
-| 39 | `stripExports` | — |
-| 44 | `topLevelNames` | — |
-| 52 | `buildBundle` | — |
-| 86 | `replaceVerbatim` | 把 html 里的某个位置换成一段**原样插入**的文本。 |
-| 90 | `buildHtml` | — |
-| 136 | `buildStandalone` | 生成 standalone.html 的内容。 |
-| 142 | `isMain` | 直接运行本文件时才写盘；被 import 时只导出函数 |
+| 32 | `read` | — |
+| 35 | `stripImports` | — |
+| 40 | `stripExports` | — |
+| 45 | `topLevelNames` | — |
+| 53 | `buildBundle` | — |
+| 87 | `replaceVerbatim` | 把 html 里的某个位置换成一段**原样插入**的文本。 |
+| 91 | `buildHtml` | — |
+| 137 | `buildStandalone` | 生成 standalone.html 的内容。 |
+| 143 | `isMain` | 直接运行本文件时才写盘；被 import 时只导出函数 |
 
 ### `tools/check-project.mjs`
 > 一致性自检：文档 / 文件结构 / 构建产物不许对不上。
-> 147 行 / 6041 字节
+> 174 行 / 7120 字节
 
 **函数**
 
