@@ -108,7 +108,6 @@ export function drawTree(svg, lay, opts = {}) {
         if (!c.children.length) continue; // 空转义节点：没东西可画
         const x1 = it.cx;
         const y1 = it.y + nodeH + 2;
-        const yJ = ci.y + nodeH + 2;
         // 母亲正好在转义节点正上方时挑中间那个，否则挑相反那一侧
         const same = Math.abs(it.cx - ci.cx) < 0.5;
         const idx = same ? Math.floor((c.children.length - 1) / 2) : it.cx < ci.cx ? c.children.length - 1 : 0;
@@ -117,12 +116,19 @@ export function drawTree(svg, lay, opts = {}) {
         const x2 = bi.cx;
         const y2 = bi.y - 3;
 
-        // 一条直线：共线（180°）由这条线自己保证
+        // 交点 J：横坐标取"女儿节点的正中间"（ci.cx 就是母亲节点居中模式算出来的中点，
+        // 所以分叉点正好落在最左和最右那个女儿中间），纵坐标取那条直线在该处的值 ——
+        // 这样 J 既在正中间，又落在这条直线上，上下两段仍然是一条直线（180° 不丢）。
+        // 直线是竖直的（母亲正好在正上方）时，J 就取转义节点那一行的底。
+        const vertical = Math.abs(x2 - x1) < 0.5;
+        const t = vertical ? 0 : (ci.cx - x1) / (x2 - x1);
+        const Jx = ci.cx;
+        const Jy = vertical ? ci.y + nodeH + 2 : y1 + t * (y2 - y1);
+
+        // 一条直线：母亲框底 -> 共线那个女儿框顶（共线是这么构造出来的）
         gEdge.appendChild(
           el("line", { x1, y1, x2, y2, stroke: COLORS.edge, "stroke-width": 1.2 }),
         );
-        const t = y2 === y1 ? 0 : (yJ - y1) / (y2 - y1);
-        const Jx = x1 + (x2 - x1) * t;
 
         c.children.forEach((d, di) => {
           if (di === idx) return;
@@ -132,7 +138,7 @@ export function drawTree(svg, lay, opts = {}) {
             const half = didx.textW / 2 + 4;
             gEdge.appendChild(
               el("polygon", {
-                points: `${Jx},${yJ} ${didx.cx + half},${didx.y - 3} ${didx.cx - half},${didx.y - 3}`,
+                points: `${Jx},${Jy} ${didx.cx + half},${didx.y - 3} ${didx.cx - half},${didx.y - 3}`,
                 fill: "none",
                 stroke: COLORS.edge,
                 "stroke-width": 1.2,
@@ -143,7 +149,7 @@ export function drawTree(svg, lay, opts = {}) {
             gEdge.appendChild(
               el("line", {
                 x1: Jx,
-                y1: yJ,
+                y1: Jy,
                 x2: didx.cx,
                 y2: didx.y - 3,
                 stroke: COLORS.edge,

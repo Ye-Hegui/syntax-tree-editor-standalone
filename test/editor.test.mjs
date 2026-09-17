@@ -1623,11 +1623,11 @@ await t("画布上照常显示 %Empty（点得到），导出里不出现", asyn
   assert.ok(!ed.toSvgString({ background: true }).includes("%Empty"), "导出的图里不该出现 %Empty");
 });
 
-await t("导出时母亲连过来的那条线和某个女儿那条线共线（180°）", async () => {
-  const ed = mount("[A [%Empty [B] [C]]]");
+await t("导出时分叉点在女儿正中间，且母亲那条线和女儿那条线共线（180°）", async () => {
+  const ed = mount("[A [Z] [%Empty [B] [C]]]");
   const esc = preorder(ed.root).find((n) => n.escape);
   const ei = ed.lay.info.get(esc);
-  const yJ = ei.y + ed.lay.nodeH + 2;
+  const mid = ei.cx; // 母亲居中模式下，转义节点的 cx 就是最左/最右两个女儿的中点
   const svg = ed.toSvgString();
   const lines = [...svg.matchAll(/<line x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)"/g)].map((m) => ({
     x1: Number(m[1]),
@@ -1635,24 +1635,25 @@ await t("导出时母亲连过来的那条线和某个女儿那条线共线（18
     x2: Number(m[3]),
     y2: Number(m[4]),
   }));
-  // 穿过转义节点那一层的长线：起点在它上面、终点在它下面。
-  // 它自己是"母亲 -> 共线那个女儿"的一条直线，所以上下两段必然共线；
-  // 其余女儿则必须从交点出发。
-  const long = lines.find((l) => l.y1 < yJ - 1 && l.y2 > yJ + 1);
-  assert.ok(long, "找不到那条长线");
-  const t = (yJ - long.y1) / (long.y2 - long.y1);
-  const Jx = long.x1 + (long.x2 - long.x1) * t;
 
-  const inX = Jx - long.x1;
-  const inY = yJ - long.y1;
-  const outX = long.x2 - Jx;
-  const outY = long.y2 - yJ;
-  const cross = inX * outY - inY * outX;
-  assert.ok(Math.abs(cross) < 1e-6, `上下段不共线，叉积 = ${cross}`);
+  // ① 从分叉点出发的那条：它的起点横坐标必须是女儿的正中间
+  const fan = lines.find((l) => Math.abs(l.x1 - mid) < 0.01 && l.x1 !== l.x2);
+  assert.ok(fan, `分叉点该落在 x=${mid}（B 和 C 的正中间）`);
+  const Jx = fan.x1;
+  const Jy = fan.y1;
+
+  // ② 母亲连过来的那条：必须从 J 上方穿到 J 下方，且经过 J（= 一条直线）
+  const stem = lines.find((l) => (l.y1 - Jy) * (l.y2 - Jy) < 0);
+  assert.ok(stem, "找不到母亲连过来的那条长线");
+  const t = (Jy - stem.y1) / (stem.y2 - stem.y1);
+  const xOnStem = stem.x1 + (stem.x2 - stem.x1) * t;
+  assert.ok(Math.abs(xOnStem - Jx) < 1e-6, `分叉点不在母亲那条线上：${xOnStem} vs ${Jx}`);
+  const inX = Jx - stem.x1;
+  const inY = Jy - stem.y1;
+  const outX = stem.x2 - Jx;
+  const outY = stem.y2 - Jy;
+  assert.ok(Math.abs(inX * outY - inY * outX) < 1e-6, "上下段不共线");
   assert.ok(inX * outX + inY * outY > 0, "上下段应该接成一条直线，而不是折回来");
-
-  const fan = lines.find((l) => Math.abs(l.y1 - yJ) < 0.01 && Math.abs(l.x1 - Jx) < 0.01);
-  assert.ok(fan, "其余女儿应该从交点出发");
 });
 
 await t("转义节点最多三个女儿：第四个加不进去，按钮灰掉", async () => {
