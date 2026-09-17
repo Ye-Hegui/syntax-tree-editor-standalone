@@ -1,7 +1,22 @@
 # 更新日志 / Changelog
 
-版本号采用语义化版本。`v1.2.1` 是**内部开发号，没有对外发布**；对外发布的最新版本仍是 `v1.2.0`。
-Version numbers follow semantic versioning. `v1.2.1` is an **internal development number and has not been released**; the latest published version is still `v1.2.0`.
+版本号采用语义化版本。`v1.2.1` 与 `v1.2.2` 都是**内部开发号，没有对外发布**；对外发布的最新版本仍是 `v1.2.0`。
+Version numbers follow semantic versioning. `v1.2.1` and `v1.2.2` are both **internal development numbers and have not been released**; the latest published version is still `v1.2.0`.
+
+## v1.2.2（内部开发版，未发布 / internal, unreleased）
+
+这个版本**只有一件事：界面语言切换（中文 / English）**。
+
+### 新增 / Added
+
+- **界面语言切换**：演示页顶部新增「语言」一行（中文 / English），编辑器也支持 `setLanguage("zh" | "en")` 与 `lang` 选项；界面文案全部走 `src/i18n.js` 的文案表（85 条 key，中英一一对应，自检会核对）· **UI language switch**: a new "Language" row on the demo page (中文 / English), plus `setLanguage("zh" | "en")` and a `lang` option on the editor. Every UI string now comes from the table in `src/i18n.js` (85 keys, one-to-one between the two languages, checked by the self-test)
+- **称谓与语言正确叠加**：文案先按语言取、再套称谓；中文三套（母系 / 中性 / 父系）与英文三套（mother / neutral / father）各自地道 —— 英文用 mother node / sister node / daughter node、parent / sibling / child、father / brother / child · **Terms and language compose correctly**: text is picked by language first, then the term set is applied. Chinese keeps its three sets and English gets its own idiomatic three: mother node / sister node / daughter node, parent / sibling / child, father / brother / child
+- 组件选项 `lang`、方法 `setLanguage()`、演示页的 `?lang=en` 预置 · The `lang` option, the `setLanguage()` method, and `?lang=en` on the demo page
+- 英文替换按**整词边界**、大小写不敏感且保留原文大小写（按钮 `＋ Sister` 与说明里的 `a sister node` 各自正确）· English term replacement is word-bounded, case-insensitive and keeps the original capitalisation
+
+### 已知限制 / Known limitations
+
+- **教程正文（网页底部「使用方法」那一整篇）还没有英文版**：切到英文时界面全变英文，但这一篇仍是中文。英文版会随后续版本补上，届时 `main.js` 的 `DOCS_LANG` 改成跟着界面语言走即可 · **The tutorial body is not translated yet**: switching to English translates the whole UI, but the "Instructions" section at the bottom stays Chinese. The English version will follow in a later release; wiring it up only means letting `DOCS_LANG` in `main.js` follow the UI language.
 
 ## v1.2.1（内部开发版，未发布 / internal, unreleased）
 
