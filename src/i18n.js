@@ -138,9 +138,9 @@ export const STRINGS = {
     // ---- 标色与字体样式 ----
     "style.label": "标色",
     "style.allBlue": "全部标蓝",
-    "style.allBlue.hint": "把每个节点都标成蓝色（词也标），整棵树同一个蓝，等价于写一行 Blue(all)",
+    "style.allBlue.hint": "删掉所有颜色声明，只留一行 Blue(all)：整棵树同一个蓝",
     "style.wordsRed": "单词标红",
-    "style.wordsRed.hint": '把所有"词"标成红色（词 = 裸标签的叶子节点，或带位移箭头的叶子节点）',
+    "style.wordsRed.hint": '删掉所有颜色声明，只留一行 Red(words)：把所有"词"标成红色（词 = 裸标签的叶子节点，或带位移箭头的叶子节点）',
     "style.nodeRed": "节点标红",
     "style.nodeRed.hint": "把选中的节点标成红色（选中的是词或范畴都可以）",
     "style.nodeBlue": "节点标蓝",
@@ -252,9 +252,9 @@ export const STRINGS = {
     // ---- colour and font style ----
     "style.label": "Colour",
     "style.allBlue": "All blue",
-    "style.allBlue.hint": "Write a blue declaration on every node, words included — one single blue for the whole tree, the same as Blue(all)",
+    "style.allBlue.hint": "Drop every colour declaration and leave a single Blue(all): one blue for the whole tree",
     "style.wordsRed": "Words red",
-    "style.wordsRed.hint": "Colour every word red (a word is a bare-label leaf, or a leaf carrying a movement arrow)",
+    "style.wordsRed.hint": "Drop every colour declaration and leave a single Red(words): colour every word red (a word is a bare-label leaf, or a leaf carrying a movement arrow)",
     "style.nodeRed": "Node red",
     "style.nodeRed.hint": "Colour the selected node red (a word or a category)",
     "style.nodeBlue": "Node blue",

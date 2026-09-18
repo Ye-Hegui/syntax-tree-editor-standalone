@@ -46,9 +46,14 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1
   declarations share one table, keeping the original baseline values (`Red` = `#CC0000`,
   `Blue` = `#0000CC`; the canvas looks unchanged), so relying on the baseline and writing `Blue(words)`
   by hand look identical — never two blues in one tree
-- 「全部标蓝」现在给**每个**节点都写上蓝色声明（导出 `Blue(all)`），点完整棵树是同一个蓝 ·
-  "All blue" now writes a blue declaration on **every** node (exported as `Blue(all)`), so the whole tree
-  ends up one single blue
+- 「全部标蓝」现在先**删掉所有颜色声明**，然后只留一句 `Blue(all)`（词也一起蓝，整棵树同一个蓝）·
+  "All blue" now drops every colour declaration first and leaves a single `Blue(all)` — the whole tree is
+  one blue, words included
+- 「单词标红」同样是**先删掉所有颜色声明、再只写一句** `Red(words)`，所以不会再残留
+  「全部标蓝」写下的那些编号声明；单个那两个按钮（节点标红 / 节点标蓝）只动选中节点自己的声明 ·
+  "Words red" likewise drops every colour declaration and leaves a single `Red(words)`, so the number
+  declarations written by "All blue" no longer linger. The two single-node buttons keep touching only the
+  selected node's own declaration
 - 「节点标蓝」从"删掉该节点的颜色声明"改成"给该节点写上蓝色声明"；四个按钮的灰掉判定改用
   **蓝色声明**（靠基线蓝但没有声明的节点仍然可点 —— 点一下确实会改变文本）· "Node blue" now writes a
   blue declaration instead of deleting one, and the four buttons grey out from the **blue declaration**

@@ -252,39 +252,57 @@ export class SyntaxTreeEditor {
   //
   // ⚠️ 基线的蓝就是声明蓝（都取 `style.js` 的 `COLOR_VALUES.blue`，见 render.js 的 BASELINE_FILL），
   //   所以"两种蓝"的问题从根上没有了。四个按钮的做法是：
-  //   - `markAllBlue()` 照样**无条件给每个节点写声明**：导出的文本里明明白白是 `Blue(all)`，
-  //     不依赖"运行时靠基线推算"，撤销/重做和手改文本都一致（返回是否真的改了东西）。
-  //   - `markSelectedBlue()` / `markSelectedRed()` 只看**声明**：该节点已经写着这个颜色就跳过。
+  //   - 整树的那个（`markAllBlue()` / `markWordsRed()`）：**先把所有颜色声明清干净，再只写一句**
+  //     （作者 2026-09-18 定："删除所有下边的颜色声明"）—— 所以点完文本里干干净净，
+  //     只会看到 `Red(words)` 或 `Blue(all)`，不会留下一堆旧的编号声明。
+  //     代价：别的节点上原来写的颜色（比如 `Green(3)`）也一起被清掉，这是作者要的"重来一遍"。
+  //     ⚠️ 所以**不能**只改"有没有变化"的判定：即使每个词都已经是红的，
+  //     只要别处还留着别的颜色声明，这一下也确实会改动文本（把残留清掉）⇒ 必须返回 true。
+  //   - 单个节点的那个（`markSelectedBlue()` / `markSelectedRed()`）：只看**声明**，已经写着就跳过，
+  //     绝不碰别的节点的声明（不然选中一个范畴点一下会清掉整棵树的颜色）。
   //   - 灰掉判定也用声明而不是"看起来是不是蓝的"（见 #updateStatus）。
   //
   // 颜色是"一个节点一个颜色"，所以标红对已经带别的颜色的节点是【覆盖】。
-  // 没有任何变化时（例如对已经红的词再点一次"词红"）直接返回，不压撤销历史、不产生重复声明。
+  // 没有任何变化时直接返回，不压撤销历史、不产生重复声明。
 
   /** 这个节点有没有写着蓝色声明（不管它看起来是不是靠基线蓝的） */
   #isDeclaredBlue(n) {
     return n.color === "blue";
   }
 
+  /** 整棵树里有没有哪条颜色声明不是 `name` 这一种（整树那两个按钮判"还有没有残留要清"用） */
+  #hasOtherColorThan(name) {
+    return preorder(this.root).some((n) => n.color != null && n.color !== name);
+  }
+
   /**
-   * 全蓝：**每个节点**都写上蓝色声明（词也写），点完整棵树是同一个蓝。
-   * 返回是否真的改了东西；已经全是蓝色声明时返回 false（不压撤销历史）。
+   * 全蓝：**清掉所有颜色声明，然后只写一句** —— 每个节点都写上蓝色声明，导出正好是 `Blue(all)`。
+   * 返回是否真的改了东西（有条目要清、或有节点要写蓝色，都算改了）。
    */
   markAllBlue() {
     if (!this.root) return false;
     const todo = preorder(this.root).filter((n) => !this.#isDeclaredBlue(n));
-    if (!todo.length) return false;
+    // 已经"整棵树只有蓝色声明"时才是真的没事可做
+    if (!todo.length && !this.#hasOtherColorThan("blue")) return false;
     this.#mutate(() => {
+      for (const n of preorder(this.root)) n.color = null;
       for (const n of todo) n.color = "blue";
     });
     return true;
   }
 
-  /** 词红：把所有"词"标成红色，已经带别的颜色的词会被覆盖 */
+  /**
+   * 词红：**清掉所有颜色声明，然后只写一句** —— 把所有"词"标成红色，导出正好是 `Red(words)`。
+   * 别的节点上原来写的颜色会被一起清掉（作者 2026-09-18 要的"重来一遍"）。
+   */
   markWordsRed() {
     if (!this.root) return false;
-    const words = wordNodes(this.root).filter((n) => n.color !== "red");
-    if (!words.length) return false;
+    const words = wordNodes(this.root);
+    const todo = words.filter((n) => n.color !== "red");
+    // 每个词都已经红 + 别处没有任何颜色声明 ⇒ 才是真的没事可做
+    if (!todo.length && !this.#hasOtherColorThan("red")) return false;
     this.#mutate(() => {
+      for (const n of preorder(this.root)) n.color = null;
       for (const n of words) n.color = "red";
     });
     return true;
@@ -1115,10 +1133,15 @@ export class SyntaxTreeEditor {
     this.btnRedo.disabled = this.redoStack.length === 0;
 
     // 颜色按钮：没有可做的改动时就灰掉，免得点下去没有反应。
-    // ⚠️ 「全部标蓝」的判定看的是**蓝色声明**（它会给每个节点都写上一条），
-    // 所以靠基线蓝的范畴不算"已经做完"—— 得等条条都写着 Blue 才灰掉。
-    this.btnAllBlue.disabled = !this.root || preorder(this.root).every((x) => this.#isDeclaredBlue(x));
-    this.btnWordsRed.disabled = !wordNodes(this.root).some((x) => x.color !== "red");
+    // ⚠️ 整树那两个（「全部标蓝」「单词标红」）点下去**会先把所有颜色声明清干净**，
+    // 所以只要还留着别的颜色声明（哪怕是别的节点上的残留），也算"有事可做" ——
+    // 不然按钮灰着，用户却看到文本里有一条清不掉的 `Blue(0, 1, 2, 4, 5)`。
+    const otherThanBlue = this.#hasOtherColorThan("blue");
+    const otherThanRed = this.#hasOtherColorThan("red");
+    this.btnAllBlue.disabled =
+      !this.root || (preorder(this.root).every((x) => this.#isDeclaredBlue(x)) && !otherThanBlue);
+    this.btnWordsRed.disabled =
+      !this.root || (!wordNodes(this.root).some((x) => x.color !== "red") && !otherThanRed);
     this.btnSelectedRed.disabled = !n || n.color === "red";
     this.btnSelectedBlue.disabled = !n || this.#isDeclaredBlue(n);
     // 字体样式那两个是开关，选中了节点就总能切换
