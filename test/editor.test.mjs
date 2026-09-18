@@ -1920,6 +1920,48 @@ await t("对转义节点下移之后，文本往返回来仍然是转义节点",
   );
 });
 
+await t("根节点自己也是转义节点时，三条左侧枝仍然互相平行（且是脊线的相反数）", async () => {
+  // 根就是 %Empty —— 它没有"母亲"，所以这一层的分叉得专门处理，否则会走普通连线那条路
+  const ed = mount("[%Empty [Z word1] [%Empty' [U] [%Empty [X word2] [Y word3]]]]");
+  const svg = ed.toSvgString();
+  const lines = [...svg.matchAll(/<line x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)"/g)].map((m) => ({
+    x1: Number(m[1]),
+    y1: Number(m[2]),
+    x2: Number(m[3]),
+    y2: Number(m[4]),
+  }));
+  const nodes = [];
+  (function walk(n) {
+    nodes.push(n);
+    n.children.forEach(walk);
+  })(ed.root);
+  const byLabel = (label, childLabel) =>
+    nodes.find((n) => n.label === label && (!childLabel || (n.children[0] || {}).label === childLabel));
+  const Z = byLabel("Z", "word1");
+  const U = byLabel("U");
+  const X = byLabel("X", "word2");
+  const Y = byLabel("Y", "word3");
+  assert.ok(Z && U && X && Y, "测试用的树没搭对");
+  const lay = ed.exportLay;
+  const into = (n, left) => {
+    const it = lay.info.get(n);
+    return lines.find(
+      (l) =>
+        Math.abs(l.x2 - it.cx) < 0.01 &&
+        Math.abs(l.y2 - (it.y - 3)) < 0.01 &&
+        (left ? l.x2 < l.x1 : l.x2 > l.x1),
+    );
+  };
+  const slope = (l) => (l.y2 - l.y1) / (l.x2 - l.x1);
+  const sZ = slope(into(Z, true) || assert.fail("找不到指向 Z 的左侧枝"));
+  const sU = slope(into(U, true) || assert.fail("找不到指向 U 的左侧枝"));
+  const sX = slope(into(X, true) || assert.fail("找不到指向 X 的左侧枝"));
+  const sY = slope(into(Y, false) || assert.fail("找不到脊线"));
+  assert.ok(Math.abs(sU - sZ) < 1e-6, `U 与 Z 不平行：${sU.toFixed(4)} vs ${sZ.toFixed(4)}`);
+  assert.ok(Math.abs(sX - sZ) < 1e-6, `X 与 Z 不平行：${sX.toFixed(4)} vs ${sZ.toFixed(4)}`);
+  assert.ok(Math.abs(sZ + sY) < 1e-6, `左枝与脊线不互为相反数：${sZ.toFixed(4)} vs ${sY.toFixed(4)}`);
+});
+
 console.log("\n[工具栏快捷键说明]");
 
 await t("每个工具栏按钮下边的快捷键说明都对", async () => {
