@@ -23,6 +23,18 @@ let SEQ = 1;
  */
 export const ESCAPE_LABEL = "%Empty";
 
+/**
+ * 这个标签算不算转义节点：`%Empty` 后面**可以跟任意个撇**（`%Empty'`、`%Empty''` …）。
+ *
+ * 为什么要允许撇：`下移`（Tab）会给投射链顶端的标签加一个 `'`，而转义节点往往正是链顶 ——
+ * 不允许撇的话，对转义节点按一下 Tab 它就不再是转义节点了（作者 2026-09-17 提的）。
+ *
+ * ⚠️ 只认裸写的；带引号的 `"%Empty'"` 只是普通标签（见 notation.js / rules.js 的判定）。
+ */
+export function isEscapeLabel(label) {
+  return typeof label === "string" && /^%Empty'*$/.test(label);
+}
+
 export function node(label = "", children = []) {
   // italic / bold / strike / color 由记法末尾的 Italic(...) / Bold(...) / Strike(...) / Red(...) 声明设置，见 style.js
   // escape 只由记法里裸写的 %Empty 设置（见 notation.js / rules.js），改名时会跟着标签同步

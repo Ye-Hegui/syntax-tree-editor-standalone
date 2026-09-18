@@ -876,6 +876,25 @@ t("只认精确的 %Empty：大小写和 &Empty 都是普通标签", () => {
   }
 });
 
+t("%Empty 后面跟任意个撇，仍然算转义节点（下移会给链顶加撇）", () => {
+  for (const label of ["%Empty'", "%Empty''", "%Empty'''"]) {
+    const root = parse(`[A [${label} [B] [C]]]`);
+    assert.equal(root.children[0].escape, true, `${label} 应该是转义节点`);
+    assert.equal(toText(root), `[A [${label} [B] [C]]]`, "撇要原样留着（那是投射层数）");
+  }
+  // 两条校验照样管着它们
+  assert.throws(() => parse("[A [%Empty' [B] [C] [D] [E]]]"), NotationError, "超过三个女儿");
+  assert.throws(() => parse("[A %Empty']"), NotationError, "裸写就一定在树底");
+  // 带引号的仍然只是普通标签
+  const quoted = parse('["%Empty\'" [B] [C]]');
+  assert.ok(!quoted.escape, "带引号的不算转义节点");
+  assert.equal(toText(quoted), '["%Empty\'" [B] [C]]', "导出要保留引号，否则会变成转义节点");
+  // 规则记法同样认
+  const rules = parseRules("0 A -> %Empty'\n1 %Empty' -> B\n1 %Empty' -> C");
+  assert.equal(rules.children[0].escape, true);
+  assert.equal(toRulesText(rules), "0 A -> %Empty'\n1 %Empty' -> B\n1 %Empty' -> C");
+});
+
 t("转义节点必须有女儿节点（不能出现在树底）", () => {
   assert.throws(() => parse("[A [%Empty]]"), NotationError, "方括号里什么都不挂");
   assert.throws(() => parse("[A %Empty]"), NotationError, "裸标签形式");

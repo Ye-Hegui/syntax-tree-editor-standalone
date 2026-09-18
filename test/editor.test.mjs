@@ -1905,6 +1905,21 @@ await t("嵌套时侧枝关于竖直方向镜像：左枝斜率一致，且是�
   assert.ok(Math.abs(sX + sY) < 1e-6, `左枝与右枝不互为相反数：${sX.toFixed(4)} vs ${sY.toFixed(4)}`);
 });
 
+await t("对转义节点下移之后，文本往返回来仍然是转义节点", async () => {
+  const ed = mount("[A [%Empty [B] [C]]]");
+  const esc = preorder(ed.root).find((n) => n.escape);
+  clickNode(ed, esc);
+  ed.addLevel(); // 下移会给投射链顶端的标签加一个撇
+  const text = ed.getValue();
+  assert.ok(text.includes("%Empty'"), `链顶的标签应该带撇了，实际是 ${text}`);
+  // 关键：这份文本再解析回来，那个节点还得是转义节点（旧规则下会退化成普通节点）
+  const back = mount(text);
+  assert.ok(
+    preorder(back.root).some((n) => n.escape),
+    `重新解析后应该还有转义节点：${text}`,
+  );
+});
+
 console.log("\n[工具栏快捷键说明]");
 
 await t("每个工具栏按钮下边的快捷键说明都对", async () => {

@@ -25,7 +25,7 @@
 // （见 editor.js 的 #repairRulesNumbers），所以这里解析时做一次宽松处理：
 // 编号对不上就退回按标签找，这样编辑器才有机会把它修正。
 
-import { node, nodeIds, preorder, ESCAPE_LABEL } from "./model.js";
+import { node, nodeIds, preorder, ESCAPE_LABEL, isEscapeLabel } from "./model.js";
 import { splitStyleDecls, applyStyleDecls, styleDeclsText } from "./style.js";
 
 export class RuleError extends Error {
@@ -100,8 +100,8 @@ function makeNode(spec) {
   const n = node(spec.label);
   n.sub = spec.sub ?? null;
   n.sup = spec.sup ?? null;
-  // 裸写的 %Empty 是转义节点；写成 "%Empty"（带引号）只是一个普通标签
-  if (!spec.quoted && spec.label === ESCAPE_LABEL) n.escape = true;
+  // 裸写的 %Empty（后面可以跟任意个撇）是转义节点；写成 "%Empty"（带引号）只是一个普通标签
+  if (!spec.quoted && isEscapeLabel(spec.label)) n.escape = true;
   return n;
 }
 
@@ -255,8 +255,9 @@ export function parseRules(text) {
 /** 把一个标签（含下/上标）写成规则记法里的 token */
 function tokenOf(n) {
   const label = String(n.label ?? "");
-  // 标签正好是 %Empty 又不是转义节点时，必须带引号写，否则再解析回来就变成转义节点了
-  const force = label === ESCAPE_LABEL && !n.escape;
+  // 标签长得像转义节点（%Empty 或带撇）但又不是转义节点时，必须带引号写，
+  // 否则再解析回来就变成转义节点了
+  const force = isEscapeLabel(label) && !n.escape;
   const bare = !force && label !== "" && !/[\s"^_]/.test(label) && !/-->|->/.test(label);
   const head = bare ? label : `"${label.replace(/"/g, "")}"`;
 

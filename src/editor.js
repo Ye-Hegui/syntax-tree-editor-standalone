@@ -22,6 +22,7 @@ import {
   canCollapsePrimeLevel,
   collapsePrimeLevel,
   ESCAPE_LABEL,
+  isEscapeLabel,
 } from "./model.js";
 import { parse, serialize, NotationError } from "./notation.js";
 import { parseRules, serializeRules, RuleError } from "./rules.js";
@@ -1374,7 +1375,7 @@ export class SyntaxTreeEditor {
    */
   #setNodeLabel(n, text) {
     n.label = text;
-    n.escape = text === ESCAPE_LABEL;
+    n.escape = isEscapeLabel(text);
   }
 
   /** 套用标签（范畴快捷按钮 / 外部调用）。空白画布上会用它当根节点开一棵树 */
@@ -1442,7 +1443,7 @@ export class SyntaxTreeEditor {
     this.editing = null;
     this.input.hidden = true;
     n.label = this.editBackup;
-    n.escape = this.editBackup === ESCAPE_LABEL;
+    n.escape = isEscapeLabel(this.editBackup);
     this.undoStack.pop();
     this.#refresh({ syncText: true });
     if (refocus) this.scroller.focus();

@@ -13,7 +13,7 @@
 //                               （见 model.js 的 nodeIds）
 //                               `-->` `<-` `<>` 是旧写法，仍然能读，但一律导出成 `->`
 
-import { node, nodeIds, walk, ESCAPE_LABEL } from "./model.js";
+import { node, nodeIds, walk, ESCAPE_LABEL, isEscapeLabel } from "./model.js";
 import { splitStyleDecls, applyStyleDecls, styleDeclsText } from "./style.js";
 
 /**
@@ -156,8 +156,9 @@ function parseNode(tokens, i) {
   if (!labelTok || (labelTok.type !== STRING && labelTok.type !== QUOTED))
     throw new NotationError('"[" 之后需要节点标签', labelTok ? labelTok.start : tokens[i].end);
   n.label = labelTok.value;
-  // 裸写的 %Empty 是转义节点；写成 "%Empty"（带引号）只是一个普通标签
-  if (labelTok.type === STRING && n.label === ESCAPE_LABEL) n.escape = true;
+  // 裸写的 %Empty（后面可以跟任意个撇，见 isEscapeLabel）是转义节点；
+  // 写成 "%Empty"（带引号）只是一个普通标签
+  if (labelTok.type === STRING && isEscapeLabel(n.label)) n.escape = true;
   i += 2;
 
   const ss = parseSubSup(tokens, i);
@@ -204,8 +205,8 @@ function parseValue(tokens, i) {
     const parts = [];
     while (i < tokens.length && tokens[i].type === STRING) parts.push(tokens[i++].value);
     n.label = parts.join(" ");
-    // 裸写的 %Empty 是转义节点，而裸标签一定是叶子 —— 叶子就是"在树底"，直接报错
-    if (n.label === ESCAPE_LABEL)
+    // 裸写的 %Empty（可带撇）是转义节点，而裸标签一定是叶子 —— 叶子就是"在树底"，直接报错
+    if (isEscapeLabel(n.label))
       throw new NotationError(`"${ESCAPE_LABEL}" 必须有女儿节点（转义节点不能出现在树底）`, first.start);
   } else {
     n.label = String(first.value);
@@ -344,7 +345,7 @@ export function serialize(root) {
 
     if (bracketed) out += "[";
     // 标签正好是 %Empty 又不是转义节点时，必须带引号写，否则再解析回来就变成转义节点了
-    out += quote(n.label, bracketed ? "node" : "leaf", n.label === ESCAPE_LABEL && !n.escape);
+    out += quote(n.label, bracketed ? "node" : "leaf", isEscapeLabel(n.label) && !n.escape);
 
     const hasSub = n.sub != null && n.sub !== "";
     const ss = hasSub ? n.sub : n.sup != null && n.sup !== "" ? n.sup : null;
