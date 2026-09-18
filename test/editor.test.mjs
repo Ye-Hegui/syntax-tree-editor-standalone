@@ -1847,6 +1847,28 @@ await t("嵌套的转义节点：内层那一支的连线也要画出来（原�
   assert.ok(oneLine, "XP 到 Y 应该是同一条直线（现在被拆成几段了）");
 });
 
+await t("转义节点只占画布的宽度，导出那份布局按 0 宽排版", async () => {
+  // 用"%Empty 比它唯一那个女儿宽"的形状：这时幽灵宽度才真的把整棵树撑开。
+  // （若儿女本身就比 %Empty 宽，转义节点的宽度由儿女决定，0 宽不改变总宽 —— 那种树上这步是无害的 no-op。）
+  const ed = mount("[A [Z] [%Empty [B]]]");
+  const esc = preorder(ed.root).find((n) => n.escape);
+  assert.ok(ed.lay.info.get(esc).labelW > ed.lay.info.get(esc.children[0]).labelW, "测试前提：%Empty 比女儿宽");
+  assert.ok(ed.lay.info.get(esc).labelW > 0, "画布上仍按 %Empty 方框算宽（不然文字会压到邻居）");
+
+  const svg = ed.toSvgString();
+  assert.equal(ed.exportLay.info.get(esc).labelW, 0, "导出那份布局里应该是 0 宽");
+  assert.ok(
+    ed.exportLay.width < ed.lay.width,
+    `导出应该更紧凑（画布 ${ed.lay.width}，导出 ${ed.exportLay.width}）`,
+  );
+  assert.ok(svg.startsWith("<svg"));
+
+  // 没有转义节点时，两份布局就是同一份
+  const plain = mount("[A [Z] [B [C]]]");
+  plain.toSvgString();
+  assert.equal(plain.exportLay, plain.lay, "没有转义节点时不该多算一份布局");
+});
+
 console.log("\n[工具栏快捷键说明]");
 
 await t("每个工具栏按钮下边的快捷键说明都对", async () => {

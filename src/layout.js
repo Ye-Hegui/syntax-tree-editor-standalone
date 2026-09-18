@@ -81,7 +81,11 @@ export function layout(root, measure, options = {}) {
     const hasSS = (n.sub != null && n.sub !== "") || (n.sup != null && n.sup !== "");
     const ssText = hasSS ? String(n.sub != null && n.sub !== "" ? n.sub : n.sup) : "";
     const subW = hasSS ? measure(ssText, subSize, o.fontFamily) + 4 : 0;
-    const labelW = Math.max(textW + subW + o.padX * 2, o.minLabelWidth);
+    let labelW = Math.max(textW + subW + o.padX * 2, o.minLabelWidth);
+    // 导出时转义节点不画方框，也就不该占横向位置：
+    // 否则它那 76.8px 的幽灵宽度会把儿女整体推偏，分叉点看着就不对称了。
+    // （画布上仍然按方框算宽 —— 那边 %Empty 是要显示的，0 宽会让文字压到邻居。）
+    if (o.hideEscapes && n.escape) labelW = 0;
     info.set(n, {
       node: n,
       textW,

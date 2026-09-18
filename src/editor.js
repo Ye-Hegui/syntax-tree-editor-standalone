@@ -349,9 +349,12 @@ export class SyntaxTreeEditor {
     let source = this.svg;
     let size = this.size;
     if (this.root && this.lay && preorder(this.root).some((n) => n.escape)) {
+      // 连布局一起重算：转义节点按 0 宽排版，它的儿女才会对称地落在分叉点两侧
+      const lay = layout(this.root, this.measure, this.#layoutOptions({ hideEscapes: true }));
+      this.exportLay = lay; // 导出用的那份布局（要拿坐标时用它，别用画布那份）
       source = document.createElementNS(SVG_NS, "svg");
       source.setAttribute("class", "ste-svg");
-      size = drawTree(source, this.lay, this.#drawOptions({ hideEscapes: true }));
+      size = drawTree(source, lay, this.#drawOptions({ hideEscapes: true }));
       source.setAttribute("viewBox", `0 0 ${size.width} ${size.height}`);
       source.setAttribute("width", size.width);
       source.setAttribute("height", size.height);
@@ -742,6 +745,22 @@ export class SyntaxTreeEditor {
   }
 
   /**
+   * layout 的选项。画布与导出共用这一份 —— 导出多传一个 `hideEscapes: true`，
+   * 那样转义节点按 **0 宽**排版（它不画方框，就不该占位置；否则那块"幽灵宽度"
+   * 会把它的儿女整体推偏，导出的分叉点看着左右不对称）。
+   */
+  #layoutOptions(extra = {}) {
+    return {
+      fontSize: this.opts.fontSize,
+      fontFamily: this.opts.fontFamily,
+      vscale: this.opts.vscale,
+      align: this.opts.align,
+      center: this.opts.center,
+      ...extra,
+    };
+  }
+
+  /**
    * drawTree 的选项。画布和导出共用这一份 —— 导出多传一个 `hideEscapes: true`，
    * 那样转义节点会被画成"交点"而不是 %Empty 方框（见 toSvgString）。
    */
@@ -778,13 +797,9 @@ export class SyntaxTreeEditor {
     }
     this.placeholder.hidden = true;
 
-    this.lay = layout(this.root, this.measure, {
-      fontSize: this.opts.fontSize,
-      fontFamily: this.opts.fontFamily,
-      vscale: this.opts.vscale,
-      align: this.opts.align,
-      center: this.opts.center,
-    });
+    this.lay = layout(this.root, this.measure, this.#layoutOptions());
+    // 导出的布局：没有转义节点时和画布那份是同一个
+    this.exportLay = this.lay;
     this.size = drawTree(this.svg, this.lay, this.#drawOptions());
     this.surface.style.width = `${this.size.width}px`;
     this.surface.style.height = `${this.size.height}px`;
