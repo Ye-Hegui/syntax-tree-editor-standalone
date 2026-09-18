@@ -46,20 +46,23 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1
   declarations share one table, keeping the original baseline values (`Red` = `#CC0000`,
   `Blue` = `#0000CC`; the canvas looks unchanged), so relying on the baseline and writing `Blue(words)`
   by hand look identical — never two blues in one tree
-- 「单词标红」改成**删掉所有颜色声明、什么都不留**（作者 2026-09-18 的新定义）：词因此回到默认的红、
-  其余节点回到默认的蓝，文本里连 `Red(words)` 都不留 —— 效果上就是「一键清掉所有标色」。
+- 「单词标红」改成按三步走（作者 2026-09-18 的新定义）：① 删掉所有**词**的颜色声明（词回到默认的红）；
+  ② 若其余节点本来都只是蓝色，③ 就连那些蓝色声明一起清掉 —— 文本只剩树那一行；
+  否则只删词上的，别的颜色（`Green(2)` 之类）和那些蓝色声明都保留。
   ⚠️ 按钮名字是历史遗留（早期它确实是"把词标红"）·
-  "Words red" now **drops every colour declaration and leaves none** (the author's new definition): words
-  fall back to the default red and the other nodes to the default blue, with not even `Red(words)` left
-  behind — in effect it clears all colouring. The button keeps its historical name
+  "Words red" now works in three steps (the author's new definition): (1) drop the colour declaration on
+  every **word** (they fall back to the default red); (2) if all the other nodes were only blue,
+  (3) those blue declarations go too, leaving just the tree line; otherwise only the words are touched and
+  every other colour (such as `Green(2)`) plus the blue declarations stay. The button keeps its historical
+  name
 - 「全部标蓝」先**删掉所有颜色声明**，然后只留一句 `Blue(all)`（词也一起蓝，整棵树同一个蓝）·
   "All blue" drops every colour declaration first and leaves a single `Blue(all)` — the whole tree is
   one blue, words included
-- 两个整树按钮的灰掉判定跟着改：**一条颜色声明都没有时「单词标红」是灰的**（它没有可删的东西），
-  而「全部标蓝」仍然可用；单个那两个（节点标红 / 节点标蓝）只动选中节点自己的声明 ·
-  The two whole-tree buttons grey out accordingly: with no colour declaration at all "Words red" is
-  disabled (nothing to delete) while "All blue" stays available. The two single-node buttons keep touching
-  only the selected node's own declaration
+- 两个整树按钮的灰掉判定跟着改（和实现共用同一套判断，避免"亮着却点不动"）：词上有声明、
+  或者"非词只有蓝"时那些蓝色声明可以清，才算有事可做 ·
+  The two whole-tree buttons grey out by the same test the implementation uses (so a lit button always does
+  something): there is something to remove when a word carries a declaration, or when the non-words are all
+  blue and those declarations can go too
 - 「节点标蓝」从"删掉该节点的颜色声明"改成"给该节点写上蓝色声明"；四个按钮的灰掉判定改用
   **蓝色声明**（靠基线蓝但没有声明的节点仍然可点 —— 点一下确实会改变文本）· "Node blue" now writes a
   blue declaration instead of deleting one, and the four buttons grey out from the **blue declaration**

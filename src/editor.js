@@ -276,9 +276,21 @@ export class SyntaxTreeEditor {
     return preorder(this.root).some((n) => n.color != null && n.color !== name);
   }
 
-  /** 整棵树里有没有颜色声明（「单词标红」= 把这些全删掉，所以有声明才有事可做） */
+  /** 整棵树里有没有颜色声明（「全部标蓝」判"还有没有残留要清"用） */
   #hasAnyColor() {
     return preorder(this.root).some((n) => n.color != null);
+  }
+
+  /**
+   * 「单词标红」还做不做得成事（灰掉判定要和 `markWordsRed()` 完全一致，否则会出现
+   * "按钮亮着但点下去什么都没变"）：
+   * 词上有颜色声明可删，或者"非词里没有别的颜色"时那些蓝色声明可以一起清掉。
+   */
+  #canCleanWordColors() {
+    const all = preorder(this.root);
+    const wordSet = new Set(wordNodes(this.root));
+    const hasOtherColor = all.some((n) => !wordSet.has(n) && n.color != null && n.color !== "blue");
+    return all.some((n) => n.color != null && (wordSet.has(n) || !hasOtherColor));
   }
 
   /**
@@ -298,19 +310,37 @@ export class SyntaxTreeEditor {
   }
 
   /**
-   * 单词标红：**删掉所有颜色声明，什么都不留**（作者 2026-09-18 的新定义）。
+   * 单词标红（作者 2026-09-18 定的三步，实现严格照做）：
    *
-   * 删掉之后节点全部 `color = null` ⇒ 跟着基线走：词是红的、其余是蓝的 ——
-   * 效果上就是"词变红了"，但文本里**不会**留下 `Red(words)` 之类的任何声明，
-   * 和"从来没人标过色"完全一致（所以本来就没有颜色声明时，这个按钮是灰的、返回 false）。
+   *   1. **删掉所有「词」的颜色声明**（词于是回到基线的红）；
+   *   2. 看**其余节点**（非词）是不是都还是蓝的（明确的 `Blue`，或者没有声明、本来靠基线蓝）；
+   *   3. 如果**全是蓝** ⇒ 顺手把整棵树的颜色声明都清掉（反正看起来一模一样，文本更干净）；
+   *      只要有一个别的颜色（比如 `Green(2)`）⇒ 保留**除了蓝色以外**的声明，
+   *      也就是说这些蓝色声明留着（不去动它们）。
    *
-   * ⚠️ 按钮名字是历史遗留（早期它确实只把词标红）。别再改成"写 `Red(words)`"。
+   * 一句话：词的颜色一律删；"无谓的蓝色声明"只在没有别的颜色要保留时才一起清掉。
+   *
+   * ⚠️ 每一步都要**真的改动模型**才算数（决定返回值和是否压撤销记录）：
+   *    只有真的删掉了什么东西（词上的颜色、或整树清空）才返回 true。
+   * ⚠️ 按钮名字是历史遗留（早期它确实只把词标红）。别再改成"写一行 `Red(words)`"。
    */
   markWordsRed() {
     if (!this.root) return false;
-    if (!this.#hasAnyColor()) return false; // 一条声明都没有 ⇒ 效果和"什么都不写"一样，没事可做
+    if (!this.#canCleanWordColors()) return false; // 没有可删的声明 ⇒ 什么都不做（见 #canCleanWordColors）
+
+    const all = preorder(this.root);
+    const wordSet = new Set(wordNodes(this.root));
+    // 非词里还有别的颜色（非蓝）⇒ 那些蓝色声明要留着，只删词上的
+    const keepOtherColors = all.some((n) => !wordSet.has(n) && n.color != null && n.color !== "blue");
+
     this.#mutate(() => {
-      for (const n of preorder(this.root)) n.color = null;
+      for (const n of all) {
+        if (wordSet.has(n)) n.color = null; // 第 1 步：词的颜色一律删
+      }
+      // 第 3 步：其余声明全是蓝的 ⇒ 一并清掉（整棵树回到"从来没人标过色"）
+      if (!keepOtherColors) {
+        for (const n of all) n.color = null;
+      }
     });
     return true;
   }
@@ -1142,12 +1172,12 @@ export class SyntaxTreeEditor {
     // 颜色按钮：没有可做的改动时就灰掉，免得点下去没有反应。
     // ⚠️ 两个整树的按钮语义不同，灰掉判定也就不同：
     //   - 「全部标蓝」= 清空后重写成 `Blue(all)`：要等**整棵树只有蓝色声明**才灰。
-    //   - 「单词标红」= **删掉所有颜色声明**：一条声明都没有时才是真的没事可做（灰）；
-    //     只要还留着任何声明（哪怕是别的节点上的残留），点一下就确实会改动文本 ⇒ 可点。
+    //   - 「单词标红」= 删词上的颜色声明（非词没有别的颜色时顺带清掉那些蓝色声明）：
+    //     判定与 `markWordsRed()` 共用 #canCleanWordColors()，避免"亮着却点不动"。
     this.btnAllBlue.disabled =
       !this.root ||
       (preorder(this.root).every((x) => this.#isDeclaredBlue(x)) && !this.#hasOtherColorThan("blue"));
-    this.btnWordsRed.disabled = !this.root || !this.#hasAnyColor();
+    this.btnWordsRed.disabled = !this.root || !this.#canCleanWordColors();
     this.btnSelectedRed.disabled = !n || n.color === "red";
     this.btnSelectedBlue.disabled = !n || this.#isDeclaredBlue(n);
     // 字体样式那两个是开关，选中了节点就总能切换
