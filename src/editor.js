@@ -27,7 +27,7 @@ import {
 import { parse, serialize, NotationError } from "./notation.js";
 import { parseRules, serializeRules, RuleError } from "./rules.js";
 import { layout, ALIGN_MODES, CENTER_MODES, wordNodes } from "./layout.js";
-import { COLOR_VALUES } from "./style.js";
+import { COLOR_VALUES, baselineColor } from "./style.js";
 import { drawTree } from "./render.js";
 import { LANGS, TERMS, TERM_KINDS, LANG_LABELS, i18nText, applyTerms } from "./i18n.js";
 
@@ -243,19 +243,36 @@ export class SyntaxTreeEditor {
 
   // ------------------------------------------------------------ 颜色标记
   //
-  // 这四个按钮都不引入新的染色机制，只是生成或删掉已有的颜色声明（Red(1, 3) 这种），
+  // 这四个按钮都不引入新的染色机制，只是生成已有的颜色声明（Red(1, 3)、Blue(words) 这种），
   // 所以效果可以往返 —— 导出的文本里就是那些声明，用户也能手动改、手动删。
+  //
+  // ⚠️ 颜色有两行**隐式基线**（写在 src/style.js 的文件头）：先给所有节点刷蓝，再把词刷红。
+  // 所以「标蓝」**不能靠删声明** —— 删掉之后词就回到基线的红，这正是曾经的 bug。
+  // 现在两个"标蓝"都是**写上**蓝色声明（`markAllBlue()` 产出的就是 `Blue(words)`）。
+  // 「实际颜色」= 有声明就用声明，没声明就按基线算（词红、其余蓝），判定按钮灰不灰要用它。
   //
   // 颜色是"一个节点一个颜色"，所以标红对已经带别的颜色的节点是【覆盖】。
   // 没有任何变化时（例如对已经红的词再点一次"词红"）直接返回，不压撤销历史、不产生重复声明。
 
-  /** 全蓝：删掉所有颜色声明（回到默认画法）。返回是否真的改了东西 */
+  /** 这个节点在画布上是不是蓝的：有声明看声明，没声明看基线（style.js 的 baselineColor） */
+  #isBlueLooking(n, words) {
+    if (n.color) return n.color === "blue";
+    return baselineColor(words.has(n)) === "blue";
+  }
+
+  /** 当前的「词」集合（判定唯一来源是 layout.js 的 wordNodes） */
+  #wordSet() {
+    return new Set(wordNodes(this.root));
+  }
+
+  /** 全蓝：把还不是蓝的节点（也就是词，以及显式写成别的颜色的节点）都写成蓝色声明。返回是否真的改了东西 */
   markAllBlue() {
     if (!this.root) return false;
-    const colored = preorder(this.root).filter((n) => n.color);
-    if (!colored.length) return false;
+    const words = this.#wordSet();
+    const todo = preorder(this.root).filter((n) => !this.#isBlueLooking(n, words));
+    if (!todo.length) return false;
     this.#mutate(() => {
-      for (const n of colored) n.color = null;
+      for (const n of todo) n.color = "blue";
     });
     return true;
   }
@@ -281,12 +298,12 @@ export class SyntaxTreeEditor {
     return true;
   }
 
-  /** 单个标蓝：删掉选中节点的颜色声明（词会回到默认的词红） */
+  /** 单个标蓝：给选中的节点写上蓝色声明（**不是删声明**：删了词会回基线的红） */
   markSelectedBlue() {
     const n = this.selected;
-    if (!this.root || !n || !n.color) return false;
+    if (!this.root || !n || n.color === "blue") return false;
     this.#mutate(() => {
-      n.color = null;
+      n.color = "blue";
     });
     return true;
   }
@@ -1095,11 +1112,14 @@ export class SyntaxTreeEditor {
     this.btnUndo.disabled = this.undoStack.length === 0;
     this.btnRedo.disabled = this.redoStack.length === 0;
 
-    // 颜色按钮：没有可做的改动时（例如整棵树已经没有任何颜色声明）就灰掉，免得点下去没有反应
-    this.btnAllBlue.disabled = !ord.some((x) => x.color);
+    // 颜色按钮：没有可做的改动时就灰掉，免得点下去没有反应。
+    // ⚠️ 判定要用「实际颜色」（有声明看声明，没声明按基线算），不能只看 node.color ——
+    // 靠基线蓝的节点（非词）本来就是蓝的，「全部标蓝」不该为它亮着。
+    const words = this.#wordSet();
+    this.btnAllBlue.disabled = !this.root || preorder(this.root).every((x) => this.#isBlueLooking(x, words));
     this.btnWordsRed.disabled = !wordNodes(this.root).some((x) => x.color !== "red");
     this.btnSelectedRed.disabled = !n || n.color === "red";
-    this.btnSelectedBlue.disabled = !n || !n.color;
+    this.btnSelectedBlue.disabled = !n || this.#isBlueLooking(n, words);
     // 字体样式那两个是开关，选中了节点就总能切换
     this.btnSelectedItalic.disabled = !n;
     this.btnSelectedStrike.disabled = !n;

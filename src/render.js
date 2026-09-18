@@ -1,4 +1,4 @@
-import { COLOR_VALUES } from "./style.js";
+import { COLOR_VALUES, baselineColor } from "./style.js";
 ﻿// 把 layout() 的结果画成【可交互】的 SVG。
 //
 // 两个刻意的设计：
@@ -22,6 +22,12 @@ const COLORS = {
   edge: "#000000",
   arrow: "#990099",
 };
+
+/**
+ * 基线的色值：style.js 的 baselineColor() 说"应该是红还是蓝"，这里说"红/蓝长什么样"。
+ * 两边必须一致，否则「全部标蓝」算出来的颜色会和画布上看到的不一样。
+ */
+const BASELINE_FILL = { red: COLORS.leaf, blue: COLORS.branch };
 
 /**
  * @returns {{width:number, height:number}} 实际画布尺寸（已含箭头所需的下方留白）
@@ -351,12 +357,13 @@ export function drawTree(svg, lay, opts = {}) {
     const contentLeft = it.cx - contentW / 2;
     // 只有"词"染红：叶子节点、而且是母亲节点唯一的女儿节点（也就是记法里写成裸标签的那种），
     // 或者带位移箭头的叶子。方括号包起来的空节点是范畴，跟非叶子一样用蓝色。
-    // 这只是**默认画法**（opts.redWords !== false）：模型里并没有"隐式颜色声明"，
-    // 编辑器的界面默认开着它（作者觉得词红好看）；函数式调用 / 命令行默认关掉，出一张全蓝的图。
+    // 这就是 src/style.js 文件头写的那条**隐式基线**（词红、其余蓝）：颜色名从这里取，
+    // 色值从 BASELINE_FILL 取，两边分开是为了让"基线是什么颜色"只有 style.js 一个来源。
+    // opts.redWords !== false 时按基线画（编辑器默认）；关掉时全画成范畴的蓝（命令行 / rulesToSvg() 的默认）。
     // 显式声明的颜色优先级最高，不受「关闭颜色」选项影响 —— 那是作者自己的选择
     const declared = n.color ? COLOR_VALUES[n.color] : null;
-    const wordRed = o.redWords !== false && it.isWord;
-    const fill = declared || (o.colors ? (wordRed ? COLORS.leaf : COLORS.branch) : COLORS.mono);
+    const baseFill = BASELINE_FILL[baselineColor(o.redWords !== false && it.isWord)];
+    const fill = declared || (o.colors ? baseFill : COLORS.mono);
 
     const label = el("text", {
       x: contentLeft + it.textW / 2,

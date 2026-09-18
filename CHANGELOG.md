@@ -1,7 +1,57 @@
 # 更新日志 / Changelog
 
-版本号采用语义化版本。`v1.2.1`、`v1.2.2`、`v1.2.3` 都是**内部开发号，没有对外发布**；对外发布的最新版本仍是 `v1.2.0`。
-Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2` and `v1.2.3` are all **internal development numbers and have not been released**; the latest published version is still `v1.2.0`.
+版本号采用语义化版本。`v1.2.1`、`v1.2.2`、`v1.2.3`、`v1.2.4` 都是**内部开发号，没有对外发布**；对外发布的最新版本仍是 `v1.2.0`。
+Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1.2.4` are all **internal development numbers and have not been released**; the latest published version is still `v1.2.0`.
+
+## v1.2.4（内部开发版，未发布 / internal, unreleased）
+
+这个版本**只有一件事：颜色基线** —— 颜色声明的括号里新增 `all` / `words` 两个关键词，
+并修掉「全部标蓝」点了还是红的那个 bug。
+
+### 修复 / Fixed
+
+- **「全部标蓝」点了之后词还是红的**：旧语义是"标蓝 = 删掉颜色声明"，而删掉之后词回到默认画法的红，
+  所以那个按钮在词上等于没作用。现在"标蓝"是**写上**蓝色声明，`Blue(words)` 正好把词也刷蓝 ·
+  **"All blue" left the words red**: it used to delete colour declarations, which sent words back to the
+  default red, making the button a no-op for them. Both blue buttons now *write* a blue declaration, and
+  `Blue(words)` is exactly what paints the words blue
+
+### 新增 / Added
+
+- **颜色声明支持两个关键词**：`all`（所有节点）与 `words`（所有「词」，判定与「单词标红」完全一致），
+  可与编号混写、可重复、大小写不敏感（`Blue(words, 0)`、`BLUE(ALL)` 都认）·
+  **Two keywords in colour declarations**: `all` (every node) and `words` (every word, the same test the
+  "Words red" button uses). They mix freely with numbers, may repeat, and are case-insensitive
+  (`Blue(words, 0)`, `BLUE(ALL)`)
+- **文本层有了一条隐式基线**：`Blue(all)` + `Red(words)` 两行先在后台生效，用户写的声明排在它们后面，
+  所以后写的覆盖先写的（这正是 `Blue(words)` = 全蓝的原因）。**基线永远不出现在文本里**，
+  用户写什么就显示什么；模型没有新增任何状态（`color == null` 就是"跟着基线走"）·
+  **A text-level implicit baseline**: `Blue(all)` then `Red(words)` act behind the scenes first, and any
+  declarations you write come after them, so later ones win (which is why `Blue(words)` means all blue).
+  The baseline never appears in the text — what you write is what you see — and the model gains no new
+  state: `color == null` still means "follow the baseline"
+- **导出自动挑最短写法**：整棵树同色写 `Blue(all)`，整组词同色写 `Blue(words)`（再跟上同色的其它编号），
+  其余情况照旧逐列编号 ·
+  **Exports pick the shortest form**: `Blue(all)` when a whole tree shares one colour, `Blue(words)` when a
+  whole set of words does (plus the numbers of any same-coloured non-word nodes), a plain number list otherwise
+- 教程正文与「标色」两个按钮的提示补上了新写法与基线说明（中英两版同步）·
+  The tutorial and the two blue tooltips document the new forms and the baseline (both languages kept in sync)
+
+### 改动 / Changed
+
+- 「全部标蓝」现在给**每个还不是蓝的**节点写上蓝色声明（本来靠基线就是蓝的范畴不必写），
+  所以在一棵普通的树上产出的正好是 `Blue(words)` · "All blue" now writes a blue declaration for every
+  node that is not already blue (non-words are blue by the baseline and need no declaration), so on an
+  ordinary tree it produces exactly `Blue(words)`
+- 「节点标蓝」从"删掉该节点的颜色声明"改成"给该节点写上蓝色声明"；四个按钮的灰掉判定改用
+  **实际颜色**（有声明看声明，没声明按基线算）· "Node blue" now writes a blue declaration instead of
+  deleting one, and the four buttons decide whether to grey out from the **effective** colour (a declaration
+  if there is one, the baseline otherwise)
+- 基线与默认画法的"词红、其余蓝"现在**只有一个来源**（`style.js` 的 `baselineColor()`），
+  渲染与按钮判定都从这里取，测试里另有一条断言两者一致 ·
+  The baseline and the default rendering now share a single source (`baselineColor()` in `style.js`) for
+  "words red, everything else blue", used by both the renderer and the button logic, with a test asserting
+  the two agree
 
 ## v1.2.3（内部开发版，未发布 / internal, unreleased）
 

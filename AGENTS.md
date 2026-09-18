@@ -101,7 +101,7 @@
 | `src/docs-en.js` | `DOCS_EN` —— 教程正文（网页底部那一篇）的英文版，整篇 HTML 一个常量；**只导出、不 import**（扁平打包会去掉 import）。改它要守三条：`doc-*` 锚点与中文版一致、`example/*.svg` 原样保留、亲属称谓用 mother/sister/daughter |
 | `src/notation.js` | `parse` `serialize` `toText` `NotationError` |
 | `src/rules.js` | `parseRules` `serializeRules` `toRulesText` `RuleError` |
-| `src/style.js` | `splitStyleDecls` `applyStyleDecls` `styleDeclsText` |
+| `src/style.js` | `COLOR_NAMES` `COLOR_VALUES` `baselineColor` `splitStyleDecls` `applyStyleDecls` `styleDeclsText` |
 | `src/layout.js` | `layout` `wordNodes` `ALIGN_MODES` `CENTER_MODES` |
 | `src/render.js` | `drawTree` |
 | `src/main.js` | 无导出 —— 演示页的引导（例句、URL 参数、称谓切换）。**不是组件的一部分**，别往这里放逻辑 |
@@ -146,7 +146,7 @@ new SyntaxTreeEditor(elOrSelector, {
 | `setOptions(partial)` | 改选项后重绘 |
 | `setAlign(v)` / `setCenter(v)` / `setTerms(pairs)` / `setLanguage(lang)` / `setStyle({italic,bold,strike})` | 改对齐、水平位置、界面称谓、界面语言（`"zh"`/`"en"`）、选中节点的字体样式。**只动界面文字，对树没有任何影响** |
 | `createRoot()` `addChild()` `addSibling()` `addLevel()` `collapseLevel()` `moveLeft()` `moveRight()` `remove()` `setLabel(t)` | 结构编辑，都作用于当前选中节点 |
-| `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝。**不引入新的染色机制**，只是增删颜色声明：两个"标蓝"是**删掉**颜色声明（回到默认画法），两个"标红"是写上红色声明。都返回"是否真的改了东西"，没有变化时不压撤销历史 |
+| `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝。**不引入新的染色机制**，只是写上颜色声明（`Blue(words)`、`Red(3)` 这种）：两个"标蓝"都是**写上**蓝色声明（删声明会让词回基线的红，那是旧 bug），两个"标红"是写上红色声明。灰掉判定用**实际颜色**（有声明看声明，没声明按基线算），都返回"是否真的改了东西"，没有变化时不压撤销历史 |
 | `toggleSelectedItalic()` `toggleSelectedStrike()` | 同一行右边的两个字体开关：给选中节点切换斜体 / 删除线（等价于加或删一行 `Italic(编号)` / `Strike(编号)` 声明），再按一次取消。粗体刻意没有按钮，只能用声明写 |
 | `undo()` / `redo()` | 撤销 / 重做 |
 | `toSvgString({background})` / `exportSvg()` / `exportPng()` | 导出 |
@@ -189,13 +189,21 @@ new SyntaxTreeEditor(elOrSelector, {
 5. **编号有两个来源，别搞混**：节点编号一律来自 `nodeIds()`，词序号一律来自 `leafOrdinals()`。
    两者的用途见「编号体系」一节 —— 它们**不是一回事**。
 6. **词默认染红、范畴默认蓝**（`drawTree` 的 `opts.redWords`，默认开）。
-   ⚠️ 这只是**默认画法**，模型里**没有**"隐式颜色声明"：没有任何声明时节点上就是没有颜色，
-   只是编辑器画布把它画成词红。**函数式入口 `rulesToSvg()` 与命令行默认 `redWords: false`**
-   （出全蓝的图）—— 作者定的：界面好看优先，机器出的图干净优先。
+   ⚠️ 模型里**没有**"隐式颜色声明"这个状态：没有任何声明时节点上就是没有颜色
+   （`node.color == null`）。但**文本层有一条隐式基线**，写在 `src/style.js` 的文件头：
+   `Blue(all)` + `Red(words)` 两行，永远不出现在文本里，只在后台生效，
+   文本里写的颜色声明按顺序排在它们后面（所以是覆盖）。基线与默认画法必须始终一致 ——
+   两边的"词红、其余蓝"都从 `style.js` 的 `baselineColor()` 取（`render.js` 再用 `BASELINE_FILL` 换色值）。
+   **函数式入口 `rulesToSvg()` 与命令行默认 `redWords: false`**
+   （出全蓝的图）—— 作者定的：界面好看优先，机器出的图干净优先；这只改**画法**，不改基线。
    「词」= 叶子节点 **且**（是母亲节点唯一的女儿节点 **或** 带位移箭头），纯结构判定，
-   不认任何词类；**唯一来源是 `layout.js` 的 `wordNodes(root)`**（"单词标红"按钮用它）。
+   不认任何词类；**唯一来源是 `layout.js` 的 `wordNodes(root)`**（"单词标红"按钮与 `words` 关键词都用它）。
    ⚠️ 它和箭头用的「词序号」（`notation.js` 的 `leafOrdinals`，数**所有**叶子，
    包括 `[Y]`、`[X']` 这类空范畴）**口径不同**，别混用。
+7. **颜色声明的括号里可以写两个关键词**（`style.js` 的 `TARGET_KEYWORDS`）：
+   `all` = 所有节点，`words` = 所有「词」（口径就是 `wordNodes()`），可混写、可重复、大小写不敏感。
+   导出时"整组 = 全部节点"写 `all`、"整组包含全部词"写 `words`（再跟上多出来的编号），其余列编号。
+   ⚠️ 关键词只在**整棵树建好之后**展开，所以 `splitStyleDecls` 只负责认，`applyStyleDecls` 才展开。
 
 ---
 
@@ -292,7 +300,7 @@ cmd /c "npm run build"   ← 重新生成单文件版
 3. **内部特性（转义节点 / `%Empty`）的规格不在本仓库** —— 作者要求不公开，规格与来龙去脉记在
    工作区 `HANDOVER.md` 第九部分 ⑤。上面 6.1 第 1 条讲的是它的**渲染手法**（不含语法）；
    本文件只留这个名字，不给语法，README / 教程 / CHANGELOG 里一个字都没有。
-4. **版本号**：`package.json` 与页脚是 `1.2.3`（内部开发号，未发布）；对外最新仍是 `1.2.0`。
+4. **版本号**：`package.json` 与页脚是 `1.2.4`（内部开发号，未发布）；对外最新仍是 `1.2.0`。
    三处一致性（`package.json` / 页脚 / `CHANGELOG` 顶部）由自检强制。
 
 ### 不要做的事

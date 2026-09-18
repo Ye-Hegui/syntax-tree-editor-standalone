@@ -19,7 +19,7 @@ import {
 } from "../src/model.js";
 import { parse, serialize, toText, NotationError } from "../src/notation.js";
 import { layout, wordNodes } from "../src/layout.js";
-import { COLOR_NAMES } from "../src/style.js";
+import { COLOR_NAMES, baselineColor } from "../src/style.js";
 
 let pass = 0;
 let fail = 0;
@@ -602,6 +602,135 @@ t("一个节点可以同时有颜色和字体样式", () => {
 t("颜色声明排在字体声明之后，颜色之间按固定顺序", () => {
   const root = parse("[XP [A] [B] [C]]\nBlue(3)\nRed(1)\nItalic(2)");
   assert.ok(toText(root).endsWith("Italic(2)\nRed(1)\nBlue(3)"), toText(root));
+});
+
+console.log("\n[颜色基线：all / words 关键词]");
+
+// 这几条用同一棵树：[S [NP Dogs] [VP barks]] —— 词是 Dogs、barks，NP / VP / S 是范畴
+const TREE = "[S [NP Dogs] [VP barks]]";
+const colorOf = (text, label) => preorder(parse(text)).find((n) => n.label === label).color;
+const colorMap = (text) => preorder(parse(text)).map((n) => `${n.label}:${n.color}`).join(" ");
+
+t("all：括号记法和规则记法里的所有节点都变色", () => {
+  assert.equal(colorMap(`${TREE}\nBlue(all)`), "S:blue NP:blue Dogs:blue VP:blue barks:blue");
+  const rules = "0 S -> NP\n0 S -> VP\n1 NP -> Dogs\n2 VP -> barks\n\nItalic(all)";
+  for (const n of preorder(parseRules(rules))) assert.equal(n.italic, true, n.label);
+});
+
+t("words：只给「词」上色，范畴不变", () => {
+  const root = parse(`${TREE}\nRed(words)`);
+  assert.equal(root.color, null, "S 不是词，不该被碰");
+  assert.equal(colorOf(`${TREE}\nRed(words)`, "NP"), null);
+  assert.equal(colorOf(`${TREE}\nRed(words)`, "Dogs"), "red");
+  assert.equal(colorOf(`${TREE}\nRed(words)`, "barks"), "red");
+  assert.equal(wordNodes(root).length, 2, "这棵树的词判定就是两个");
+});
+
+t("混写：编号和关键词一起用，靠后的声明照样覆盖靠前的", () => {
+  const root = parse(`${TREE}\nBlue(words, 0)`);
+  assert.equal(root.color, "blue", "0 号被编号点到了");
+  assert.equal(colorOf(`${TREE}\nBlue(words, 0)`, "NP"), null, "NP 既不是词、也没被编号点到");
+  // words 落在最后，所以词回到红
+  assert.equal(colorOf(`${TREE}\nBlue(words, 0)\nRed(words)`, "Dogs"), "red");
+  assert.equal(colorOf(`${TREE}\nBlue(words, 0)\nRed(words)`, "S"), "blue", "没被后一条命中的节点保留原来的颜色");
+});
+
+t("大小写不敏感，导出统一成小写关键词", () => {
+  assert.equal(colorOf(`${TREE}\nBLUE(WORDS)`, "Dogs"), "blue");
+  assert.equal(colorOf(`${TREE}\nblue(All)`, "NP"), "blue");
+  assert.ok(toText(parse(`${TREE}\nBLUE(WORDS)`)).endsWith("Blue(words)"), toText(parse(`${TREE}\nBLUE(WORDS)`)));
+});
+
+t("关键词和编号重复时去重，等价于只写一次", () => {
+  const once = parse(`${TREE}\nBlue(all)`);
+  const twice = parse(`${TREE}\nBlue(all, all)`);
+  assert.equal(colorMap(`${TREE}\nBlue(all, all)`), colorMap(`${TREE}\nBlue(all)`));
+  assert.equal(toText(twice), toText(once));
+});
+
+t("空项、非整数、认不出来的项照旧静默丢掉（只针对括号里的内容）", () => {
+  assert.equal(colorMap(`${TREE}\nBlue(, 0, )`), colorMap(`${TREE}\nBlue(0)`));
+  assert.equal(colorMap(`${TREE}\nBlue(-1, 1.5, x)`), colorMap(TREE), "一个都没认出来就当没写");
+});
+
+t("导出优先级：全蓝写 all、整组词写 words、其余列编号", () => {
+  // 只有词蓝
+  assert.equal(toText(parse(`${TREE}\nBlue(words)`)), `${TREE}\nBlue(words)`);
+  // 词蓝，另外 0 号也蓝
+  assert.equal(toText(parse(`${TREE}\nBlue(words, 0)`)), `${TREE}\nBlue(words, 0)`);
+  // 只有词红
+  assert.equal(toText(parse(`${TREE}\nRed(words)`)), `${TREE}\nRed(words)`);
+  // 4 号（barks）红 —— 不是全部的词，所以只能列编号
+  assert.equal(colorMap(`${TREE}\nRed(4)`), "S:null NP:null Dogs:null VP:null barks:red");
+  assert.equal(toText(parse(`${TREE}\nRed(4)`)), `${TREE}\nRed(4)`);
+  // 词红 + 0 号（S）蓝：两种颜色各写一行，红在蓝前；两组节点不重叠，所以语义清楚
+  assert.equal(toText(parse(`${TREE}\nBlue(0)\nRed(words)`)), `${TREE}\nRed(words)\nBlue(0)`);
+  assert.equal(colorMap(`${TREE}\nBlue(0)\nRed(words)`), "S:blue NP:null Dogs:red VP:null barks:red");
+});
+
+t("全部节点都写出来时用 all 收尾（优先级 1 高于 2）", () => {
+  // 逐个显式写上蓝色声明 ⇒ 整棵树都是蓝的 ⇒ 导出该写成 Blue(all)
+  let text = TREE;
+  for (const label of ["S", "NP", "Dogs", "VP", "barks"]) {
+    const root = parse(text);
+    const n = preorder(root).find((x) => x.label === label);
+    n.color = "blue";
+    text = toText(root);
+  }
+  assert.equal(text.split("\n").pop(), "Blue(all)", text);
+});
+
+t("往返幂等：导出再解析，模型和文本都不再变", () => {
+  for (const decl of ["Blue(words)", "Blue(words, 0)", "Red(words)", "Red(4)"]) {
+    const text = `${TREE}\n${decl}`;
+    const once = toText(parse(text));
+    assert.equal(once, text, `${decl} 应该原样导出`);
+    assert.equal(toText(parse(once)), once, `${decl} 再往返一次必须完全一样`);
+  }
+});
+
+t("基线与默认画法一致：没有任何颜色声明时，模型全 null、基线算出来就是词红其余蓝", () => {
+  const root = parse(TREE);
+  const words = new Set(wordNodes(root));
+  for (const n of preorder(root)) {
+    assert.equal(n.color, null, `${n.label} 不该带颜色`);
+    // render.js 的默认画法走的就是这个函数（BASELINE_FILL 只是把颜色名换成色值）
+    assert.equal(baselineColor(words.has(n)), words.has(n) ? "red" : "blue", n.label);
+  }
+  assert.equal(toText(root), TREE, "没有任何声明就不写颜色行");
+});
+
+t("边界：词集合为空时绝不写 words（空括号的 Red() 很难看也没意义）", () => {
+  // 单节点树：孤零零一个根节点是叶子，但没有母亲节点，所以不是词
+  const only = parse("[S]");
+  assert.equal(wordNodes(only).length, 0);
+  preorder(only).find((n) => n.label === "S").color = "red";
+  assert.equal(toText(only), "[S]\nRed(all)", "整棵树就一个节点，写 all 比列编号短");
+  // 根 + 一个方括号范畴：NP 是根唯一的女儿节点，按 wordNodes 的口径它【算】词
+  const lone = parse("[S [NP]]");
+  assert.equal(wordNodes(lone).length, 1);
+  for (const n of preorder(lone)) n.color = "red";
+  assert.equal(toText(lone), "[S NP]\nRed(all)", "唯一的女儿节点是裸写的叶子，方括号会被规范化掉");
+  // 词集合非空、又没铺满整棵树 -> 该用 words（[S [NP [D the]]] 里 the 是唯一的词，
+  // 但整棵树都上了色，优先级 1 的 all 更短，所以这条要留一部分节点不上色）
+  const some = parse("[S [NP [D the]]]");
+  assert.equal(wordNodes(some).length, 1);
+  for (const n of preorder(some)) n.color = "red";
+  assert.equal(toText(some), "[S [NP [D the]]]\nRed(all)", "铺满整棵树时 all 优先于 words");
+  const partial = parse("[S [NP [D the]]]");
+  preorder(partial).find((n) => n.label === "the").color = "red";
+  assert.equal(toText(partial), "[S [NP [D the]]]\nRed(words)", "只有词上色 -> words");
+  // 只给 0 号上色：这组不等于 all，也没把词包含进来 ⇒ 只能列编号
+  const part = parse("[S [NP]]");
+  preorder(part).find((n) => n.label === "S").color = "red";
+  assert.equal(toText(part), "[S NP]\nRed(0)");
+  // 没有词的树：根 + 两个方括号范畴（都不是"唯一的女儿节点"）⇒ 只能列编号
+  const noWords = parse("[S [A] [B]]");
+  assert.equal(wordNodes(noWords).length, 0);
+  preorder(noWords).find((n) => n.label === "S").color = "red";
+  assert.equal(toText(noWords), "[S [A] [B]]\nRed(0)", "一个词都没有，绝不能写 words");
+  for (const n of preorder(noWords)) n.color = "red";
+  assert.equal(toText(noWords), "[S [A] [B]]\nRed(all)", "铺满整棵树时走 all 那条路");
 });
 
 console.log("\n[水平位置：母亲节点居中]");

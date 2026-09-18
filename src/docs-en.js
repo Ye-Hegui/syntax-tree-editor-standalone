@@ -332,14 +332,30 @@ Red(5)</pre>
   For how the numbers are counted see <a href="#doc-arrow">1.6 Drawing an arrow</a>.
 </p>
 <p>
-  With no colour declarations at all, words are drawn red and the other nodes blue (that is only the
-  default rendering, not a hidden declaration). The buttons on the <b>“Colour” row</b> add and remove those
-  declarations for you, so the effect can be undone and the text edited by hand at any time:
-  <b>All blue</b> removes every colour declaration (the tree returns to the default rendering),
-  <b>Words red</b> writes a red declaration for every word, and <b>Node red</b> / <b>Node blue</b> act on
-  the selected node. On the same row <b>Node italic</b> and <b>Node strike</b> are toggles: pressing one
-  applies that style to the selected node, pressing it again removes it. Bold has no button and can only be
-  written as a declaration.
+  With no colour declarations at all, words are drawn red and the other nodes blue. That default rendering has
+  an equivalent <b>implicit baseline</b> in the notation: colour every node blue first, then every word red.
+  It never appears in the text and only acts behind the scenes, so the text always shows exactly what you wrote.
+  The buttons on the <b>“Colour” row</b> write those declarations for you, so the effect can be undone and the
+  text edited by hand at any time: <b>All blue</b> writes a blue declaration for every node that is not blue
+  already (words included), <b>Words red</b> writes a red declaration for every word, and
+  <b>Node red</b> / <b>Node blue</b> act on the selected node. On the same row <b>Node italic</b> and
+  <b>Node strike</b> are toggles: pressing one applies that style to the selected node, pressing it again
+  removes it. Bold has no button and can only be written as a declaration.
+</p>
+<p>
+  Besides node numbers the brackets also accept two <b>keywords</b> (case-insensitive, mixable with numbers):
+  <code>words</code> means every word in the sense of the note “only words are drawn red” below, and
+  <code>all</code> means every node. Declarations take effect in the order they are written, so writing
+  <code>Blue(words)</code> after the baseline's red means “paint the words blue as well” — the whole tree blue:
+</p>
+<pre class="code-block">Blue(words)
+Red(all, 0)</pre>
+<p>
+  <code>Blue(words)</code> only touches words and leaves categories alone, whereas <code>Red(all, 0)</code>
+  paints the whole tree red together with node 0 (<code>all</code> already covers node 0; the number is only
+  there to show that the two can be mixed). On export the shorter form is chosen automatically: <code>all</code>
+  when a whole tree shares one colour, <code>words</code> when a whole set of words does (plus the numbers of
+  any same-coloured nodes that are not words), and a plain number list otherwise.
 </p>
 <p>
   Declarations can only go at the end, one per line. In rule notation they come after all edges and
@@ -431,7 +447,9 @@ Red(4)</pre>
     <code>Y</code> and <code>X'</code> are blue.
     Red words are only the default rendering and can be changed: on the <b>“Colour” row</b>, <b>All blue</b>
     colours every node blue, <b>Words red</b> colours the words red, and <b>Node red</b> / <b>Node blue</b>
-    act on the selected node.
+    act on the selected node. You can also write the declarations by hand, for instance
+    <code>Blue(words)</code> to paint the words blue as well (the whole tree blue), or
+    <code>Blue(all)</code> to write a blue declaration on every node.
   </li>
   <li>
     <b>Adjacent bare labels become one multi-word leaf node.</b> So <code>[S NP VP]</code> means S has a

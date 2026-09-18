@@ -1183,12 +1183,28 @@ Red(5)</pre>
           编号怎么数参考 <a href="#doc-arrow">1.6 创建箭头</a>。
         </p>
         <p>
-          没有任何颜色声明时，词绘制成红色、其余节点绘制成蓝色（这只是默认画法，不是隐藏起来的声明）。
-          <b>「标色」那一行</b>的按钮可以代为增删上面这些声明，因此效果可以往返，也可以随时手动修改：
-          <b>全部标蓝</b>删掉所有颜色声明（整棵树回到默认画法），<b>单词标红</b>给所有词写上红色声明，
+          没有任何颜色声明时，词绘制成红色、其余节点绘制成蓝色。这条默认画法在记法里有一份等价的<b>隐式基线</b>：
+          先给所有节点刷蓝，再把词刷红 —— 它不出现在文本里，只在后台生效，所以你自己写什么就显示什么。
+          <b>「标色」那一行</b>的按钮可以代为写上这些声明，因此效果可以往返，也可以随时手动修改：
+          <b>全部标蓝</b>给每个还不是蓝的节点写上蓝色声明（词也标），
+          <b>单词标红</b>给所有词写上红色声明，
           <b>节点标红</b>与<b>节点标蓝</b>作用于当前选中的节点。
           同一行的<b>节点斜体</b>与<b>节点删除线</b>是开关：按下时给选中的节点加上该样式，
           再按一次则取消。粗体不提供按钮，只能用声明书写。
+        </p>
+        <p>
+          括号里除了编号，还可以写两个<b>关键词</b>（大小写不敏感，可以与编号混写）：
+          <code>words</code> 指所有「词」（口径与上面「只有词才会被染成红色」那一条一致），
+          <code>all</code> 指所有节点。声明按书写顺序生效，所以在基线的红之后写
+          <code>Blue(words)</code> 就等于「把词也刷蓝」，也就是整棵树全蓝：
+        </p>
+        <pre class="code-block">Blue(words)
+Red(all, 0)</pre>
+        <p>
+          <code>Blue(words)</code> 只作用于词，范畴不受影响；<code>Red(all, 0)</code> 则把整棵树连同 0 号一起标红
+          （<code>all</code> 已经把 0 号包含进去了，混写只是为了说明写法）。
+          导出时会自动挑选更短的写法：整棵树同色就写 <code>all</code>，整组词同色就写 <code>words</code>
+          （还要带上同色的其它节点编号），其余情况才逐列编号。
         </p>
         <p>
           声明只能写在末尾、单独成行。规则记法里声明排在所有边和位移箭头之后；
@@ -1278,7 +1294,9 @@ Red(4)</pre>
             例如在 <code>[XP [D [X'' [X word] [Y]]] [X']]</code> 里，只有 <code>word</code> 是词，
             <code>Y</code> 和 <code>X'</code> 都是蓝色。
             词红只是默认画法，也可以改：<b>「标色」那一行</b>的<b>全部标蓝</b>把每个节点都标成蓝色，
-            <b>单词标红</b>把词标红，<b>节点标红</b>与<b>节点标蓝</b>作用于当前选中的节点。
+            <b>单词标红</b>把词标红，<b>节点标红</b>与<b>节点标蓝</b>作用于当前选中的节点；
+            手写声明也可以，例如 <code>Blue(words)</code> 把词也刷蓝（整棵树全蓝），
+            <code>Blue(all)</code> 把每个节点都写上蓝色声明。
           </li>
           <li>
             <b>相邻的裸标签会被当成一个多词叶子节点。</b>所以 <code>[S NP VP]</code> 表示 S 底下只有一个叶子节点
@@ -1317,7 +1335,7 @@ Red(4)</pre>
         <a href="https://disk.pku.edu.cn/link/AADCFA80E10F2B4D49B2FA4A8A0C9BB2CF" data-i18n="page.link.download">组件下载</a>
       </span>
       <br />
-      v1.2.3 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
+      v1.2.4 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
     </footer>
   <script>
 (function () {
@@ -1687,6 +1705,23 @@ function moveNodeRight(root, n) {
 // 颜色名自己就是声明词（Red / Blue / ...），所以不需要 Color 前缀。
 // 声明词大小写不敏感（`ITALIC(1)` 和 `italic(1)` 都认），导出统一成首字母大写。
 //
+// 括号里的项除了编号，还可以用两个关键词（大小写不敏感，可混写、可重复）：
+//
+//   all     所有节点          —— Blue(all) 就是整棵树蓝
+//   words   所有「词」        —— Blue(words, 0) 把词和 0 号一起标蓝
+//
+// 关键词的「词」口径与 layout.js 的 wordNodes(root) 完全一致。
+//
+// 颜色求值顺序里有两行**隐式基线**（永远不写进文本，只在后台生效）：
+//
+//   Blue(all)      先给所有节点刷蓝
+//   Red(words)     再把「词」刷红
+//   ⋯⋯             文本里的颜色声明按出现顺序排在这两行之后（所以后写的赢 = 覆盖）
+//
+// 模型里没有"基线"这个状态：node.color == null 就是"跟着基线走"，
+// 而默认画法（render.js）本来就是"词红、其余蓝"，两边必须始终一致。
+// 所以 `Blue(words)` 的效果正好是"把词也刷蓝" —— 这正是「全部标蓝」按钮要的。
+//
 // 规则记法里接在所有边和位移箭头后面：
 //
 //   0 XP -> D
@@ -1739,14 +1774,40 @@ const DECL = /^\s*(Italic|Bold|Strike)\s*\(([^)]*)\)\s*$/i;
  */
 const COLOR_DECL = new RegExp(`^\\s*(${COLOR_NAMES.join("|")})\\s*\\(([^)]*)\\)\\s*$`, "i");
 
-/** 括号里的编号列表 -> 数字数组；空项、非整数、负数一律丢掉 */
+/**
+ * 括号里的两个关键词（大小写不敏感）。它们和编号一样是"项"，可以混写：
+ *
+ *   all     所有节点          —— 展开成 nodeIds(root) 的全部节点
+ *   words   所有「词」        —— 展开成 layout.js 的 wordNodes(root)，口径完全一致
+ *
+ * `Blue(all)` = 整棵树蓝；`Blue(words)` 落在隐式基线（词红、其余蓝）之后，
+ * 所以正好是"把词也刷蓝"（见文件末尾「隐式基线」那段）。
+ */
+const TARGET_KEYWORDS = ["all", "words"];
+
+/**
+ * 括号里的项列表 -> { ids, targets }。
+ * 编号：空项、非整数、负数一律丢掉（一直是这个规矩）；
+ * 关键词：trim + 小写后命中 TARGET_KEYWORDS 才认，去重后按出现顺序留在 targets 里。
+ * 认不出来的东西静默丢掉 —— 只针对括号里的内容，颜色声明词本身仍受严格检查。
+ *
+ * @returns {{ids: number[], targets: string[]}}
+ */
 function parseIds(s) {
-  return s
-    .split(",")
-    .map((x) => x.trim())
-    .filter((x) => x !== "")
-    .map(Number)
-    .filter((n) => Number.isInteger(n) && n >= 0);
+  const ids = [];
+  const targets = [];
+  for (const item of s.split(",")) {
+    const raw = item.trim();
+    if (raw === "") continue;
+    const lower = raw.toLowerCase();
+    if (TARGET_KEYWORDS.includes(lower)) {
+      if (!targets.includes(lower)) targets.push(lower);
+      continue;
+    }
+    const n = Number(raw);
+    if (Number.isInteger(n) && n >= 0) ids.push(n);
+  }
+  return { ids, targets };
 }
 
 /** red -> Red、ITALIC -> Italic。声明词大小写不敏感，内部和导出一律用规范写法 */
@@ -1756,8 +1817,9 @@ function capitalize(name) {
 
 /**
  * 把尾部的样式声明切下来。
- * @returns {{tree: string, decls: Array<{kind: string, ids: number[], color?: string}>}}
- *   kind 是 "Italic" / "Bold" / "Strike" / "Color"；颜色声明额外带 color（小写颜色名）
+ * @returns {{tree: string, decls: Array<{kind: string, ids: number[], color?: string, targets: string[]}>}}
+ *   kind 是 "Italic" / "Bold" / "Strike" / "Color"；颜色声明额外带 color（小写颜色名）；
+ *   targets 是括号里的关键词（"all" / "words"，去重），没有关键词时是空数组
  */
 function splitStyleDecls(text) {
   const lines = String(text ?? "").split(/\r?\n/);
@@ -1770,14 +1832,16 @@ function splitStyleDecls(text) {
     const m = DECL.exec(lines[end - 1]);
     if (m) {
       // 声明词大小写不敏感，内部统一成 Italic / Bold / Strike 三种规范写法
-      decls.unshift({ kind: capitalize(m[1]), ids: parseIds(m[2]) });
+      const { ids, targets } = parseIds(m[2]);
+      decls.unshift({ kind: capitalize(m[1]), ids, targets });
       end--;
       continue;
     }
 
     const c = COLOR_DECL.exec(lines[end - 1]);
     if (!c) break;
-    decls.unshift({ kind: "Color", ids: parseIds(c[2]), color: c[1].toLowerCase() });
+    const { ids, targets } = parseIds(c[2]);
+    decls.unshift({ kind: "Color", ids, targets, color: c[1].toLowerCase() });
     end--;
   }
 
@@ -1790,15 +1854,25 @@ function splitStyleDecls(text) {
  * 颜色是**一个节点一个颜色**，而同一个节点可以被多条颜色声明命中。
  * 这里按声明在文本里出现的先后依次赋值，所以**靠后的那条有效**；
  * 冗余的声明会在下一次图形改动写回文本时自然消失（导出只认节点上的那一个颜色）。
+ *
+ * 括号里的关键词在这里展开成编号：`all` -> 所有节点，`words` -> wordNodes(root)。
+ * 展开必须在**整棵树建好之后**做 —— 两套记法都是在末尾调用本函数，位置正合适。
  */
 function applyStyleDecls(root, decls) {
   if (!root || !decls.length) return;
   const byId = new Map();
   for (const [node, id] of nodeIds(root)) byId.set(id, node);
 
+  // 关键词展开出来的节点对象（展开结果与声明无关，所以只算一次）
+  const expanded = { all: [], words: [] };
+  for (const t of TARGET_KEYWORDS) {
+    if (t === "all") expanded.all = [...byId.values()];
+    else expanded.words = wordNodes(root);
+  }
+
   for (const decl of decls) {
-    for (const id of decl.ids) {
-      const target = byId.get(id);
+    const targets = [...decl.ids.map((id) => byId.get(id)), ...(decl.targets ?? []).flatMap((t) => expanded[t])];
+    for (const target of targets) {
       if (!target) continue;
       if (decl.kind === "Italic") target.italic = true;
       else if (decl.kind === "Bold") target.bold = true;
@@ -1814,14 +1888,35 @@ function colorRank(name) {
   return i < 0 ? COLOR_NAMES.length : i;
 }
 
-/** 生成尾部的声明行；这棵树没有任何样式时返回空字符串 */
+/**
+ * 隐式基线：没有显式颜色声明时，一个节点在画布上是什么颜色。
+ *
+ * 定义就是文件头那两行基线（词红、其余蓝），所以：
+ *  - render.js 的默认画法必须用它（两边不一致就会出现"按钮算出来的颜色"和"看到的颜色"不同）；
+ *  - editor.js 判断按钮灰不灰时也用它（`node.color == null` 就是"跟着基线走"）；
+ *  - 测试里直接调它来断言"基线与默认画法一致"。
+ *
+ * @param {boolean} isWord  这个节点是不是「词」（判定唯一来源是 layout.js 的 wordNodes）
+ */
+function baselineColor(isWord) {
+  return isWord ? "red" : "blue";
+}
+
+/**
+ * 生成尾部的声明行；这棵树没有任何样式时返回空字符串。
+ *
+ * 颜色行按「怎么短怎么写、而且跟着树走」的优先级挑选写法（见下面的 colorItems）：
+ * 整棵树同色写 `Blue(all)`，整组词同色写 `Blue(words)`（还要算上多出来的编号），
+ * 其余照旧列编号。关键词一律小写，`all` 的优先级比 `words` 高。
+ */
 function styleDeclsText(root) {
   if (!root) return "";
   const italic = [];
   const bold = [];
   const strike = [];
   const byColor = new Map(); // 颜色名 -> 编号数组
-  for (const [node, id] of nodeIds(root)) {
+  const nodes = [...nodeIds(root)]; // [node, id] 数组（Map 没有 filter）
+  for (const [node, id] of nodes) {
     if (node.italic) italic.push(id);
     if (node.bold) bold.push(id);
     if (node.strike) strike.push(id);
@@ -1830,6 +1925,11 @@ function styleDeclsText(root) {
       byColor.get(node.color).push(id);
     }
   }
+  const total = nodes.length;
+
+  // 「词」的编号集合（用的是全项目唯一的那个判定），供 `words` 关键词的比较用
+  const wordSet = new Set(wordNodes(root));
+  const wordIds = new Set(nodes.filter(([node]) => wordSet.has(node)).map(([, id]) => id));
 
   const asc = (a, b) => a - b;
   const parts = [];
@@ -1838,8 +1938,34 @@ function styleDeclsText(root) {
   if (strike.length) parts.push(`Strike(${strike.sort(asc).join(", ")})`);
   // 一种颜色一行；同一个颜色下的编号合并在一起，和 Italic(1, 3) 的写法一致
   const colors = [...byColor.keys()].sort((a, b) => colorRank(a) - colorRank(b) || (a < b ? -1 : a > b ? 1 : 0));
-  for (const name of colors) parts.push(`${capitalize(name)}(${byColor.get(name).sort(asc).join(", ")})`);
+  for (const name of colors) {
+    const ids = byColor.get(name).sort(asc);
+    parts.push(`${capitalize(name)}(${colorItems(ids, wordIds, total)})`);
+  }
   return parts.join("\n");
+}
+
+/**
+ * 一组的括号内容：优先用关键词，用不了才列编号。
+ *
+ * 1. 这组就是**全部**节点            -> `all`
+ * 2. 「词」不为空且这组包含**全部**词 -> `words` + 多出来的编号（为空就只写 `words`）
+ * 3. 其它                            -> 照旧列编号
+ *
+ * @param {number[]} ids      这一组里有颜色的节点编号（升序）
+ * @param {Set<number>} wordIds 全树的词编号
+ * @param {number} total      全树的节点数
+ */
+function colorItems(ids, wordIds, total) {
+  if (ids.length === total) return "all";
+  if (wordIds.size) {
+    const covered = new Set(ids);
+    if ([...wordIds].every((id) => covered.has(id))) {
+      const rest = ids.filter((id) => !wordIds.has(id));
+      return rest.length ? `words, ${rest.join(", ")}` : "words";
+    }
+  }
+  return ids.join(", ");
 }
 
 // ===== src/i18n.js =============================================
@@ -1983,13 +2109,13 @@ const STRINGS = {
     // ---- 标色与字体样式 ----
     "style.label": "标色",
     "style.allBlue": "全部标蓝",
-    "style.allBlue.hint": "删掉所有颜色声明，整棵树回到默认画法",
+    "style.allBlue.hint": "把每个节点都标成蓝色（词也标），等价于写一行 Blue(words)",
     "style.wordsRed": "单词标红",
     "style.wordsRed.hint": '把所有"词"标成红色（词 = 裸标签的叶子节点，或带位移箭头的叶子节点）',
     "style.nodeRed": "节点标红",
     "style.nodeRed.hint": "把选中的节点标成红色（选中的是词或范畴都可以）",
     "style.nodeBlue": "节点标蓝",
-    "style.nodeBlue.hint": "删掉选中节点的颜色声明，该节点回到默认画法",
+    "style.nodeBlue.hint": "给选中的节点写上蓝色声明（等价于加一行 Blue(编号)）",
     "style.nodeItalic": "节点斜体",
     "style.nodeItalic.hint": "给选中的节点切换斜体（等价于在末尾加或删一行 Italic(编号) 声明）",
     "style.nodeStrike": "节点删除线",
@@ -2097,13 +2223,13 @@ const STRINGS = {
     // ---- colour and font style ----
     "style.label": "Colour",
     "style.allBlue": "All blue",
-    "style.allBlue.hint": "Remove every colour declaration, returning the tree to the default rendering",
+    "style.allBlue.hint": "Colour every node blue, words included — same as writing Blue(words)",
     "style.wordsRed": "Words red",
     "style.wordsRed.hint": "Colour every word red (a word is a bare-label leaf, or a leaf carrying a movement arrow)",
     "style.nodeRed": "Node red",
     "style.nodeRed.hint": "Colour the selected node red (a word or a category)",
     "style.nodeBlue": "Node blue",
-    "style.nodeBlue.hint": "Remove the selected node's colour declaration, returning it to the default rendering",
+    "style.nodeBlue.hint": "Write a blue declaration for the selected node — same as adding Blue(number)",
     "style.nodeItalic": "Node italic",
     "style.nodeItalic.hint": "Toggle italic on the selected node (adds or removes an Italic(N) declaration)",
     "style.nodeStrike": "Node strike",
@@ -2549,14 +2675,30 @@ Red(5)</pre>
   For how the numbers are counted see <a href="#doc-arrow">1.6 Drawing an arrow</a>.
 </p>
 <p>
-  With no colour declarations at all, words are drawn red and the other nodes blue (that is only the
-  default rendering, not a hidden declaration). The buttons on the <b>“Colour” row</b> add and remove those
-  declarations for you, so the effect can be undone and the text edited by hand at any time:
-  <b>All blue</b> removes every colour declaration (the tree returns to the default rendering),
-  <b>Words red</b> writes a red declaration for every word, and <b>Node red</b> / <b>Node blue</b> act on
-  the selected node. On the same row <b>Node italic</b> and <b>Node strike</b> are toggles: pressing one
-  applies that style to the selected node, pressing it again removes it. Bold has no button and can only be
-  written as a declaration.
+  With no colour declarations at all, words are drawn red and the other nodes blue. That default rendering has
+  an equivalent <b>implicit baseline</b> in the notation: colour every node blue first, then every word red.
+  It never appears in the text and only acts behind the scenes, so the text always shows exactly what you wrote.
+  The buttons on the <b>“Colour” row</b> write those declarations for you, so the effect can be undone and the
+  text edited by hand at any time: <b>All blue</b> writes a blue declaration for every node that is not blue
+  already (words included), <b>Words red</b> writes a red declaration for every word, and
+  <b>Node red</b> / <b>Node blue</b> act on the selected node. On the same row <b>Node italic</b> and
+  <b>Node strike</b> are toggles: pressing one applies that style to the selected node, pressing it again
+  removes it. Bold has no button and can only be written as a declaration.
+</p>
+<p>
+  Besides node numbers the brackets also accept two <b>keywords</b> (case-insensitive, mixable with numbers):
+  <code>words</code> means every word in the sense of the note “only words are drawn red” below, and
+  <code>all</code> means every node. Declarations take effect in the order they are written, so writing
+  <code>Blue(words)</code> after the baseline's red means “paint the words blue as well” — the whole tree blue:
+</p>
+<pre class="code-block">Blue(words)
+Red(all, 0)</pre>
+<p>
+  <code>Blue(words)</code> only touches words and leaves categories alone, whereas <code>Red(all, 0)</code>
+  paints the whole tree red together with node 0 (<code>all</code> already covers node 0; the number is only
+  there to show that the two can be mixed). On export the shorter form is chosen automatically: <code>all</code>
+  when a whole tree shares one colour, <code>words</code> when a whole set of words does (plus the numbers of
+  any same-coloured nodes that are not words), and a plain number list otherwise.
 </p>
 <p>
   Declarations can only go at the end, one per line. In rule notation they come after all edges and
@@ -2648,7 +2790,9 @@ Red(4)</pre>
     <code>Y</code> and <code>X'</code> are blue.
     Red words are only the default rendering and can be changed: on the <b>“Colour” row</b>, <b>All blue</b>
     colours every node blue, <b>Words red</b> colours the words red, and <b>Node red</b> / <b>Node blue</b>
-    act on the selected node.
+    act on the selected node. You can also write the declarations by hand, for instance
+    <code>Blue(words)</code> to paint the words blue as well (the whole tree blue), or
+    <code>Blue(all)</code> to write a blue declaration on every node.
   </li>
   <li>
     <b>Adjacent bare labels become one multi-word leaf node.</b> So <code>[S NP VP]</code> means S has a
@@ -3648,6 +3792,12 @@ const COLORS = {
 };
 
 /**
+ * 基线的色值：style.js 的 baselineColor() 说"应该是红还是蓝"，这里说"红/蓝长什么样"。
+ * 两边必须一致，否则「全部标蓝」算出来的颜色会和画布上看到的不一样。
+ */
+const BASELINE_FILL = { red: COLORS.leaf, blue: COLORS.branch };
+
+/**
  * @returns {{width:number, height:number}} 实际画布尺寸（已含箭头所需的下方留白）
  */
 function drawTree(svg, lay, opts = {}) {
@@ -3975,12 +4125,13 @@ function drawTree(svg, lay, opts = {}) {
     const contentLeft = it.cx - contentW / 2;
     // 只有"词"染红：叶子节点、而且是母亲节点唯一的女儿节点（也就是记法里写成裸标签的那种），
     // 或者带位移箭头的叶子。方括号包起来的空节点是范畴，跟非叶子一样用蓝色。
-    // 这只是**默认画法**（opts.redWords !== false）：模型里并没有"隐式颜色声明"，
-    // 编辑器的界面默认开着它（作者觉得词红好看）；函数式调用 / 命令行默认关掉，出一张全蓝的图。
+    // 这就是 src/style.js 文件头写的那条**隐式基线**（词红、其余蓝）：颜色名从这里取，
+    // 色值从 BASELINE_FILL 取，两边分开是为了让"基线是什么颜色"只有 style.js 一个来源。
+    // opts.redWords !== false 时按基线画（编辑器默认）；关掉时全画成范畴的蓝（命令行 / rulesToSvg() 的默认）。
     // 显式声明的颜色优先级最高，不受「关闭颜色」选项影响 —— 那是作者自己的选择
     const declared = n.color ? COLOR_VALUES[n.color] : null;
-    const wordRed = o.redWords !== false && it.isWord;
-    const fill = declared || (o.colors ? (wordRed ? COLORS.leaf : COLORS.branch) : COLORS.mono);
+    const baseFill = BASELINE_FILL[baselineColor(o.redWords !== false && it.isWord)];
+    const fill = declared || (o.colors ? baseFill : COLORS.mono);
 
     const label = el("text", {
       x: contentLeft + it.textW / 2,
@@ -4246,19 +4397,36 @@ class SyntaxTreeEditor {
 
   // ------------------------------------------------------------ 颜色标记
   //
-  // 这四个按钮都不引入新的染色机制，只是生成或删掉已有的颜色声明（Red(1, 3) 这种），
+  // 这四个按钮都不引入新的染色机制，只是生成已有的颜色声明（Red(1, 3)、Blue(words) 这种），
   // 所以效果可以往返 —— 导出的文本里就是那些声明，用户也能手动改、手动删。
+  //
+  // ⚠️ 颜色有两行**隐式基线**（写在 src/style.js 的文件头）：先给所有节点刷蓝，再把词刷红。
+  // 所以「标蓝」**不能靠删声明** —— 删掉之后词就回到基线的红，这正是曾经的 bug。
+  // 现在两个"标蓝"都是**写上**蓝色声明（`markAllBlue()` 产出的就是 `Blue(words)`）。
+  // 「实际颜色」= 有声明就用声明，没声明就按基线算（词红、其余蓝），判定按钮灰不灰要用它。
   //
   // 颜色是"一个节点一个颜色"，所以标红对已经带别的颜色的节点是【覆盖】。
   // 没有任何变化时（例如对已经红的词再点一次"词红"）直接返回，不压撤销历史、不产生重复声明。
 
-  /** 全蓝：删掉所有颜色声明（回到默认画法）。返回是否真的改了东西 */
+  /** 这个节点在画布上是不是蓝的：有声明看声明，没声明看基线（style.js 的 baselineColor） */
+  #isBlueLooking(n, words) {
+    if (n.color) return n.color === "blue";
+    return baselineColor(words.has(n)) === "blue";
+  }
+
+  /** 当前的「词」集合（判定唯一来源是 layout.js 的 wordNodes） */
+  #wordSet() {
+    return new Set(wordNodes(this.root));
+  }
+
+  /** 全蓝：把还不是蓝的节点（也就是词，以及显式写成别的颜色的节点）都写成蓝色声明。返回是否真的改了东西 */
   markAllBlue() {
     if (!this.root) return false;
-    const colored = preorder(this.root).filter((n) => n.color);
-    if (!colored.length) return false;
+    const words = this.#wordSet();
+    const todo = preorder(this.root).filter((n) => !this.#isBlueLooking(n, words));
+    if (!todo.length) return false;
     this.#mutate(() => {
-      for (const n of colored) n.color = null;
+      for (const n of todo) n.color = "blue";
     });
     return true;
   }
@@ -4284,12 +4452,12 @@ class SyntaxTreeEditor {
     return true;
   }
 
-  /** 单个标蓝：删掉选中节点的颜色声明（词会回到默认的词红） */
+  /** 单个标蓝：给选中的节点写上蓝色声明（**不是删声明**：删了词会回基线的红） */
   markSelectedBlue() {
     const n = this.selected;
-    if (!this.root || !n || !n.color) return false;
+    if (!this.root || !n || n.color === "blue") return false;
     this.#mutate(() => {
-      n.color = null;
+      n.color = "blue";
     });
     return true;
   }
@@ -5098,11 +5266,14 @@ class SyntaxTreeEditor {
     this.btnUndo.disabled = this.undoStack.length === 0;
     this.btnRedo.disabled = this.redoStack.length === 0;
 
-    // 颜色按钮：没有可做的改动时（例如整棵树已经没有任何颜色声明）就灰掉，免得点下去没有反应
-    this.btnAllBlue.disabled = !ord.some((x) => x.color);
+    // 颜色按钮：没有可做的改动时就灰掉，免得点下去没有反应。
+    // ⚠️ 判定要用「实际颜色」（有声明看声明，没声明按基线算），不能只看 node.color ——
+    // 靠基线蓝的节点（非词）本来就是蓝的，「全部标蓝」不该为它亮着。
+    const words = this.#wordSet();
+    this.btnAllBlue.disabled = !this.root || preorder(this.root).every((x) => this.#isBlueLooking(x, words));
     this.btnWordsRed.disabled = !wordNodes(this.root).some((x) => x.color !== "red");
     this.btnSelectedRed.disabled = !n || n.color === "red";
-    this.btnSelectedBlue.disabled = !n || !n.color;
+    this.btnSelectedBlue.disabled = !n || this.#isBlueLooking(n, words);
     // 字体样式那两个是开关，选中了节点就总能切换
     this.btnSelectedItalic.disabled = !n;
     this.btnSelectedStrike.disabled = !n;
