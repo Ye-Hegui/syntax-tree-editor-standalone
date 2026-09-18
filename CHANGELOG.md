@@ -39,11 +39,13 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1
 
 ### 改动 / Changed
 
-- **基线的红蓝 = 声明写出来的红蓝**：默认画法不再另用一套色值（原来是 `#CC0000` / `#0000CC`），
-  直接取颜色声明那套（`Red` = `#d32f2f`、`Blue` = `#1565c0`）。所以什么都不写（靠基线）和手写
-  `Blue(words)` 看起来完全一样，不会出现"一棵树两种蓝" · **The baseline red and blue are now the
-  declaration values** (previously the default rendering used its own `#CC0000` / `#0000CC`), so relying on
-  the baseline and writing `Blue(words)` by hand look identical — never two blues in one tree
+- **基线的红蓝 = 声明写出来的红蓝**：默认画法不再另用一套色值，改成一**共用同一张色值表**，
+  以原来基线那两个为准（`Red` = `#CC0000`、`Blue` = `#0000CC`，画布外观不变）。
+  所以什么都不写（靠基线）和手写 `Blue(words)` 看起来完全一样，不会出现"一棵树两种蓝" ·
+  **The baseline red and blue are now the declaration values**: the default rendering and the colour
+  declarations share one table, keeping the original baseline values (`Red` = `#CC0000`,
+  `Blue` = `#0000CC`; the canvas looks unchanged), so relying on the baseline and writing `Blue(words)`
+  by hand look identical — never two blues in one tree
 - 「全部标蓝」现在给**每个**节点都写上蓝色声明（导出 `Blue(all)`），点完整棵树是同一个蓝 ·
   "All blue" now writes a blue declaration on **every** node (exported as `Blue(all)`), so the whole tree
   ends up one single blue
@@ -55,8 +57,8 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1
   `COLOR_VALUES` 决定色值），渲染、按钮判定与测试都从这里取 ·
   The baseline and the default rendering now share a single source (`baselineColor()` in `style.js` decides
   red-or-blue, `COLOR_VALUES` supplies the value), used by the renderer, the button logic and the tests
-- `screenshots/` 六张重新拍过（默认画布的词红/范畴蓝换成了色值表那一套）·
-  The six screenshots were retaken (the default canvas now uses the colour-table red and blue)
+- `screenshots/` 六张**不用重拍**（默认画布的颜色回到原样）·
+  The six screenshots needed no retake (the default canvas keeps its original colours)
 
 ## v1.2.3（内部开发版，未发布 / internal, unreleased）
 

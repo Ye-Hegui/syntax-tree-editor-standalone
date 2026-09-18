@@ -59,11 +59,15 @@ export const COLOR_NAMES = [
  * 颜色名 -> 实际色值。
  * 这是唯一来源：style.js 负责语法，render.js 从这里取色。
  * 黄色和白色特意选了在浅色背景上仍能看清的色值。
+ *
+ * ⚠️ red / blue 就是**隐式基线**那两个色值（`#CC0000` / `#0000CC`，作者 2026-09-18 定：
+ * "都用原来基线的"）。所以靠基线画出来的词和手写 `Red(words)` / `Blue(words)` 是同一个色值 ——
+ * render.js 的 BASELINE_FILL 直接引用这里，别再另写一套。
  */
 export const COLOR_VALUES = {
-  red: "#d32f2f",
+  red: "#CC0000",
   yellow: "#e0a000",
-  blue: "#1565c0",
+  blue: "#0000CC",
   green: "#2e7d32",
   orange: "#e65100",
   magenta: "#c2185b",

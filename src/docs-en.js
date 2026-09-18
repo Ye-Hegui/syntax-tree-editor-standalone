@@ -359,7 +359,7 @@ Red(all, 0)</pre>
 </p>
 <p>
   The baseline red and blue are <b>the same values</b> the colour declarations use
-  (<code>Red</code> = <code>#d32f2f</code>, <code>Blue</code> = <code>#1565c0</code>), so writing
+  (<code>Red</code> = <code>#CC0000</code>, <code>Blue</code> = <code>#0000CC</code>), so writing
   <code>Blue(words)</code> by hand looks exactly like writing nothing at all and letting the baseline paint
   the words red — never two different blues in one tree. For any other colour just write the declaration,
   for instance <code>Green(all)</code>.

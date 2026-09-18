@@ -1207,8 +1207,8 @@ Red(all, 0)</pre>
           （还要带上同色的其它节点编号），其余情况才逐列编号。
         </p>
         <p>
-          基线的红蓝和写出来的声明红蓝是<b>同一套色值</b>（颜色名对应的色值见下面「标色」那一行旁边的按钮，
-          也就是 <code>Red</code> = <code>#d32f2f</code>、<code>Blue</code> = <code>#1565c0</code>），
+          基线的红蓝和写出来的声明红蓝是<b>同一套色值</b>（也就是 <code>Red</code> = <code>#CC0000</code>、
+          <code>Blue</code> = <code>#0000CC</code>），
           所以手写 <code>Blue(words)</code> 和什么都不写（靠基线）看起来完全一样，
           不会出现"一棵树两种蓝"。想看别的颜色就照常写声明，例如 <code>Green(all)</code>。
         </p>
@@ -1755,11 +1755,15 @@ const COLOR_NAMES = [
  * 颜色名 -> 实际色值。
  * 这是唯一来源：style.js 负责语法，render.js 从这里取色。
  * 黄色和白色特意选了在浅色背景上仍能看清的色值。
+ *
+ * ⚠️ red / blue 就是**隐式基线**那两个色值（`#CC0000` / `#0000CC`，作者 2026-09-18 定：
+ * "都用原来基线的"）。所以靠基线画出来的词和手写 `Red(words)` / `Blue(words)` 是同一个色值 ——
+ * render.js 的 BASELINE_FILL 直接引用这里，别再另写一套。
  */
 const COLOR_VALUES = {
-  red: "#d32f2f",
+  red: "#CC0000",
   yellow: "#e0a000",
-  blue: "#1565c0",
+  blue: "#0000CC",
   green: "#2e7d32",
   orange: "#e65100",
   magenta: "#c2185b",
@@ -2709,7 +2713,7 @@ Red(all, 0)</pre>
 </p>
 <p>
   The baseline red and blue are <b>the same values</b> the colour declarations use
-  (<code>Red</code> = <code>#d32f2f</code>, <code>Blue</code> = <code>#1565c0</code>), so writing
+  (<code>Red</code> = <code>#CC0000</code>, <code>Blue</code> = <code>#0000CC</code>), so writing
   <code>Blue(words)</code> by hand looks exactly like writing nothing at all and letting the baseline paint
   the words red — never two different blues in one tree. For any other colour just write the declaration,
   for instance <code>Green(all)</code>.
@@ -3809,7 +3813,8 @@ const COLORS = {
  *
  * ⚠️ **直接取 COLOR_VALUES**（也就是颜色声明的色值表），所以隐式基线与写出来的声明
  * 是同一个蓝同一个红 —— 手写一行 `Blue(words)` 和什么都不写（靠基线）看起来完全一样，
- * 不会出现"一棵树两种蓝"。别在这里另写一套色值。
+ * 不会出现"一棵树两种蓝"。别在这里另写一套色值（作者 2026-09-18 定的：
+ * 色值以**原来基线那两个**为准，即 `#CC0000` / `#0000CC`，写进 COLOR_VALUES）。
  */
 const BASELINE_FILL = { red: COLOR_VALUES[baselineColor(true)], blue: COLOR_VALUES[baselineColor(false)] };
 

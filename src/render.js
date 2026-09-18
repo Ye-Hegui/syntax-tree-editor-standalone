@@ -27,7 +27,8 @@ const COLORS = {
  *
  * ⚠️ **直接取 COLOR_VALUES**（也就是颜色声明的色值表），所以隐式基线与写出来的声明
  * 是同一个蓝同一个红 —— 手写一行 `Blue(words)` 和什么都不写（靠基线）看起来完全一样，
- * 不会出现"一棵树两种蓝"。别在这里另写一套色值。
+ * 不会出现"一棵树两种蓝"。别在这里另写一套色值（作者 2026-09-18 定的：
+ * 色值以**原来基线那两个**为准，即 `#CC0000` / `#0000CC`，写进 COLOR_VALUES）。
  */
 const BASELINE_FILL = { red: COLOR_VALUES[baselineColor(true)], blue: COLOR_VALUES[baselineColor(false)] };
 

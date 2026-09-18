@@ -196,8 +196,9 @@ new SyntaxTreeEditor(elOrSelector, {
    两边的"词红、其余蓝"都从 `style.js` 的 `baselineColor()` 取（`render.js` 再用 `BASELINE_FILL` 换色值）。
    **函数式入口 `rulesToSvg()` 与命令行默认 `redWords: false`**
    （出全蓝的图）—— 作者定的：界面好看优先，机器出的图干净优先；这只改**画法**，不改基线。
-   ⚠️ 基线的色值**就是颜色声明的色值**（`render.js` 的 `BASELINE_FILL` 直接取 `COLOR_VALUES`），
-   所以手写 `Blue(words)` 与什么都不写看起来一样，不会出现"一棵树两种蓝"。
+   ⚠️ 基线的色值**就是颜色声明的色值**（`render.js` 的 `BASELINE_FILL` 直接取 `COLOR_VALUES`，
+   而 `COLOR_VALUES.red` / `.blue` 就是原来默认画法用的 `#CC0000` / `#0000CC`），
+   所以手写 `Blue(words)` 与什么都不写看起来一样，不会出现"一棵树两种蓝"；改色值只改 `COLOR_VALUES` 一处。
    「词」= 叶子节点 **且**（是母亲节点唯一的女儿节点 **或** 带位移箭头），纯结构判定，
    不认任何词类；**唯一来源是 `layout.js` 的 `wordNodes(root)`**（"单词标红"按钮与 `words` 关键词都用它）。
    ⚠️ 它和箭头用的「词序号」（`notation.js` 的 `leafOrdinals`，数**所有**叶子，

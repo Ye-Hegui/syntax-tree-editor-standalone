@@ -1019,7 +1019,7 @@ await t("关掉颜色后全部是黑色", async () => {
 await t("词红：只给词标红，范畴不动，导出用 words 关键词", async () => {
   const ed = mount("[XP [D [X'' [X word] [Y]]] [X']]");
   assert.equal(ed.markWordsRed(), true);
-  assert.equal(fillOf(ed, "word"), "#d32f2f", "word 是词，应该变红");
+  assert.equal(fillOf(ed, "word"), COLOR_VALUES.red, "word 是词，应该变红");
   assert.equal(fillOf(ed, "Y"), COLOR_VALUES.blue, "Y 是范畴，不该红");
   assert.equal(fillOf(ed, "X'"), COLOR_VALUES.blue, "X' 是范畴，不该红");
   assert.equal(fillOf(ed, "X"), COLOR_VALUES.blue, "X 是非叶子，不该红");
@@ -1035,14 +1035,14 @@ await t("词红在两套记法下都用 words 关键词，且能往返", async (
   assert.equal(ed.getRules().endsWith("Red(words)"), true, ed.getRules());
   // 导出再解析回同一棵树：词的红色落到模型上，导出还是同一行
   ed.setValue(ed.getValue());
-  assert.equal(fillOf(ed, "Dogs"), "#d32f2f", "解析 Red(words) 之后词是红的");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "解析 Red(words) 之后词是红的");
   assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nRed(words)");
 });
 
 await t("词红覆盖词原有的颜色，且没有变化时不再压撤销记录", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]\nGreen(3)");
   ed.markWordsRed();
-  assert.equal(fillOf(ed, "Dogs"), "#d32f2f", "词原有的绿色应该被红色覆盖");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "词原有的绿色应该被红色覆盖");
   assert.equal(declLines(ed, "Green").length, 0, "冗余的绿色声明应该消失");
   const before = ed.undoStack.length;
   const text = ed.getValue();
@@ -1056,7 +1056,7 @@ await t("单个标红：选中的是范畴也照做，不受'词'的限制", asy
   const np = preorder(ed.root).find((x) => x.label === "NP");
   clickNode(ed, np);
   assert.equal(ed.markSelectedRed(), true);
-  assert.equal(fillOf(ed, "NP"), "#d32f2f", "范畴也能标红");
+  assert.equal(fillOf(ed, "NP"), COLOR_VALUES.red, "范畴也能标红");
   assert.equal(fillOf(ed, "dog"), COLOR_VALUES.red, "没选中的词仍然是默认的红");
 });
 
@@ -1073,8 +1073,8 @@ await t("单个标蓝：给选中节点写上蓝色声明（不是删声明）",
   const dogs = preorder(ed.root).find((x) => x.label === "Dogs");
   clickNode(ed, dogs);
   assert.equal(ed.markSelectedBlue(), true);
-  assert.equal(fillOf(ed, "Dogs"), "#1565c0", "选中的词现在有明确的蓝声明，不再靠默认画法");
-  assert.equal(fillOf(ed, "barks"), "#d32f2f", "别的词不受影响");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.blue, "选中的词现在有明确的蓝声明，不再靠默认画法");
+  assert.equal(fillOf(ed, "barks"), COLOR_VALUES.red, "别的词不受影响");
   assert.equal(declLines(ed, "Blue")[0], "Blue(3)", ed.getValue());
   assert.equal(declLines(ed, "Red")[0], "Red(4)", ed.getValue());
   assert.equal(ed.markSelectedBlue(), false, "已经是蓝的了，应该报告没改动");
@@ -1084,7 +1084,7 @@ await t("全部标蓝：给【每个】节点写上蓝色声明（含本来就�
   const ed = mount("[S [NP Dogs] [VP barks]]\nRed(words)\nGreen(0)\nBold(1)");
   assert.equal(ed.markAllBlue(), true);
   for (const label of ["Dogs", "barks", "NP", "VP", "S"]) {
-    assert.equal(fillOf(ed, label), "#1565c0", `${label} 应该是声明的蓝（整棵树同一个蓝）`);
+    assert.equal(fillOf(ed, label), COLOR_VALUES.blue, `${label} 应该是声明的蓝（整棵树同一个蓝）`);
   }
   assert.equal(declLines(ed, "Green").length, 0, "绿色声明被蓝色覆盖掉了");
   // 每个节点都写上了声明 ⇒ 整组就是全部节点 ⇒ 导出用 all
@@ -1098,13 +1098,13 @@ await t("全部标蓝之后词也真的变蓝，且整棵树只有一种蓝（�
   assert.equal(fillOf(ed, "S"), COLOR_VALUES.blue, "一开始范畴是基线的蓝");
   assert.equal(ed.markAllBlue(), true);
   for (const label of ["Dogs", "barks", "NP", "VP", "S"]) {
-    assert.equal(fillOf(ed, label), "#1565c0", `${label} 必须和别的节点同一个蓝`);
+    assert.equal(fillOf(ed, label), COLOR_VALUES.blue, `${label} 必须和别的节点同一个蓝`);
   }
   assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nBlue(all)");
   // 再点「单词标红」：词变红，别的节点保留刚刚写上的蓝色声明
   assert.equal(ed.markWordsRed(), true);
-  assert.equal(fillOf(ed, "Dogs"), "#d32f2f", "词又红了");
-  assert.equal(fillOf(ed, "S"), "#1565c0", "范畴的蓝是刚刚「全部标蓝」写下的声明，仍然在");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "词又红了");
+  assert.equal(fillOf(ed, "S"), COLOR_VALUES.blue, "范畴的蓝是刚刚「全部标蓝」写下的声明，仍然在");
   assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nRed(words)\nBlue(0, 1, 2)");
 });
 
@@ -1113,11 +1113,11 @@ await t("单个标红 / 单个标蓝：都作用在选中的那一个节点上",
   const np = preorder(ed.root).find((x) => x.label === "NP");
   clickNode(ed, np);
   assert.equal(ed.markSelectedRed(), true);
-  assert.equal(fillOf(ed, "NP"), "#d32f2f", "范畴也能标红");
+  assert.equal(fillOf(ed, "NP"), COLOR_VALUES.red, "范畴也能标红");
   assert.equal(fillOf(ed, "dog"), COLOR_VALUES.red, "没选中的词仍然是默认的红");
   assert.ok(declLines(ed, "Red")[0].startsWith("Red("), ed.getValue());
   assert.equal(ed.markSelectedBlue(), true);
-  assert.equal(fillOf(ed, "NP"), "#1565c0", "同一个节点改成蓝色声明");
+  assert.equal(fillOf(ed, "NP"), COLOR_VALUES.blue, "同一个节点改成蓝色声明");
   assert.equal(declLines(ed, "Red").length, 0, "红色声明应该被蓝色覆盖掉");
   assert.ok(declLines(ed, "Blue")[0].startsWith("Blue("), ed.getValue());
 });
@@ -1192,7 +1192,7 @@ await t("颜色按钮只用声明体系，颜色声明能手工改回文本再�
   // 手写成列编号的等价写法，解析后模型一致，导出时又规范化回关键词
   const hand = ed.getValue().replace("Red(words)", "Red(3, 4)");
   ed.setValue(hand);
-  assert.equal(fillOf(ed, "Dogs"), "#d32f2f");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red);
   assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nRed(words)", "两份写法语义相同");
 });
 
@@ -1501,7 +1501,7 @@ await t("颜色声明只作用于被点到的节点，没声明的仍是默认�
 await t("显式声明的颜色优先于「关闭颜色」选项", async () => {
   const ed = mount("[CP [NP what_i] [C' [C is_j]]]\nRed(3)", { colors: false });
   const fill = (l) => [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === l).getAttribute("fill");
-  assert.equal(fill("what"), "#d32f2f", "显式声明的颜色不受选项影响");
+  assert.equal(fill("what"), COLOR_VALUES.red, "显式声明的颜色不受选项影响");
   assert.equal(fill("is"), "#111111", "没声明的是单色");
 });
 
