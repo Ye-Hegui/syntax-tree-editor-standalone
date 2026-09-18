@@ -336,11 +336,11 @@ Red(5)</pre>
   an equivalent <b>implicit baseline</b> in the notation: colour every node blue first, then every word red.
   It never appears in the text and only acts behind the scenes, so the text always shows exactly what you wrote.
   The buttons on the <b>“Colour” row</b> write those declarations for you, so the effect can be undone and the
-  text edited by hand at any time: <b>All blue</b> writes a blue declaration for every node that is not blue
-  already (words included), <b>Words red</b> writes a red declaration for every word, and
-  <b>Node red</b> / <b>Node blue</b> act on the selected node. On the same row <b>Node italic</b> and
-  <b>Node strike</b> are toggles: pressing one applies that style to the selected node, pressing it again
-  removes it. Bold has no button and can only be written as a declaration.
+  text edited by hand at any time: <b>All blue</b> writes a blue declaration on every node — words and
+  categories alike, so the whole tree ends up one single blue — <b>Words red</b> writes a red declaration for
+  every word, and <b>Node red</b> / <b>Node blue</b> act on the selected node. On the same row
+  <b>Node italic</b> and <b>Node strike</b> are toggles: pressing one applies that style to the selected node,
+  pressing it again removes it. Bold has no button and can only be written as a declaration.
 </p>
 <p>
   Besides node numbers the brackets also accept two <b>keywords</b> (case-insensitive, mixable with numbers):
@@ -356,6 +356,12 @@ Red(all, 0)</pre>
   there to show that the two can be mixed). On export the shorter form is chosen automatically: <code>all</code>
   when a whole tree shares one colour, <code>words</code> when a whole set of words does (plus the numbers of
   any same-coloured nodes that are not words), and a plain number list otherwise.
+</p>
+<p>
+  The baseline blue and a written blue are two different values (<code>#0000CC</code> and <code>#1565c0</code>),
+  so mixing them in one tree gives two slightly different shades. To make the whole tree one single blue, press
+  <b>All blue</b> (it writes a declaration on every node, exported as <code>Blue(all)</code>) or write a
+  <code>Blue(all)</code> line yourself.
 </p>
 <p>
   Declarations can only go at the end, one per line. In rule notation they come after all edges and

@@ -146,7 +146,7 @@ new SyntaxTreeEditor(elOrSelector, {
 | `setOptions(partial)` | 改选项后重绘 |
 | `setAlign(v)` / `setCenter(v)` / `setTerms(pairs)` / `setLanguage(lang)` / `setStyle({italic,bold,strike})` | 改对齐、水平位置、界面称谓、界面语言（`"zh"`/`"en"`）、选中节点的字体样式。**只动界面文字，对树没有任何影响** |
 | `createRoot()` `addChild()` `addSibling()` `addLevel()` `collapseLevel()` `moveLeft()` `moveRight()` `remove()` `setLabel(t)` | 结构编辑，都作用于当前选中节点 |
-| `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝。**不引入新的染色机制**，只是写上颜色声明（`Blue(words)`、`Red(3)` 这种）：两个"标蓝"都是**写上**蓝色声明（删声明会让词回基线的红，那是旧 bug），两个"标红"是写上红色声明。灰掉判定用**实际颜色**（有声明看声明，没声明按基线算），都返回"是否真的改了东西"，没有变化时不压撤销历史 |
+| `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝。**不引入新的染色机制**，只是写上颜色声明（`Blue(all)`、`Red(3)` 这种）：两个"标蓝"都是**写上**蓝色声明（删声明会让词回基线的红，那是旧 bug），两个"标红"是写上红色声明。「全部标蓝」给**每个**节点都写声明（导出 `Blue(all)`）—— 只写"还不是蓝的"会让范畴停在基线的蓝、词用声明的蓝，一棵树两种蓝。灰掉判定看**声明**（`#isDeclaredBlue`），都返回"是否真的改了东西"，没有变化时不压撤销历史 |
 | `toggleSelectedItalic()` `toggleSelectedStrike()` | 同一行右边的两个字体开关：给选中节点切换斜体 / 删除线（等价于加或删一行 `Italic(编号)` / `Strike(编号)` 声明），再按一次取消。粗体刻意没有按钮，只能用声明写 |
 | `undo()` / `redo()` | 撤销 / 重做 |
 | `toSvgString({background})` / `exportSvg()` / `exportPng()` | 导出 |

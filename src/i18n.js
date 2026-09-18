@@ -138,7 +138,7 @@ export const STRINGS = {
     // ---- 标色与字体样式 ----
     "style.label": "标色",
     "style.allBlue": "全部标蓝",
-    "style.allBlue.hint": "把每个节点都标成蓝色（词也标），等价于写一行 Blue(words)",
+    "style.allBlue.hint": "把每个节点都标成蓝色（词也标），整棵树同一个蓝，等价于写一行 Blue(all)",
     "style.wordsRed": "单词标红",
     "style.wordsRed.hint": '把所有"词"标成红色（词 = 裸标签的叶子节点，或带位移箭头的叶子节点）',
     "style.nodeRed": "节点标红",
@@ -252,7 +252,7 @@ export const STRINGS = {
     // ---- colour and font style ----
     "style.label": "Colour",
     "style.allBlue": "All blue",
-    "style.allBlue.hint": "Colour every node blue, words included — same as writing Blue(words)",
+    "style.allBlue.hint": "Write a blue declaration on every node, words included — one single blue for the whole tree, the same as Blue(all)",
     "style.wordsRed": "Words red",
     "style.wordsRed.hint": "Colour every word red (a word is a bare-label leaf, or a leaf carrying a movement arrow)",
     "style.nodeRed": "Node red",
