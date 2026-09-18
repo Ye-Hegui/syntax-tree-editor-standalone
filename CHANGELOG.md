@@ -40,9 +40,12 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1
 ### 改动 / Changed
 
 - **三个链接从页脚挪到页头右上角**（作者 2026-09-18 要的：项目地址 / 在线使用 / 组件下载，
-  排在语言切换的下面一行）；页脚只留版权行，不再重复 ·
+  排在语言切换的下面一行）；页脚**也保留一份**（作者后来要求"页脚那里也加上，多一点没关系"），
+  并且页脚那三个链接补上了自己的配色（原来跟着页脚是浅灰，看不出是链接）·
   **The three links moved from the footer to the top-right of the header** (the author's request: repository /
-  live demo / download, on the line below the language switch); the footer now only carries the licence line
+  live demo / download, on the line below the language switch); the footer **keeps its own copy** as well
+  (the author asked for it later), and the footer links got their own colour — previously they inherited the
+  footer grey and did not look like links
 - **基线的红蓝 = 声明写出来的红蓝**：默认画法不再另用一套色值，改成一**共用同一张色值表**，
   以原来基线那两个为准（`Red` = `#CC0000`、`Blue` = `#0000CC`，画布外观不变）。
   所以什么都不写（靠基线）和手写 `Blue(words)` 看起来完全一样，不会出现"一棵树两种蓝" ·

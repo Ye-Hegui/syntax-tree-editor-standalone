@@ -752,6 +752,23 @@ footer {
   color: #98a2b3;
 }
 
+/* 页脚那三个链接：默认是页脚那种浅灰，悬停才明显（页头右上角另有一份，配色不同） */
+.footer-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-links a {
+  color: #7b8794;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: #1a7fb3;
+  text-decoration: underline;
+}
+
 /* --------------------------------------------------------------- 文档排版
    标题按层级依次变小（h2 > h3 > h4），
    正文 —— 段落 / 列表 / 表格 / 代码块 / 提示框 / 目录 —— 统一同一个字号。
