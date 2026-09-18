@@ -148,15 +148,51 @@ export function drawTree(svg, lay, opts = {}) {
     const y2 = ei.y - 3;
     gEdge.appendChild(el("line", { x1, y1, x2, y2, stroke: COLORS.edge, "stroke-width": 1.2 }));
 
-    // ③ 链上每一层：分叉点取这条直线与本层 cx 的交点，侧枝从那儿出发
-    const vertical = Math.abs(x2 - x1) < 0.5;
-    for (const step of chain) {
-      const t = vertical ? 0 : (step.info.cx - x1) / (x2 - x1);
-      const Jx = step.info.cx;
-      const Jy = vertical ? step.info.y + nodeH + 2 : y1 + t * (y2 - y1);
+    // ③ 链上每一层各自分叉。
+    //
+    //    分叉点必须落在这条直线上（不落上去 180° 就断了），但**它在直线上的位置是自由的** ——
+    //    正好拿这个自由度去满足"**同一侧的侧枝彼此平行**"：顶层（链的第一层）照旧取
+    //    "与本层 cx 的交点"、它的侧枝斜率当基准；下面每一层的分叉点在直线上滑动，
+    //    让同侧侧枝的斜率与基准相同。于是嵌套时是等斜率的"人字形"，不会一层一个角度。
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const at = (tt) => ({ x: x1 + tt * dx, y: y1 + tt * dy });
+    const tAtCx = (cx) => (Math.abs(dx) < 0.5 ? 0 : (cx - x1) / dx);
+    // ⚠️ 坐标在 info 里，模型节点上没有 cx/y —— 直接写 d.cx 会得到 undefined，
+    // 算出来的斜率变成 NaN，整段"等斜率"就静默失效（退回老路子）。
+    const cxOf = (d) => info.get(d).cx;
+    const topOf = (d) => info.get(d).y - 3;
+    const sideOf = (step, d) => (cxOf(d) < step.info.cx ? "left" : "right");
 
+    // 基准斜率：顶层里每一侧的第一条侧枝
+    const base = { left: null, right: null };
+    const first = chain[0];
+    first.node.children.forEach((d, di) => {
+      if (di === first.idx) return;
+      const j = at(tAtCx(first.info.cx));
+      const k = sideOf(first, d);
+      const drop = topOf(d) - j.y;
+      if (base[k] == null && Math.abs(drop) > 1e-6) base[k] = (cxOf(d) - j.x) / drop;
+    });
+
+    /** 某条侧枝的分叉点：先解"斜率 = 同侧基准"，解不到（或落在直线外）就退回本层 cx */
+    const junctionFor = (step, d) => {
+      if (step === first) return at(tAtCx(step.info.cx)); // 顶层保持原样
+      const s = base[sideOf(step, d)];
+      const denom = s == null || Number.isNaN(s) ? 0 : dx - s * dy;
+      if (s != null && !Number.isNaN(s) && Math.abs(denom) > 1e-6) {
+        const tt = (cxOf(d) - x1 - s * (topOf(d) - y1)) / denom;
+        if (tt >= 0 && tt <= 1) return at(tt); // 分叉点必须落在这条线段内
+      }
+      return at(tAtCx(step.info.cx));
+    };
+
+    for (const step of chain) {
       step.node.children.forEach((d, di) => {
         if (di === step.idx) return; // 被选中走直线的那一支，不用再画
+        const j = junctionFor(step, d);
+        const Jx = j.x;
+        const Jy = j.y;
         // 侧枝自己也是转义节点：递归 —— 它自己又是"一条线捅到底"
         if (o.hideEscapes && d.escape && d.children.length) {
           drawEscape(d, Jx, Jy);

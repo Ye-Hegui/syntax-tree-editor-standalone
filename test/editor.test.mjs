@@ -1869,6 +1869,40 @@ await t("转义节点只占画布的宽度，导出那份布局按 0 宽排版",
   assert.equal(plain.exportLay, plain.lay, "没有转义节点时不该多算一份布局");
 });
 
+await t("嵌套时同侧侧枝互相平行（向左到 X 的斜线与向左到 word3 的斜线同斜率）", async () => {
+  const ed = mount("[XP [Z word1] [%Empty [X word2] [%Empty [word3] [Y]]]]");
+  const svg = ed.toSvgString();
+  const lines = [...svg.matchAll(/<line x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)"/g)].map((m) => ({
+    x1: Number(m[1]),
+    y1: Number(m[2]),
+    x2: Number(m[3]),
+    y2: Number(m[4]),
+  }));
+  const nodes = [];
+  (function walk(n) {
+    nodes.push(n);
+    n.children.forEach(walk);
+  })(ed.root);
+  const X = nodes.find((n) => n.label === "X" && n.children.length === 1 && n.children[0].label === "word2");
+  const w3 = nodes.find((n) => n.label === "word3");
+  const lay = ed.exportLay;
+  /** 找到"以某个节点框顶为终点、且朝左"的那条侧枝 */
+  const branchTo = (n) => {
+    const it = lay.info.get(n);
+    return lines.find(
+      (l) => Math.abs(l.x2 - it.cx) < 0.01 && Math.abs(l.y2 - (it.y - 3)) < 0.01 && l.x2 < l.x1,
+    );
+  };
+  const a = branchTo(X);
+  const b = branchTo(w3);
+  assert.ok(a && b, "两条向左侧枝都要找得到");
+  const slope = (l) => (l.y2 - l.y1) / (l.x2 - l.x1);
+  assert.ok(
+    Math.abs(slope(a) - slope(b)) < 1e-6,
+    `两条向左侧枝不平行：斜率 ${slope(a).toFixed(4)} vs ${slope(b).toFixed(4)}`,
+  );
+});
+
 console.log("\n[工具栏快捷键说明]");
 
 await t("每个工具栏按钮下边的快捷键说明都对", async () => {
