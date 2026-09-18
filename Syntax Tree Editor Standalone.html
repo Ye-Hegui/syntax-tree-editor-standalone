@@ -3291,30 +3291,33 @@ function drawTree(svg, lay, opts = {}) {
     const at = (tt) => ({ x: x1 + tt * dx, y: y1 + tt * dy });
     const tAtCx = (cx) => (Math.abs(dx) < 0.5 ? 0 : (cx - x1) / dx);
     // ⚠️ 坐标在 info 里，模型节点上没有 cx/y —— 直接写 d.cx 会得到 undefined，
-    // 算出来的斜率变成 NaN，整段"等斜率"就静默失效（退回老路子）。
+    // 算出来的斜率变成 NaN，整段计算就静默失效（退回老路子，日志都不打一条）。
     const cxOf = (d) => info.get(d).cx;
     const topOf = (d) => info.get(d).y - 3;
-    const sideOf = (step, d) => (cxOf(d) < step.info.cx ? "left" : "right");
+    const isLeft = (step, d) => cxOf(d) < step.info.cx;
 
-    // 基准斜率：顶层里每一侧的第一条侧枝
-    const base = { left: null, right: null };
-    const first = chain[0];
-    first.node.children.forEach((d, di) => {
-      if (di === first.idx) return;
-      const j = at(tAtCx(first.info.cx));
-      const k = sideOf(first, d);
-      const drop = topOf(d) - j.y;
-      if (base[k] == null && Math.abs(drop) > 1e-6) base[k] = (cxOf(d) - j.x) / drop;
-    });
-
-    /** 某条侧枝的分叉点：先解"斜率 = 同侧基准"，解不到（或落在直线外）就退回本层 cx */
+    /**
+     * 侧枝的目标斜率（一律用 dy/dx 记）：
+     *
+     *   链本身（也就是"向右下那条线"）的斜率是 m；
+     *   **向左的侧枝取 -m** —— 于是左枝正是右枝关于竖直方向的镜像，
+     *   也就自然满足"左边几条侧枝斜率一致、且与右边那条互为相反数"。
+     *
+     * 单层时这条规则与"分叉点取本层 cx"是等价的（两个女儿同排、落差相同），
+     * 所以老的单层效果一点不变；只有嵌套时更深那些层会滑动分叉点去对齐斜率。
+     *
+     * 竖直的链（dx≈0）没有"相反数"可言，退回老办法；
+     * 向右的侧枝不可能与链同斜率（平行线不相交），也退回老办法。
+     */
+    const m = Math.abs(dx) < 0.5 ? null : dy / dx;
     const junctionFor = (step, d) => {
-      if (step === first) return at(tAtCx(step.info.cx)); // 顶层保持原样
-      const s = base[sideOf(step, d)];
-      const denom = s == null || Number.isNaN(s) ? 0 : dx - s * dy;
-      if (s != null && !Number.isNaN(s) && Math.abs(denom) > 1e-6) {
-        const tt = (cxOf(d) - x1 - s * (topOf(d) - y1)) / denom;
-        if (tt >= 0 && tt <= 1) return at(tt); // 分叉点必须落在这条线段内
+      const s = m == null ? null : isLeft(step, d) ? -m : m;
+      if (s != null) {
+        const denom = dy - s * dx;
+        if (Math.abs(denom) > 1e-6) {
+          const tt = (topOf(d) - y1 - s * (cxOf(d) - x1)) / denom;
+          if (tt >= 0 && tt <= 1) return at(tt); // 分叉点必须落在这条线段内
+        }
       }
       return at(tAtCx(step.info.cx));
     };
