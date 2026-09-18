@@ -1016,37 +1016,39 @@ await t("关掉颜色后全部是黑色", async () => {
   assert.equal(fillOf(ed, "Y"), "#111111");
 });
 
-await t("词红：只给词标红，范畴不动，导出用 words 关键词", async () => {
+await t("单词标红：删掉所有颜色声明，只留下树这一行（词靠基线的红）", async () => {
   const ed = mount("[XP [D [X'' [X word] [Y]]] [X']]");
+  // 先写点声明，才看得出"删干净了"
+  assert.equal(ed.markWordsRed(), false, "本来没有任何颜色声明，效果和什么都不写一样 ⇒ 报告没改动");
+  const withDecl = mount("[XP [D [X'' [X word] [Y]]] [X']]\nGreen(0)\nBlue(5)");
+  assert.equal(withDecl.markWordsRed(), true);
+  assert.equal(withDecl.getValue(), "[XP [D [X'' [X word] [Y]]] [X']]", "所有颜色声明都不留");
+  assert.equal(fillOf(withDecl, "word"), COLOR_VALUES.red, "词靠基线的红");
+  assert.equal(fillOf(withDecl, "Y"), COLOR_VALUES.blue, "Y 是范畴，靠基线的蓝");
+  assert.equal(fillOf(withDecl, "X'"), COLOR_VALUES.blue, "X' 是范畴，靠基线的蓝");
+  assert.equal(fillOf(withDecl, "X"), COLOR_VALUES.blue, "X 是非叶子，靠基线的蓝");
+  assert.equal(declLines(withDecl, "Red").length, 0, "**不保留** Red(words)");
+  assert.equal(declLines(withDecl, "Blue").length, 0);
+});
+
+await t("单词标红在两套记法下都是「删干净」，且导出稳定", async () => {
+  const ed = mount("[S [NP Dogs] [VP barks]]\nRed(4)");
   assert.equal(ed.markWordsRed(), true);
-  assert.equal(fillOf(ed, "word"), COLOR_VALUES.red, "word 是词，应该变红");
-  assert.equal(fillOf(ed, "Y"), COLOR_VALUES.blue, "Y 是范畴，不该红");
-  assert.equal(fillOf(ed, "X'"), COLOR_VALUES.blue, "X' 是范畴，不该红");
-  assert.equal(fillOf(ed, "X"), COLOR_VALUES.blue, "X 是非叶子，不该红");
-  const red = declLines(ed, "Red");
-  assert.equal(red.length, 1, "一种颜色一行");
-  assert.equal(red[0], "Red(words)", "整棵树的词都在这一组里，写关键词");
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]");
+  assert.equal(ed.getRules().includes("Red("), false, ed.getRules());
+  const rules = mount("[S [NP Dogs] [VP barks]]", { textMode: "rules" });
+  rules.markWordsRed();
+  assert.equal(rules.getRules().includes("Red(") || rules.getRules().includes("Blue("), false, rules.getRules());
 });
 
-await t("词红在两套记法下都用 words 关键词，且能往返", async () => {
-  const ed = mount("[S [NP Dogs] [VP barks]]");
-  ed.markWordsRed();
-  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nRed(words)");
-  assert.equal(ed.getRules().endsWith("Red(words)"), true, ed.getRules());
-  // 导出再解析回同一棵树：词的红色落到模型上，导出还是同一行
-  ed.setValue(ed.getValue());
-  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "解析 Red(words) 之后词是红的");
-  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nRed(words)");
-});
-
-await t("词红覆盖词原有的颜色，且没有变化时不再压撤销记录", async () => {
+await t("单词标红会覆盖词原有的颜色，且没有变化时不再压撤销记录", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]\nGreen(3)");
   ed.markWordsRed();
-  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "词原有的绿色应该被红色覆盖");
-  assert.equal(declLines(ed, "Green").length, 0, "冗余的绿色声明应该消失");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "词回到基线的红（绿色声明被删掉）");
+  assert.equal(declLines(ed, "Green").length, 0, "绿色声明应该消失");
   const before = ed.undoStack.length;
   const text = ed.getValue();
-  assert.equal(ed.markWordsRed(), false, "已经全红了，应该报告没改动");
+  assert.equal(ed.markWordsRed(), false, "已经一条声明都没有了，应该报告没改动");
   assert.equal(ed.undoStack.length, before, "没有变化时不该压撤销记录");
   assert.equal(ed.getValue(), text, "没有变化时导出的文本应该一模一样");
 });
@@ -1101,27 +1103,27 @@ await t("全部标蓝之后词也真的变蓝，且整棵树只有一种蓝（�
     assert.equal(fillOf(ed, label), COLOR_VALUES.blue, `${label} 必须和别的节点同一个蓝`);
   }
   assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nBlue(all)");
-  // 再点「单词标红」：**清空重写**，所以只剩下 Red(words) 一句，
-  // 不会残留「全部标蓝」写下的那些编号声明（作者 2026-09-18 定的新行为）
+  // 再点「单词标红」：**删掉所有颜色声明**，所以只剩树那一行（词靠基线的红）
   assert.equal(ed.markWordsRed(), true);
-  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "词现在红了");
-  assert.equal(fillOf(ed, "S"), COLOR_VALUES.blue, "范畴回到基线的蓝（不是声明，但看起来一样）");
-  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nRed(words)", "残留的 Blue(0, 1, 2) 必须被清掉");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "词现在红了（基线的红）");
+  assert.equal(fillOf(ed, "S"), COLOR_VALUES.blue, "范畴回到基线的蓝");
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]", "声明一条都不留");
 });
 
-await t("单词标红：清掉所有颜色声明后只留一句 Red(words)", async () => {
+await t("单词标红：删掉所有颜色声明（包括别的节点上的残留）", async () => {
   // 手工构造"点过全部标蓝、又点过单个标蓝"的残留状态
   const ed = mount("[S [NP Dogs] [VP barks]]\nBlue(all)\nGreen(0)");
   assert.equal(ed.markWordsRed(), true);
-  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nRed(words)", "别的颜色声明全部清掉");
-  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red);
-  assert.equal(fillOf(ed, "S"), COLOR_VALUES.blue, "范畴靠基线蓝，没有声明");
-  // 每个词都已经红、别处也没有颜色声明 ⇒ 才报告没改动
-  assert.equal(ed.markWordsRed(), false, "已经只剩 Red(words) 了，应该报告没改动");
-  // 但只要有残留（这里加一条别的颜色），再点就还得清 => 返回 true
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]", "别的颜色声明全部清掉，也不留 Red(words)");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "词靠基线的红");
+  assert.equal(fillOf(ed, "S"), COLOR_VALUES.blue, "范畴靠基线的蓝，没有声明");
+  // 一条声明都没有 ⇒ 效果和"什么都不写"一样，所以报告没改动、按钮也灰掉
+  assert.equal(ed.markWordsRed(), false, "已经没有声明可删了，应该报告没改动");
+  assert.equal(ed.btnWordsRed.disabled, true, "没有颜色声明时「单词标红」是灰的");
+  // 只要有残留（这里加一条别的颜色），再点就还得清 => 返回 true
   const ed2 = mount("[S [NP Dogs] [VP barks]]\nRed(words)\nGreen(0)");
   assert.equal(ed2.markWordsRed(), true, "还有别的颜色声明的残留，点一下要把它清掉");
-  assert.equal(ed2.getValue(), "[S [NP Dogs] [VP barks]]\nRed(words)");
+  assert.equal(ed2.getValue(), "[S [NP Dogs] [VP barks]]");
 });
 
 await t("单个标红 / 单个标蓝：都作用在选中的那一个节点上", async () => {
@@ -1174,26 +1176,30 @@ await t("四个颜色按钮跟着有无可做的改动灰掉", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]");
   // 构造完默认选中根节点，所以两个"单个"按钮一开始是能用的（根没写红色声明、也没写蓝色声明）
   assert.equal(ed.btnAllBlue.disabled, false, "词现在是红的，全蓝还有事可做");
-  assert.equal(ed.btnWordsRed.disabled, false, "还有词没标红");
+  assert.equal(ed.btnWordsRed.disabled, true, "一条颜色声明都没有 ⇒「单词标红」无事可做（它就是删声明）");
   assert.equal(ed.btnSelectedRed.disabled, false, "根节点还没标红");
   assert.equal(ed.btnSelectedBlue.disabled, false, "根节点还没有蓝色声明（点一下就会写上一条）");
 
-  ed.markWordsRed();
-  assert.equal(ed.btnAllBlue.disabled, false);
-  assert.equal(ed.btnWordsRed.disabled, true, "已经全红了");
+  ed.markAllBlue();
+  assert.equal(ed.btnAllBlue.disabled, true, "整棵树都写着蓝色声明了");
+  assert.equal(ed.btnWordsRed.disabled, false, "现在有声明可删了");
 
   const dogs = preorder(ed.root).find((x) => x.label === "Dogs");
   clickNode(ed, dogs);
-  assert.equal(ed.btnSelectedRed.disabled, true, "选中的词已经是红的");
-  assert.equal(ed.btnSelectedBlue.disabled, false, "这个词还没有蓝色声明");
+  assert.equal(ed.btnSelectedRed.disabled, false, "选中的词还没标红（它写着蓝）");
+  assert.equal(ed.btnSelectedBlue.disabled, true, "这个词已经写着 Blue 了");
 
   const np = preorder(ed.root).find((x) => x.label === "NP");
   clickNode(ed, np);
   assert.equal(ed.btnSelectedRed.disabled, false, "NP 还没标红");
-  assert.equal(ed.btnSelectedBlue.disabled, false, "NP 没有蓝色声明（靠基线蓝不算写过）");
-  // 给 NP 写上蓝色声明之后，「节点标蓝」才灰掉
-  ed.markSelectedBlue();
-  assert.equal(ed.btnSelectedBlue.disabled, true, "NP 已经写着 Blue 了");
+  assert.equal(ed.btnSelectedBlue.disabled, true, "NP 也写着 Blue 了");
+
+  // 删掉所有声明之后：「单词标红」灰掉、两个"单个"按钮又可用
+  ed.markWordsRed();
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]");
+  assert.equal(ed.btnWordsRed.disabled, true, "没有声明可删了");
+  assert.equal(ed.btnAllBlue.disabled, false, "全蓝还有事可做");
+  assert.equal(ed.btnSelectedBlue.disabled, false, "选中的 NP 没有蓝色声明了");
 
   // 取消选中后，两个"单个"按钮都该灰掉
   ed.svg.dispatchEvent(makeEvent("pointerdown"));
@@ -1204,12 +1210,14 @@ await t("四个颜色按钮跟着有无可做的改动灰掉", async () => {
 
 await t("颜色按钮只用声明体系，颜色声明能手工改回文本再解析", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]");
-  ed.markWordsRed();
-  // 手写成列编号的等价写法，解析后模型一致，导出时又规范化回关键词
-  const hand = ed.getValue().replace("Red(words)", "Red(3, 4)");
-  ed.setValue(hand);
-  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red);
-  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nRed(words)", "两份写法语义相同");
+  // 手工写一行 Red(words)，解析后词是红的，导出会规范化成关键词写法
+  ed.setValue("[S [NP Dogs] [VP barks]]\nRed(3, 4)");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "手工写的 Red(3, 4) 生效");
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]\nRed(words)", "导出规范化成关键词");
+  // 「单词标红」是"删掉所有声明" —— 点完就回到完全没声明过的样子
+  assert.equal(ed.markWordsRed(), true);
+  assert.equal(ed.getValue(), "[S [NP Dogs] [VP barks]]");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "词靠基线的红");
 });
 
 await t("全蓝之后「全部标蓝」灰掉，且没有变化时不压撤销记录", async () => {

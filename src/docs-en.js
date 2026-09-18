@@ -336,12 +336,13 @@ Red(5)</pre>
   an equivalent <b>implicit baseline</b> in the notation: colour every node blue first, then every word red.
   It never appears in the text and only acts behind the scenes, so the text always shows exactly what you wrote.
   The buttons on the <b>“Colour” row</b> write those declarations for you, so the effect can be undone and the
-  text edited by hand at any time: <b>All blue</b> drops every colour declaration first and then leaves a
-  single <code>Blue(all)</code> (one blue for the whole tree), <b>Words red</b> does the same and leaves a
-  single <code>Red(words)</code>, and <b>Node red</b> / <b>Node blue</b> act on the selected node only —
-  they add or remove that node's own declaration and never touch the others. On the same row
-  <b>Node italic</b> and <b>Node strike</b> are toggles: pressing one applies that style to the selected node,
-  pressing it again removes it. Bold has no button and can only be written as a declaration.
+  text edited by hand at any time: <b>Words red</b> drops every colour declaration and leaves none at all
+  (so words go back to the default red and the other nodes to the default blue), <b>All blue</b> likewise
+  drops them all and then leaves a single <code>Blue(all)</code> (one blue for the whole tree), and
+  <b>Node red</b> / <b>Node blue</b> act on the selected node only — they add or remove that node's own
+  declaration and never touch the others. On the same row <b>Node italic</b> and <b>Node strike</b> are
+  toggles: pressing one applies that style to the selected node, pressing it again removes it. Bold has no
+  button and can only be written as a declaration.
 </p>
 <p>
   Besides node numbers the brackets also accept two <b>keywords</b> (case-insensitive, mixable with numbers):
