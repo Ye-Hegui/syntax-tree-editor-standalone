@@ -65,7 +65,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/docs-en.js`
 > —
-> 489 行 / 27918 字节
+> 490 行 / 27985 字节
 
 **函数**
 
@@ -75,7 +75,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/editor.js`
 > 核心组件 SyntaxTreeEditor：交互、快捷键、撤销、双向同步、空白画布、装订线。
-> 1714 行 / 63316 字节
+> 1714 行 / 63364 字节
 
 私有方法以 `#` 开头，只在类内部使用。
 
@@ -317,7 +317,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/render.js`
 > 把布局结果画成可交互 SVG。视觉属性全部内联，导出的图脱离页面也能看。
-> 406 行 / 17234 字节
+> 408 行 / 17583 字节
 
 **函数**
 
@@ -325,9 +325,9 @@ Syntax Tree Editor Standalone/
 | --- | --- | --- |
 | 10 | `NS` | 命中区域。事件用委托挂在 <svg> 上，节点增删不需要重新绑定。 |
 | 12 | `el` | — |
-| 18 | `COLORS` | — |
-| 30 | `BASELINE_FILL` | 基线的色值：style.js 的 baselineColor() 说"应该是红还是蓝"，这里说"红/蓝长什么样"。 |
-| 35 | `drawTree` | — |
+| 19 | `COLORS` | 不用颜色声明时画布上的三种颜色。词红 / 范畴蓝的色值**不在这里**，见下面的 BASELINE_FILL |
+| 32 | `BASELINE_FILL` | 基线的色值：style.js 的 baselineColor() 说"这个节点该红还是该蓝"，这里说"红/蓝长什么样"。 |
+| 37 | `drawTree` | — |
 
 ### `src/rules.js`
 > 规则记法 ↔ 模型：一行一条「母亲节点 → 女儿节点」。
@@ -448,7 +448,7 @@ Syntax Tree Editor Standalone/
 
 ### `test/editor.test.mjs`
 > 交互层测试（跑在 DOM 垫片上）。
-> 2155 行 / 91540 字节
+> 2176 行 / 93047 字节
 
 **函数**
 
@@ -472,10 +472,10 @@ Syntax Tree Editor Standalone/
 | 861 | `selectT` | — |
 | 994 | `fillOf` | — |
 | 1001 | `declLines` | — |
-| 1223 | `USER_RULES` | — |
-| 1532 | `NEUTRAL` | — |
-| 1533 | `FATHER` | — |
-| 1650 | `ARROW_TREE` | — |
+| 1242 | `USER_RULES` | — |
+| 1553 | `NEUTRAL` | — |
+| 1554 | `FATHER` | — |
+| 1671 | `ARROW_TREE` | — |
 
 ### `test/rules.test.mjs`
 > 规则记法测试。

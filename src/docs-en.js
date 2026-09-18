@@ -358,10 +358,11 @@ Red(all, 0)</pre>
   any same-coloured nodes that are not words), and a plain number list otherwise.
 </p>
 <p>
-  The baseline blue and a written blue are two different values (<code>#0000CC</code> and <code>#1565c0</code>),
-  so mixing them in one tree gives two slightly different shades. To make the whole tree one single blue, press
-  <b>All blue</b> (it writes a declaration on every node, exported as <code>Blue(all)</code>) or write a
-  <code>Blue(all)</code> line yourself.
+  The baseline red and blue are <b>the same values</b> the colour declarations use
+  (<code>Red</code> = <code>#d32f2f</code>, <code>Blue</code> = <code>#1565c0</code>), so writing
+  <code>Blue(words)</code> by hand looks exactly like writing nothing at all and letting the baseline paint
+  the words red — never two different blues in one tree. For any other colour just write the declaration,
+  for instance <code>Green(all)</code>.
 </p>
 <p>
   Declarations can only go at the end, one per line. In rule notation they come after all edges and

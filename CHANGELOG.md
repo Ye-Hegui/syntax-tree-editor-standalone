@@ -39,6 +39,11 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1
 
 ### 改动 / Changed
 
+- **基线的红蓝 = 声明写出来的红蓝**：默认画法不再另用一套色值（原来是 `#CC0000` / `#0000CC`），
+  直接取颜色声明那套（`Red` = `#d32f2f`、`Blue` = `#1565c0`）。所以什么都不写（靠基线）和手写
+  `Blue(words)` 看起来完全一样，不会出现"一棵树两种蓝" · **The baseline red and blue are now the
+  declaration values** (previously the default rendering used its own `#CC0000` / `#0000CC`), so relying on
+  the baseline and writing `Blue(words)` by hand look identical — never two blues in one tree
 - 「全部标蓝」现在给**每个**节点都写上蓝色声明（导出 `Blue(all)`），点完整棵树是同一个蓝 ·
   "All blue" now writes a blue declaration on **every** node (exported as `Blue(all)`), so the whole tree
   ends up one single blue
@@ -46,11 +51,12 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1
   **蓝色声明**（靠基线蓝但没有声明的节点仍然可点 —— 点一下确实会改变文本）· "Node blue" now writes a
   blue declaration instead of deleting one, and the four buttons grey out from the **blue declaration**
   (a node that is blue only by the baseline can still be clicked, because clicking does change the text)
-- 基线与默认画法的"词红、其余蓝"现在**只有一个来源**（`style.js` 的 `baselineColor()`），
-  渲染与按钮判定都从这里取，测试里另有一条断言两者一致 ·
-  The baseline and the default rendering now share a single source (`baselineColor()` in `style.js`) for
-  "words red, everything else blue", used by both the renderer and the button logic, with a test asserting
-  the two agree
+- 基线与默认画法的"词红、其余蓝"现在**只有一个来源**（`style.js` 的 `baselineColor()` 决定"该红还是该蓝"、
+  `COLOR_VALUES` 决定色值），渲染、按钮判定与测试都从这里取 ·
+  The baseline and the default rendering now share a single source (`baselineColor()` in `style.js` decides
+  red-or-blue, `COLOR_VALUES` supplies the value), used by the renderer, the button logic and the tests
+- `screenshots/` 六张重新拍过（默认画布的词红/范畴蓝换成了色值表那一套）·
+  The six screenshots were retaken (the default canvas now uses the colour-table red and blue)
 
 ## v1.2.3（内部开发版，未发布 / internal, unreleased）
 

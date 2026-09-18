@@ -15,19 +15,21 @@ function el(tag, attrs = {}) {
   return e;
 }
 
+// 不用颜色声明时画布上的三种颜色。词红 / 范畴蓝的色值**不在这里**，见下面的 BASELINE_FILL
 const COLORS = {
-  leaf: "#CC0000",
-  branch: "#0000CC",
   mono: "#111111",
   edge: "#000000",
   arrow: "#990099",
 };
 
 /**
- * 基线的色值：style.js 的 baselineColor() 说"应该是红还是蓝"，这里说"红/蓝长什么样"。
- * 两边必须一致，否则「全部标蓝」算出来的颜色会和画布上看到的不一样。
+ * 基线的色值：style.js 的 baselineColor() 说"这个节点该红还是该蓝"，这里说"红/蓝长什么样"。
+ *
+ * ⚠️ **直接取 COLOR_VALUES**（也就是颜色声明的色值表），所以隐式基线与写出来的声明
+ * 是同一个蓝同一个红 —— 手写一行 `Blue(words)` 和什么都不写（靠基线）看起来完全一样，
+ * 不会出现"一棵树两种蓝"。别在这里另写一套色值。
  */
-const BASELINE_FILL = { red: COLORS.leaf, blue: COLORS.branch };
+const BASELINE_FILL = { red: COLOR_VALUES[baselineColor(true)], blue: COLOR_VALUES[baselineColor(false)] };
 
 /**
  * @returns {{width:number, height:number}} 实际画布尺寸（已含箭头所需的下方留白）

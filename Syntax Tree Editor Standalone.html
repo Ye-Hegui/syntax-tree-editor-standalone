@@ -1207,9 +1207,10 @@ Red(all, 0)</pre>
           （还要带上同色的其它节点编号），其余情况才逐列编号。
         </p>
         <p>
-          基线的蓝和写出来的蓝是两个色值（<code>#0000CC</code> 与 <code>#1565c0</code>），两者混在一棵树上时
-          深浅会略有不同。想让整棵树是同一个蓝，就点<b>全部标蓝</b>（它给每个节点都写上声明，导出
-          <code>Blue(all)</code>），或者手写一行 <code>Blue(all)</code>。
+          基线的红蓝和写出来的声明红蓝是<b>同一套色值</b>（颜色名对应的色值见下面「标色」那一行旁边的按钮，
+          也就是 <code>Red</code> = <code>#d32f2f</code>、<code>Blue</code> = <code>#1565c0</code>），
+          所以手写 <code>Blue(words)</code> 和什么都不写（靠基线）看起来完全一样，
+          不会出现"一棵树两种蓝"。想看别的颜色就照常写声明，例如 <code>Green(all)</code>。
         </p>
         <p>
           声明只能写在末尾、单独成行。规则记法里声明排在所有边和位移箭头之后；
@@ -2707,10 +2708,11 @@ Red(all, 0)</pre>
   any same-coloured nodes that are not words), and a plain number list otherwise.
 </p>
 <p>
-  The baseline blue and a written blue are two different values (<code>#0000CC</code> and <code>#1565c0</code>),
-  so mixing them in one tree gives two slightly different shades. To make the whole tree one single blue, press
-  <b>All blue</b> (it writes a declaration on every node, exported as <code>Blue(all)</code>) or write a
-  <code>Blue(all)</code> line yourself.
+  The baseline red and blue are <b>the same values</b> the colour declarations use
+  (<code>Red</code> = <code>#d32f2f</code>, <code>Blue</code> = <code>#1565c0</code>), so writing
+  <code>Blue(words)</code> by hand looks exactly like writing nothing at all and letting the baseline paint
+  the words red — never two different blues in one tree. For any other colour just write the declaration,
+  for instance <code>Green(all)</code>.
 </p>
 <p>
   Declarations can only go at the end, one per line. In rule notation they come after all edges and
@@ -3795,19 +3797,21 @@ function el(tag, attrs = {}) {
   return e;
 }
 
+// 不用颜色声明时画布上的三种颜色。词红 / 范畴蓝的色值**不在这里**，见下面的 BASELINE_FILL
 const COLORS = {
-  leaf: "#CC0000",
-  branch: "#0000CC",
   mono: "#111111",
   edge: "#000000",
   arrow: "#990099",
 };
 
 /**
- * 基线的色值：style.js 的 baselineColor() 说"应该是红还是蓝"，这里说"红/蓝长什么样"。
- * 两边必须一致，否则「全部标蓝」算出来的颜色会和画布上看到的不一样。
+ * 基线的色值：style.js 的 baselineColor() 说"这个节点该红还是该蓝"，这里说"红/蓝长什么样"。
+ *
+ * ⚠️ **直接取 COLOR_VALUES**（也就是颜色声明的色值表），所以隐式基线与写出来的声明
+ * 是同一个蓝同一个红 —— 手写一行 `Blue(words)` 和什么都不写（靠基线）看起来完全一样，
+ * 不会出现"一棵树两种蓝"。别在这里另写一套色值。
  */
-const BASELINE_FILL = { red: COLORS.leaf, blue: COLORS.branch };
+const BASELINE_FILL = { red: COLOR_VALUES[baselineColor(true)], blue: COLOR_VALUES[baselineColor(false)] };
 
 /**
  * @returns {{width:number, height:number}} 实际画布尺寸（已含箭头所需的下方留白）
@@ -4416,12 +4420,12 @@ class SyntaxTreeEditor {
   // 所以「标蓝」**不能靠删声明** —— 删掉之后词就回到基线的红，这正是曾经的 bug。
   // 现在两个"标蓝"都是**写上**蓝色声明。
   //
-  // ⚠️ 基线的蓝（`#0000CC`）和声明蓝（`#1565c0`）是两个色值，所以：
-  //   - `markAllBlue()` **无条件给每个节点写声明**，点完整棵树是同一个蓝（导出 `Blue(all)`）；
-  //     只给"还不是蓝的"节点写会让范畴停在基线的蓝、词用声明的蓝，一棵树两种蓝。
-  //   - `markSelectedBlue()` 只看**声明**：该节点已经写着 `Blue` 就跳过（包括靠基线蓝的范畴，
-  //     免得点一下白白加一条改不动外观的声明）。
-  //   - 灰掉判定也用声明而不是"看起来蓝不蓝"（见 #updateStatus）。
+  // ⚠️ 基线的蓝就是声明蓝（都取 `style.js` 的 `COLOR_VALUES.blue`，见 render.js 的 BASELINE_FILL），
+  //   所以"两种蓝"的问题从根上没有了。四个按钮的做法是：
+  //   - `markAllBlue()` 照样**无条件给每个节点写声明**：导出的文本里明明白白是 `Blue(all)`，
+  //     不依赖"运行时靠基线推算"，撤销/重做和手改文本都一致（返回是否真的改了东西）。
+  //   - `markSelectedBlue()` / `markSelectedRed()` 只看**声明**：该节点已经写着这个颜色就跳过。
+  //   - 灰掉判定也用声明而不是"看起来是不是蓝的"（见 #updateStatus）。
   //
   // 颜色是"一个节点一个颜色"，所以标红对已经带别的颜色的节点是【覆盖】。
   // 没有任何变化时（例如对已经红的词再点一次"词红"）直接返回，不压撤销历史、不产生重复声明。

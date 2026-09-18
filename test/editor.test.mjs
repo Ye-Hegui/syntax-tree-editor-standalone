@@ -10,7 +10,7 @@ const { RuleError } = await import("../src/rules.js");
 const { preorder } = await import("../src/model.js");
 const { parse } = await import("../src/notation.js");
 const { ALIGN_MODES, wordNodes } = await import("../src/layout.js");
-const { COLOR_NAMES } = await import("../src/style.js");
+const { COLOR_NAMES, COLOR_VALUES } = await import("../src/style.js");
 const { TERMS, TERM_KINDS, i18nText, applyTerms } = await import("../src/i18n.js");
 
 let pass = 0;
@@ -1004,10 +1004,10 @@ function declLines(ed, word) {
 
 await t("编辑器画布默认：词红、范畴蓝（隐式声明不变，只是默认画法）", async () => {
   const ed = mount("[XP [D [X'' [X word] [Y]]] [X']]");
-  assert.equal(fillOf(ed, "word"), "#CC0000", "词默认是红的");
-  assert.equal(fillOf(ed, "Y"), "#0000CC", "范畴是蓝的");
-  assert.equal(fillOf(ed, "X'"), "#0000CC");
-  assert.equal(fillOf(ed, "X"), "#0000CC");
+  assert.equal(fillOf(ed, "word"), COLOR_VALUES.red, "词默认是红的");
+  assert.equal(fillOf(ed, "Y"), COLOR_VALUES.blue, "范畴是蓝的");
+  assert.equal(fillOf(ed, "X'"), COLOR_VALUES.blue);
+  assert.equal(fillOf(ed, "X"), COLOR_VALUES.blue);
 });
 
 await t("关掉颜色后全部是黑色", async () => {
@@ -1020,9 +1020,9 @@ await t("词红：只给词标红，范畴不动，导出用 words 关键词", a
   const ed = mount("[XP [D [X'' [X word] [Y]]] [X']]");
   assert.equal(ed.markWordsRed(), true);
   assert.equal(fillOf(ed, "word"), "#d32f2f", "word 是词，应该变红");
-  assert.equal(fillOf(ed, "Y"), "#0000CC", "Y 是范畴，不该红");
-  assert.equal(fillOf(ed, "X'"), "#0000CC", "X' 是范畴，不该红");
-  assert.equal(fillOf(ed, "X"), "#0000CC", "X 是非叶子，不该红");
+  assert.equal(fillOf(ed, "Y"), COLOR_VALUES.blue, "Y 是范畴，不该红");
+  assert.equal(fillOf(ed, "X'"), COLOR_VALUES.blue, "X' 是范畴，不该红");
+  assert.equal(fillOf(ed, "X"), COLOR_VALUES.blue, "X 是非叶子，不该红");
   const red = declLines(ed, "Red");
   assert.equal(red.length, 1, "一种颜色一行");
   assert.equal(red[0], "Red(words)", "整棵树的词都在这一组里，写关键词");
@@ -1057,7 +1057,7 @@ await t("单个标红：选中的是范畴也照做，不受'词'的限制", asy
   clickNode(ed, np);
   assert.equal(ed.markSelectedRed(), true);
   assert.equal(fillOf(ed, "NP"), "#d32f2f", "范畴也能标红");
-  assert.equal(fillOf(ed, "dog"), "#CC0000", "没选中的词仍然是默认的红");
+  assert.equal(fillOf(ed, "dog"), COLOR_VALUES.red, "没选中的词仍然是默认的红");
 });
 
 await t("单个标红：没选中节点时什么也不做", async () => {
@@ -1094,8 +1094,8 @@ await t("全部标蓝：给【每个】节点写上蓝色声明（含本来就�
 
 await t("全部标蓝之后词也真的变蓝，且整棵树只有一种蓝（这就是那个 bug 的验收条件）", async () => {
   const ed = mount("[S [NP Dogs] [VP barks]]");
-  assert.equal(fillOf(ed, "Dogs"), "#CC0000", "一开始词是默认的红");
-  assert.equal(fillOf(ed, "S"), "#0000CC", "一开始范畴是基线的蓝");
+  assert.equal(fillOf(ed, "Dogs"), COLOR_VALUES.red, "一开始词是默认的红");
+  assert.equal(fillOf(ed, "S"), COLOR_VALUES.blue, "一开始范畴是基线的蓝");
   assert.equal(ed.markAllBlue(), true);
   for (const label of ["Dogs", "barks", "NP", "VP", "S"]) {
     assert.equal(fillOf(ed, label), "#1565c0", `${label} 必须和别的节点同一个蓝`);
@@ -1114,7 +1114,7 @@ await t("单个标红 / 单个标蓝：都作用在选中的那一个节点上",
   clickNode(ed, np);
   assert.equal(ed.markSelectedRed(), true);
   assert.equal(fillOf(ed, "NP"), "#d32f2f", "范畴也能标红");
-  assert.equal(fillOf(ed, "dog"), "#CC0000", "没选中的词仍然是默认的红");
+  assert.equal(fillOf(ed, "dog"), COLOR_VALUES.red, "没选中的词仍然是默认的红");
   assert.ok(declLines(ed, "Red")[0].startsWith("Red("), ed.getValue());
   assert.equal(ed.markSelectedBlue(), true);
   assert.equal(fillOf(ed, "NP"), "#1565c0", "同一个节点改成蓝色声明");
@@ -1130,8 +1130,27 @@ await t("基线与默认画法一致：没有颜色声明时逐节点都是词�
   // 画布层：默认画法就是基线（词红、其余蓝）
   const ed = mount(src);
   for (const n of preorder(ed.root)) {
-    const expected = wordNodes(ed.root).includes(n) ? "#CC0000" : "#0000CC";
+    const expected = wordNodes(ed.root).includes(n) ? COLOR_VALUES.red : COLOR_VALUES.blue;
     assert.equal(fillOf(ed, n.label), expected, `${n.label} 的填充色应该等于基线算出的颜色`);
+  }
+});
+
+await t("隐式基线与写出来的声明是同一个色值（不会出现两种蓝）", async () => {
+  const src = "[XP [D [X'' [X word] [Y]]] [X']]";
+  // 什么都不写（靠基线）
+  const baseline = mount(src);
+  // 手写一行 Blue(words)：词在基线上本来就是红的，所以这条声明把它刷成"声明的蓝"
+  const written = mount(`${src}\nBlue(words)`);
+  assert.equal(fillOf(written, "word"), COLOR_VALUES.blue, "声明蓝就是色值表里的蓝");
+  // 范畴两边都没声明、都靠基线，色值必须一模一样
+  for (const label of ["XP", "D", "X''", "X", "Y", "X'"]) {
+    assert.equal(fillOf(written, label), fillOf(baseline, label), `${label} 两边应该同一个蓝`);
+    assert.equal(fillOf(baseline, label), COLOR_VALUES.blue, `${label} 的基线蓝 = 色值表的蓝`);
+  }
+  // 反过来：点「全部标蓝」（给每个节点写声明）之后，每个节点的颜色都必须和基线时完全一样
+  baseline.markAllBlue();
+  for (const n of preorder(baseline.root)) {
+    assert.equal(fillOf(baseline, n.label), COLOR_VALUES.blue, `${n.label} 全蓝之后还是同一个蓝`);
   }
 });
 
@@ -1467,14 +1486,16 @@ await t("滚动文本框时装订线跟着滚", async () => {
 
 console.log("\n[颜色渲染]");
 
-await t("颜色声明覆盖默认填色，没声明的仍是默认色", async () => {
-  const ed = mount("[CP [NP what_i] [C' [C is_j]]]\nRed(3)");
+await t("颜色声明只作用于被点到的节点，没声明的仍是默认填色", async () => {
+  // 用绿色来标：默认的词红/范畴蓝现在和色值表里的红蓝是同一个值，
+  // 所以只有换成另一种颜色才看得出"声明没有外溢"
+  const ed = mount("[CP [NP what_i] [C' [C is_j]]]\nGreen(3)");
   const fill = (l) => [...ed.svg.querySelectorAll("text")].find((x) => x.textContent === l).getAttribute("fill");
-  assert.equal(fill("what"), "#d32f2f", "what_i 应该是红色");
-  assert.equal(fill("is"), "#CC0000", "没声明的词还是默认的词红");
-  assert.notEqual(fill("is"), "#d32f2f", "不该被颜色声明影响");
-  assert.notEqual(fill("CP"), "#d32f2f", "没声明的非叶子也不受影响");
-  assert.equal(fill("CP"), "#0000CC", "非叶子是默认的蓝");
+  assert.equal(fill("what"), COLOR_VALUES.green, "what_i 应该是绿的");
+  assert.equal(fill("is"), COLOR_VALUES.red, "没声明的词还是默认的词红");
+  assert.notEqual(fill("is"), COLOR_VALUES.green, "不该被颜色声明影响");
+  assert.notEqual(fill("CP"), COLOR_VALUES.green, "没声明的非叶子也不受影响");
+  assert.equal(fill("CP"), COLOR_VALUES.blue, "非叶子是默认的蓝");
 });
 
 await t("显式声明的颜色优先于「关闭颜色」选项", async () => {
@@ -1783,11 +1804,11 @@ await t("rulesToSvg() 支持括号记法与选项", async () => {
 
 await t("rulesToSvg() 默认不染红（函数式入口出全蓝的图）", async () => {
   const svg = rulesToSvg("0 S -> NP\n1 NP -> Dogs");
-  assert.ok(!svg.includes("#CC0000"), "默认不该出现词红");
-  assert.ok(svg.includes("#0000CC"), "应该是蓝的");
+  assert.ok(!svg.includes(COLOR_VALUES.red), "默认不该出现词红");
+  assert.ok(svg.includes(COLOR_VALUES.blue), "应该是蓝的");
   // 想要词红就显式传
   const red = rulesToSvg("0 S -> NP\n1 NP -> Dogs", { redWords: true });
-  assert.ok(red.includes("#CC0000"), "传 redWords 之后词应该是红的");
+  assert.ok(red.includes(COLOR_VALUES.red), "传 redWords 之后词应该是红的");
 });
 
 await t("rulesToSvg() 解析不了就抛错，错误带行号", async () => {

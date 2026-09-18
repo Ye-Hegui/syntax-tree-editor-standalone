@@ -146,7 +146,7 @@ new SyntaxTreeEditor(elOrSelector, {
 | `setOptions(partial)` | 改选项后重绘 |
 | `setAlign(v)` / `setCenter(v)` / `setTerms(pairs)` / `setLanguage(lang)` / `setStyle({italic,bold,strike})` | 改对齐、水平位置、界面称谓、界面语言（`"zh"`/`"en"`）、选中节点的字体样式。**只动界面文字，对树没有任何影响** |
 | `createRoot()` `addChild()` `addSibling()` `addLevel()` `collapseLevel()` `moveLeft()` `moveRight()` `remove()` `setLabel(t)` | 结构编辑，都作用于当前选中节点 |
-| `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝。**不引入新的染色机制**，只是写上颜色声明（`Blue(all)`、`Red(3)` 这种）：两个"标蓝"都是**写上**蓝色声明（删声明会让词回基线的红，那是旧 bug），两个"标红"是写上红色声明。「全部标蓝」给**每个**节点都写声明（导出 `Blue(all)`）—— 只写"还不是蓝的"会让范畴停在基线的蓝、词用声明的蓝，一棵树两种蓝。灰掉判定看**声明**（`#isDeclaredBlue`），都返回"是否真的改了东西"，没有变化时不压撤销历史 |
+| `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝。**不引入新的染色机制**，只是写上颜色声明（`Blue(all)`、`Red(3)` 这种）：两个"标蓝"都是**写上**蓝色声明（删声明会让词回基线的红，那是旧 bug），两个"标红"是写上红色声明。「全部标蓝」给**每个**节点都写声明（导出 `Blue(all)`；因为基线蓝和声明蓝是同一个色值，这也是"整棵树一个蓝"的确定写法）。灰掉判定看**声明**（`#isDeclaredBlue`），都返回"是否真的改了东西"，没有变化时不压撤销历史 |
 | `toggleSelectedItalic()` `toggleSelectedStrike()` | 同一行右边的两个字体开关：给选中节点切换斜体 / 删除线（等价于加或删一行 `Italic(编号)` / `Strike(编号)` 声明），再按一次取消。粗体刻意没有按钮，只能用声明写 |
 | `undo()` / `redo()` | 撤销 / 重做 |
 | `toSvgString({background})` / `exportSvg()` / `exportPng()` | 导出 |
@@ -196,6 +196,8 @@ new SyntaxTreeEditor(elOrSelector, {
    两边的"词红、其余蓝"都从 `style.js` 的 `baselineColor()` 取（`render.js` 再用 `BASELINE_FILL` 换色值）。
    **函数式入口 `rulesToSvg()` 与命令行默认 `redWords: false`**
    （出全蓝的图）—— 作者定的：界面好看优先，机器出的图干净优先；这只改**画法**，不改基线。
+   ⚠️ 基线的色值**就是颜色声明的色值**（`render.js` 的 `BASELINE_FILL` 直接取 `COLOR_VALUES`），
+   所以手写 `Blue(words)` 与什么都不写看起来一样，不会出现"一棵树两种蓝"。
    「词」= 叶子节点 **且**（是母亲节点唯一的女儿节点 **或** 带位移箭头），纯结构判定，
    不认任何词类；**唯一来源是 `layout.js` 的 `wordNodes(root)`**（"单词标红"按钮与 `words` 关键词都用它）。
    ⚠️ 它和箭头用的「词序号」（`notation.js` 的 `leafOrdinals`，数**所有**叶子，
