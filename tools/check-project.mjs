@@ -150,6 +150,29 @@ section("版本号三处一致（package.json / 页脚 / CHANGELOG 顶部）");
   else pass(`三处都是 v${want}`);
 }
 
+section("教程正文中英两版的锚点一一对应");
+
+{
+  const { DOCS_EN } = await import("../src/docs-en.js");
+  const idsOf = (html) => new Set([...html.matchAll(/id="(doc-[\w-]+)"/g)].map((m) => m[1]));
+  const hrefsOf = (html) => [...html.matchAll(/href="#(doc-[\w-]+)"/g)].map((m) => m[1]);
+  const zhIds = idsOf(INDEX);
+  const enIds = idsOf(DOCS_EN);
+
+  const onlyZh = [...zhIds].filter((id) => !enIds.has(id));
+  const onlyEn = [...enIds].filter((id) => !zhIds.has(id));
+  if (onlyZh.length || onlyEn.length)
+    fail(`中英正文的 id 对不上：中文多 [${onlyZh.join(", ")}]；英文多 [${onlyEn.join(", ")}]`);
+  else pass(`${zhIds.size} 个 doc-* 锚点，两版一致`);
+
+  // 每一版自己：目录里的每个 href 都要能找到对应的 id
+  for (const [name, html] of [["index.html", INDEX], ["src/docs-en.js", DOCS_EN]]) {
+    const missing = hrefsOf(html).filter((h) => !idsOf(html).has(h));
+    if (missing.length) fail(`${name} 的目录指向了不存在的锚点：${[...new Set(missing)].join(", ")}`);
+    else pass(`${name} 的目录锚点全部能对上`);
+  }
+}
+
 section("AGENTS.md 没有和源码脱节");
 
 {

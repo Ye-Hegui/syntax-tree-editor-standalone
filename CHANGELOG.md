@@ -1,7 +1,26 @@
 # 更新日志 / Changelog
 
-版本号采用语义化版本。`v1.2.1` 与 `v1.2.2` 都是**内部开发号，没有对外发布**；对外发布的最新版本仍是 `v1.2.0`。
-Version numbers follow semantic versioning. `v1.2.1` and `v1.2.2` are both **internal development numbers and have not been released**; the latest published version is still `v1.2.0`.
+版本号采用语义化版本。`v1.2.1`、`v1.2.2`、`v1.2.3` 都是**内部开发号，没有对外发布**；对外发布的最新版本仍是 `v1.2.0`。
+Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2` and `v1.2.3` are all **internal development numbers and have not been released**; the latest published version is still `v1.2.0`.
+
+## v1.2.3（内部开发版，未发布 / internal, unreleased）
+
+这个版本**只有一件事：把教程正文翻译成英文**，语言切换从此覆盖整个页面。
+
+### 新增 / Added
+
+- **教程正文（网页底部「使用方法」那一篇）的英文版**，整篇放在 `src/docs-en.js`（一个 HTML 常量）；
+  切到英文时界面与正文一起变，切回中文一并复原 · **English version of the tutorial body**, kept as a single HTML constant in `src/docs-en.js`; switching to English translates both the UI and the tutorial
+- 自检新增一条：中英两版教程的 `doc-*` 锚点必须一一对应，且各自的目录锚点都要能对上 ·
+  A new self-check: both tutorial versions must carry the same `doc-*` anchors, and each version's table of contents must resolve
+
+### 改动 / Changed
+
+- 教程正文改用"按语言整体替换 innerHTML"的方式切换（和原有的「称谓」切换是同一套机制），
+  换完重新绑定目录；正文的称谓替换表**按正文自己的语言**取 ·
+  The tutorial now swaps wholesale per language (the same mechanism the term switch already used), re-binding the table of contents afterwards; the term table is chosen by the tutorial's own language
+- `v1.2.2` 里那条「教程正文尚未翻译」的已知限制**已解除** ·
+  The “tutorial not translated yet” limitation noted under v1.2.2 is now resolved
 
 ## v1.2.2（内部开发版，未发布 / internal, unreleased）
 

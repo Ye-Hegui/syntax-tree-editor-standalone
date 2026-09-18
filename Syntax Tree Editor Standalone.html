@@ -1317,7 +1317,7 @@ Red(4)</pre>
         <a href="https://disk.pku.edu.cn/link/AADCFA80E10F2B4D49B2FA4A8A0C9BB2CF" data-i18n="page.link.download">组件下载</a>
       </span>
       <br />
-      v1.2.2 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
+      v1.2.3 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
     </footer>
   <script>
 (function () {
@@ -2213,6 +2213,472 @@ function applyTerms(lang, pairs, s) {
   }
   return out;
 }
+
+// ===== src/docs-en.js ==========================================
+/**
+ * 教程正文（网页底部「使用方法」那一篇）的英文版。
+ *
+ * 为什么单独一个模块：正文是**一整篇 HTML**，用 `i18n.js` 那种"一条一条 key"的表不划算；
+ * `main.js` 是按语言整体替换 `.docs` 里的 innerHTML 的（和 `setTerms()` 换称谓是同一套机制），
+ * 所以这里只要把整篇 HTML 交出去就行。
+ *
+ * ⚠️ 改这一篇时的三条硬规矩：
+ *   1. `id="doc-*"` 必须和目录里的 `href="#doc-*"` 一一配对，而且要**和中文正文用同一批 id**
+ *      （`check-project.mjs` 会比对两边）；
+ *   2. 图片标签原样保留（`src` 指向 `example/` 下的 SVG）—— 构建脚本会把它们内联成 data URI。
+ *      ⚠️ 连**注释里**也别写出"src 等于一个 example 下的 .svg 文件名"这种完整写法：
+ *      构建是按正则扫整个产物的，会把注释里那处当成真图片去找文件，然后报 ENOENT（踩过两次）；
+ *   3. 亲属称谓一律写 `mother / sister / daughter` 那套原文，由 `TERMS.en` 换成
+ *      neutral / paternal（界面默认是中性套）；写别的词就换不掉。
+ *
+ * 这个模块**只导出常量、不 import 任何东西** —— 扁平打包会整条去掉 `import`，少一层依赖少一分风险。
+ */
+const DOCS_EN = `
+<nav class="docs-toc">
+  <ol>
+    <li>
+      <a href="#doc-basic">The basics</a>
+      <ol>
+        <li><a href="#doc-start">Starting from nothing</a></li>
+        <li><a href="#doc-create">Creating nodes</a></li>
+        <li><a href="#doc-delete">Deleting nodes</a></li>
+        <li><a href="#doc-undo">Undo and redo</a></li>
+        <li><a href="#doc-triangle">Making a triangle</a></li>
+        <li><a href="#doc-arrow">Drawing an arrow</a></li>
+        <li><a href="#doc-export">Exporting</a></li>
+      </ol>
+    </li>
+    <li>
+      <a href="#doc-advanced">Beyond the basics</a>
+      <ol>
+        <li><a href="#doc-align">Vertical alignment</a></li>
+        <li><a href="#doc-hcenter">Horizontal position</a></li>
+        <li><a href="#doc-keys">Selecting with the arrow keys</a></li>
+        <li><a href="#doc-level">Move down</a></li>
+        <li><a href="#doc-up">Move up</a></li>
+        <li><a href="#doc-move">Move left and right</a></li>
+        <li><a href="#doc-style">Font and colour</a></li>
+      </ol>
+    </li>
+    <li>
+      <a href="#doc-source">About the source code</a>
+      <ol>
+        <li><a href="#doc-bracket">Bracket notation</a></li>
+        <li><a href="#doc-rules">Rule notation</a></li>
+      </ol>
+    </li>
+    <li><a href="#doc-notes">Things to keep in mind</a></li>
+  </ol>
+</nav>
+
+<h3 id="doc-basic">1. The basics</h3>
+
+<h4 id="doc-start">1.1 Starting from nothing</h4>
+<p class="tip">This editor is a small, lightweight syntax tree editor: it makes syntax trees quick and easy to build.</p>
+<p>
+  Click the “Blank” example button above to start with no nodes at all. The other examples work the same way —
+  load one and edit it directly. Emptying the source box below also clears the canvas, and pasting bracketed
+  source from anywhere else builds a tree straight away.
+</p>
+<p>
+  Click anywhere on the blank canvas and the editor creates a root node and immediately opens the rename box.
+  You can also click a category button (S, CP, VP, …) to create a root node with that label.
+</p>
+<p>
+  Feel free to click through the five example buttons. Loading an example replaces the current tree, but
+  <kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the load.
+</p>
+
+<h4 id="doc-create">1.2 Creating nodes</h4>
+<p class="tip">You can add a daughter node or a sister node to a node.</p>
+<table>
+  <tbody>
+    <tr><td><kbd>Enter</kbd></td><td>The editor creates a daughter node and immediately opens the rename box.</td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>The editor creates a sister node and immediately opens the rename box.</td></tr>
+    <tr><td><kbd>F2</kbd></td><td>The editor opens the rename box for the selected node's label. Double-clicking does the same.</td></tr>
+  </tbody>
+</table>
+<p>
+  Keyboard shortcuts keep the selection inside the tree, so the whole tree can be built from the keyboard alone.
+  Clicking “＋ Daughter” or “＋ Sister” on the toolbar does the same thing with the mouse, and
+  clicking a node selects it.
+</p>
+<p>
+  Clicking a category button (S, CP, VP, …) applies that label to the selected node, which is faster than typing.
+  <i>v</i> and <i>pro</i> are also drawn in italic in the tree.
+</p>
+
+<h4 id="doc-delete">1.3 Deleting nodes</h4>
+<p class="tip">Deleting a node removes that node and its whole subtree.</p>
+<p>
+  Press <kbd>Delete</kbd> with a node selected, or click “Delete” on the toolbar, and the editor removes
+  that node together with its whole subtree.
+</p>
+<p>Deleting the root node is a special case:</p>
+<ul>
+  <li>With no daughter nodes, deleting it clears the canvas.</li>
+  <li>With exactly one daughter node, the editor lifts that daughter up to become the new root.</li>
+  <li>With two or more daughter nodes it cannot be deleted, because the remaining branches have nowhere to go.</li>
+</ul>
+
+<h4 id="doc-undo">1.4 Undo and redo</h4>
+<p class="tip">Undo and redo move back and forth through the editing history.</p>
+<table>
+  <tbody>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>The editor undoes the last step. This also works while the rename box is open.</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></td><td>The editor redoes the step that was undone.</td></tr>
+  </tbody>
+</table>
+<p>
+  Pressing <kbd>Ctrl</kbd>+<kbd>Z</kbd> inside the rename box happens in two steps: if the label has been
+  changed, it first restores the label and stays in the box; if the label has not been touched, the editor
+  leaves the rename box and then undoes the real previous step.
+</p>
+
+<h4 id="doc-triangle">1.5 Making a triangle</h4>
+<p class="tip">A triangle means writing several words into one leaf node; the editor draws that node as a triangle.</p>
+<p>
+  Start with the most ordinary tree, where every word has a leaf node of its own:
+</p>
+<pre class="code-block">[XP [Z word1] [X' [X word2] [Y word3]]]</pre>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDE2MyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxMjAiIHgyPSIyMDYiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijc3LjciIHk9IjAiIHdpZHRoPSI0MS42IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSI5OC41IiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WFA8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI0Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjQ1IiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCc8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEwMy42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjYiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI4NiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMjwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTg5LjYiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3MiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PC9nPjwvc3ZnPg==" alt="Before: four words, each in its own leaf node" />
+<p>
+  Now leave a space after <code>word2</code> and write one more word:
+</p>
+<pre class="code-block">[XP [Z word1] [X' [X word2 word4] [Y word3]]]</pre>
+<p>
+  Two adjacent words merge into <b>one and the same</b> leaf node, whose label is
+  <code>"word2 word4"</code>. The editor draws this “several words under one node” case as a triangle:
+</p>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjkzIDE2MyIgd2lkdGg9IjI5MyIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyOTMiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9IjExOC4zMDAwMDAwMDAwMDAwMSIgeTE9IjMwIiB4Mj0iMzQiIHkyPSI0MiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxMTguMzAwMDAwMDAwMDAwMDEiIHkxPSIzMCIgeDI9IjIwMi42MDAwMDAwMDAwMDAwMiIgeTI9IjQyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjM0IiB5MT0iNzUiIHgyPSIzNCIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjIwMi42MDAwMDAwMDAwMDAwMiIgeTE9Ijc1IiB4Mj0iMTQ2LjQiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDIuNjAwMDAwMDAwMDAwMDIiIHkxPSI3NSIgeDI9IjI1OC44IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48cG9seWdvbiBwb2ludHM9IjE0Ni40LDEyMCAxOTguOCwxMzIgOTQsMTMyIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48L3BvbHlnb24+PGxpbmUgeDE9IjI1OC44IiB5MT0iMTIwIiB4Mj0iMjU4LjgiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iOSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijk3LjUwMDAwMDAwMDAwMDAxIiB5PSIwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTE4LjMwMDAwMDAwMDAwMDAxIiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WFA8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMTAiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxNy42IiB5PSI0NSIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjM0IiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WjwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIxMSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjAiIHk9IjkwIiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjM0IiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iI0NDMDAwMCIgcG9pbnRlci1ldmVudHM9Im5vbmUiPndvcmQxPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjEyIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTgxLjgiIHk9IjQ1IiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjAyLjYwMDAwMDAwMDAwMDAyIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCc8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMTMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxMzAiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTQ2LjQiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WDwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIxNCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijg2IiB5PSIxMzUiIHdpZHRoPSIxMjAuODAwMDAwMDAwMDAwMDEiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjE0Ni40IiB5PSIxNDkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iI0NDMDAwMCIgcG9pbnRlci1ldmVudHM9Im5vbmUiPndvcmQyIHdvcmQ0PC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjE1Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMjQyLjQiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjU4LjgiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIxNiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjIyNC44IiB5PSIxMzUiIHdpZHRoPSI2OCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjU4LjgiIHk9IjE0OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDM8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" alt="After: word2 word4 merged into one leaf node, drawn as a triangle" />
+<p>
+  So making a triangle takes exactly one step: <b>write the words together</b>, and the editor draws
+  the triangle for you. Note the difference from two separate leaf nodes — <code>[X word2] [Y word3]</code>
+  is two leaf nodes, whereas <code>[X word2 word4]</code> is one.
+</p>
+
+<h4 id="doc-arrow">1.6 Drawing an arrow</h4>
+<p class="tip">Writing a word ordinal after a leaf node's label creates a movement arrow pointing at that word.</p>
+<p>Arrows cannot be drawn on the canvas itself; they are written in the code panel. Again, start from the same ordinary tree:</p>
+<pre class="code-block">[XP [Z word1] [X' [X word2] [Y word3]]]</pre>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDE2MyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxMjAiIHgyPSIyMDYiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijc3LjciIHk9IjAiIHdpZHRoPSI0MS42IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSI5OC41IiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WFA8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI0Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjQ1IiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCc8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEwMy42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjYiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI4NiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMjwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTg5LjYiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3MiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PC9nPjwvc3ZnPg==" alt="Before: no arrows yet" />
+<p>
+  The number in an arrow is a <b>word ordinal</b>: count the words from left to right.
+  This tree has three words — <code>word1</code> is the 1st, <code>word2</code> the 2nd and
+  <code>word3</code> the 3rd.
+</p>
+<p>
+  Put the ordinal after a leaf node and that node carries an arrow. To make <code>word3</code> point at
+  <code>word1</code>, add <code>-&gt;1</code> after <code>word3</code>:
+</p>
+<pre class="code-block">[XP [Z word1] [X' [X word2] [Y word3 ->1]]]</pre>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDIyNyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyMjciPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMjI3IiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxMjAiIHgyPSIyMDYiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PHBhdGggZD0iTSAyMDYsMTc3IEMgMjA2LDIyMyAzNCwyMjMgMzQsMTIyIiBmaWxsPSJub25lIiBzdHJva2U9IiM5OTAwOTkiIHN0cm9rZS13aWR0aD0iMS44Ij48L3BhdGg+PHBvbHlnb24gcG9pbnRzPSIzNCwxMTcgMjkuNSwxMjUgMzguNSwxMjUiIGZpbGw9IiM5OTAwOTkiIHN0cm9rZT0ibm9uZSI+PC9wb2x5Z29uPjwvZz48Zz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjE3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iNzcuNyIgeT0iMCIgd2lkdGg9IjQxLjYiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9Ijk4LjUiIHk9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YUDwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIxOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjE5Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMCIgeT0iOTAiIHdpZHRoPSI2OCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDE8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjAiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxNDIuMiIgeT0iNDUiIHdpZHRoPSI0MS42IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxNjMiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YJzwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIyMSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEwMy42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjIyIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iODYiIHk9IjEzNSIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMjAiIHk9IjE0OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDI8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxODkuNiIgeT0iOTAiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyMDYiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIyNCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3MiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PC9nPjwvc3ZnPg==" alt="The movement arrow that appears after adding ->1" />
+<p>
+  An arrow must start at a leaf node and end at a leaf node — a word ordinal can only locate words.
+  This numbering matches jsSyntaxTree, so its code can be pasted straight in.
+</p>
+
+<h4 id="doc-export">1.7 Exporting</h4>
+<p class="tip">The current syntax tree can be exported as a vector image or a bitmap.</p>
+<p>
+  Click “SVG” to export a vector image, which can go straight into Word, LaTeX or Illustrator.
+  Click “PNG” to export a bitmap at twice the resolution. The selection highlight is never exported.
+</p>
+
+<h3 id="doc-advanced">2. Beyond the basics</h3>
+
+<h4 id="doc-align">2.1 Vertical alignment</h4>
+<p class="tip">Vertical alignment changes where nodes sit vertically.</p>
+<p>
+  The three buttons under the toolbar — “By depth”, “Words at bottom” and “Tree at bottom” — decide the
+  vertical position of each level. Load the “Movement” example above and switch between the three modes
+  to see the difference.
+</p>
+<table>
+  <tbody>
+    <tr><td><b>By depth</b></td><td>Every node stays on its own level's row; nodes at the same level share one height.</td></tr>
+    <tr><td><b>Words at bottom</b></td><td>All leaf nodes (that is, words) drop to the bottom row; inner nodes keep their level.</td></tr>
+    <tr><td><b>Tree at bottom</b></td><td>With the leaves aligned at the bottom, inner nodes slide down as far as they can to hug their daughter nodes, compressing the whole tree onto the bottom line.</td></tr>
+  </tbody>
+</table>
+<p>Vertical alignment only changes vertical positions; horizontal ones are decided by “Horizontal”.</p>
+
+<h4 id="doc-hcenter">2.2 Horizontal position</h4>
+<p class="tip">Horizontal position changes where a mother node sits horizontally.</p>
+<p>“Horizontal” decides where a mother node stands from left to right:</p>
+<table>
+  <tbody>
+    <tr><td><b>Mother centred</b></td><td>The mother lands <b>exactly between the leftmost and the rightmost daughter node</b>. (Default)</td></tr>
+    <tr><td><b>Block centred</b></td><td>The mother is centred over the <b>bounding box of all its daughter nodes</b>, which makes the whole subtree look more balanced.</td></tr>
+  </tbody>
+</table>
+<p>The two modes only differ when a node has two daughter nodes of unequal width.</p>
+
+<h4 id="doc-keys">2.3 Selecting with the arrow keys</h4>
+<p class="tip">The arrow keys move the selection from node to node with the keyboard.</p>
+<p>
+  Click once on the canvas to give it keyboard focus, and the arrow keys then move the selection
+  between nodes. Four keys, four directions:
+</p>
+<table>
+  <tbody>
+    <tr><td><kbd>↑</kbd></td><td>Jump to the <b>mother node</b>.</td></tr>
+    <tr><td><kbd>↓</kbd></td><td>Jump to the <b>leftmost</b> daughter node.</td></tr>
+    <tr><td><kbd>←</kbd></td><td>Jump to the <b>left sister node</b>.</td></tr>
+    <tr><td><kbd>→</kbd></td><td>Jump to the <b>right sister node</b>.</td></tr>
+  </tbody>
+</table>
+<p>
+  When the node is already at the edge, <kbd>←</kbd> and <kbd>→</kbd> cross over to the same side under
+  the mother's sister node, looking for the nearest <b>cousin node</b>. That scope matches
+  <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd> for moving left and right.
+</p>
+
+<h4 id="doc-level">2.4 Move down</h4>
+<p class="tip">Move down adds a projection level to this node in one step.</p>
+<p>Move down <b>adds one level</b> to the projection chain. Start with this tree:</p>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDE2MyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxMjAiIHgyPSIyMDYiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijc3LjciIHk9IjAiIHdpZHRoPSI0MS42IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSI5OC41IiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WFA8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI0Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjQ1IiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCc8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEwMy42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjYiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI4NiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMjwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTg5LjYiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3MiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PC9nPjwvc3ZnPg==" alt="Before" />
+<p>
+  Now <b>select X</b> and press <kbd>Tab</kbd> (or click “Move down” on the toolbar).
+</p>
+<p>
+  The projection chain X belongs to is <code>X</code> → <code>X'</code>, and it stops there because
+  <code>XP</code> is not <code>X''</code>. So the top of the chain is <code>X'</code>.
+  The editor wraps <b>the top of the chain</b> in a level of its own: it copies the whole subtree at the
+  top, clears the top's daughter nodes and adds a prime to its label, then hangs the copy back underneath:
+</p>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDIwOCIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyMDgiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMjA4IiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxNjMiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSIxMjAiIHgyPSIxMjAiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iMTIwIiB4Mj0iMjA2IiB5Mj0iMTMyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjE2NSIgeDI9IjEyMCIgeTI9IjE3NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxNjUiIHgyPSIyMDYiIHkyPSIxNzciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjUiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI3Ny43IiB5PSIwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iOTguNSIgeT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlhQPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI2Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTcuNiIgeT0iNDUiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iNTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlo8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjciPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIyOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEzNy44IiB5PSI0NSIgd2lkdGg9IjUwLjQwMDAwMDAwMDAwMDAwNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCcnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI5Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjkwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlgnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMwIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTAzLjYiIHk9IjEzNSIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMxIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iODYiIHk9IjE4MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMjAiIHk9IjE5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDI8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMzIiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxODkuNiIgeT0iMTM1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxNDkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMzMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxNzIiIHk9IjE4MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyMDYiIHk9IjE5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDM8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" alt="After moving X down" />
+<p>
+  Look at the two changes: the new <code>X''</code> has exactly one daughter node, the copy of
+  <code>X'</code>; and <code>X'</code> is untouched, with <code>X</code> and <code>Y</code> still where
+  they were — the subtree is simply one level deeper. In bracket notation that is
+  <code>[XP [Z word1] [X'' [X' [X word2] [Y word3]]]]</code>.
+</p>
+<p>
+  After moving down, the selection is the copy of the node you had selected — the selection box follows
+  one level down. Pressing <kbd>Tab</kbd> repeatedly therefore walks the selection down level by level.
+  The root node cannot be moved down, because the top of the chain must still have a mother node above it.
+</p>
+
+<h4 id="doc-up">2.5 Move up</h4>
+<p class="tip">Move up removes one projection level in one step.</p>
+<p>Move up is the inverse of move down, but its conditions are stricter. This time start from the result of moving down:</p>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDIwOCIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyMDgiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMjA4IiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxNjMiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSIxMjAiIHgyPSIxMjAiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iMTIwIiB4Mj0iMjA2IiB5Mj0iMTMyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjE2NSIgeDI9IjEyMCIgeTI9IjE3NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxNjUiIHgyPSIyMDYiIHkyPSIxNzciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjUiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI3Ny43IiB5PSIwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iOTguNSIgeT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlhQPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI2Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTcuNiIgeT0iNDUiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iNTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlo8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMjciPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIyOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEzNy44IiB5PSI0NSIgd2lkdGg9IjUwLjQwMDAwMDAwMDAwMDAwNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCcnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjI5Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjkwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlgnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMwIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTAzLjYiIHk9IjEzNSIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMxIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iODYiIHk9IjE4MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMjAiIHk9IjE5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDI8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMzIiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxODkuNiIgeT0iMTM1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxNDkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMzMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxNzIiIHk9IjE4MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyMDYiIHk9IjE5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDM8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" alt="Starting point: X has already been moved down one level" />
+<p>
+  Selecting <code>X</code> cannot be moved up. <code>X</code>'s mother node is <code>X'</code>, and
+  <code>X'</code> has two daughter nodes, <code>X</code> and <code>Y</code>, so it does not satisfy
+  “the mother node has only the selected node as its daughter”. The “Move up” button is disabled here.
+</p>
+<p>
+  Selecting <code>X'</code> (the copy made by moving down) can be moved up. <code>X'</code>'s mother node is
+  <code>X''</code>, and <code>X''</code> really does have only <code>X'</code> as its daughter node,
+  while <code>X''</code>'s label is exactly <code>X'</code> plus one prime — both conditions hold at once.
+  The editor then deletes <code>X''</code> and lets <code>X'</code> take its place:
+</p>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDE2MyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxMjAiIHgyPSIyMDYiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijc3LjciIHk9IjAiIHdpZHRoPSI0MS42IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSI5OC41IiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WFA8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI0Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjQ1IiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCc8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEwMy42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjYiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI4NiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMjwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTg5LjYiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3MiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PC9nPjwvc3ZnPg==" alt="After moving X' up: back to the original" />
+<p>
+  The result is exactly the original <code>[XP [Z word1] [X' [X word2] [Y word3]]]</code>, the tree from
+  before the move down. Every level above the mother node loses one prime as well, as long as its label is
+  exactly one prime more than the level below, so that the rule “level k has k primes” is never broken.
+</p>
+<p>Move up needs both conditions at once: the mother node has only the selected node as its daughter, and the mother's label is the selected node's name plus one prime.</p>
+
+<h4 id="doc-move">2.6 Move left and right</h4>
+<p class="tip">Move left and move right move a node among its sisters.</p>
+<p>Both act on the selected node and are fully symmetric. Each direction has two cases.</p>
+<table>
+  <tbody>
+    <tr>
+      <td><b>Move left</b></td>
+      <td>
+        ① If the selected node has a left sister node, the editor swaps the two, so the node simply moves one place left.<br />
+        ② If the selected node is the leftmost daughter node, the editor moves it under the mother node's
+        left sister node, as that sister's rightmost daughter node.
+      </td>
+    </tr>
+    <tr>
+      <td><b>Move right</b></td>
+      <td>
+        ① If the selected node has a right sister node, the editor swaps the two, so the node simply moves one place right.<br />
+        ② If the selected node is the rightmost daughter node, the editor moves it under the mother node's
+        right sister node, as that sister's leftmost daughter node.
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>Using the same tree again, here are three cases:</p>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDE2MyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxMjAiIHgyPSIyMDYiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9Ijc3LjciIHk9IjAiIHdpZHRoPSI0MS42IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSI5OC41IiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WFA8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iMiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI0Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQyLjIiIHk9IjQ1IiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTYzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WCc8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEwMy42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjYiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI4NiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMjwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTg5LjYiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3MiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PC9nPjwvc3ZnPg==" alt="Starting point" />
+
+<p><b>Select <code>X'</code> and move left</b>: <code>X'</code> has a left sister node <code>Z</code>, so case ① applies and the two swap.</p>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDE2MyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9IjE0MS41IiB5MT0iMzAiIHgyPSI3NyIgeTI9IjQyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjE0MS41IiB5MT0iMzAiIHgyPSIyMDYiIHkyPSI0MiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSI3NyIgeTE9Ijc1IiB4Mj0iMzQiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSI3NyIgeTE9Ijc1IiB4Mj0iMTIwIiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSIxMjAiIHgyPSIzNCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxMjAiIHkxPSIxMjAiIHgyPSIxMjAiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMjA2IiB5MT0iNzUiIHgyPSIyMDYiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjwvZz48Zz48L2c+PGc+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIzNCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEyMC43IiB5PSIwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTQxLjUiIHk9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YUDwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIzNSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjU2LjIiIHk9IjQ1IiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iNzciIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YJzwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIzNiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE3LjYiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMzQiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+WDwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIzNyI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjAiIHk9IjEzNSIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMjwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSIzOCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEwMy42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5ZPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjM5Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iODYiIHk9IjEzNSIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMjAiIHk9IjE0OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDM8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNDAiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxODkuNiIgeT0iNDUiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyMDYiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5aPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjQxIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTcyIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyMDYiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDE8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" alt="After moving X' left: X' and Z swapped" />
+
+<p>
+  <b>Select <code>X</code> and move left</b>: <code>X</code> has no left sister node
+  (it is the leftmost daughter node of <code>X'</code>), so case ② applies and it moves under
+  <code>Z</code>, the left sister node of its mother <code>X'</code>, becoming <code>Z</code>'s rightmost daughter node.
+</p>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDE2MyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9IjE0MS41IiB5MT0iMzAiIHgyPSI3NyIgeTI9IjQyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjE0MS41IiB5MT0iMzAiIHgyPSIyMDYiIHkyPSI0MiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSI3NyIgeTE9Ijc1IiB4Mj0iMzQiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSI3NyIgeTE9Ijc1IiB4Mj0iMTIwIiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTIwIiB5MT0iMTIwIiB4Mj0iMTIwIiB5Mj0iMTMyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjIwNiIgeTE9Ijc1IiB4Mj0iMjA2IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMjA2IiB5MT0iMTIwIiB4Mj0iMjA2IiB5Mj0iMTMyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PC9nPjxnPjwvZz48Zz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjQyIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTIwLjciIHk9IjAiIHdpZHRoPSI0MS42IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxNDEuNSIgeT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlhQPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjQzIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iNjAuNiIgeT0iNDUiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSI3NyIgeT0iNTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlo8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNDQiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI0NSI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjEwMy42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjQ2Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iODYiIHk9IjEzNSIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMjAiIHk9IjE0OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+d29yZDI8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNDciPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxODUuMiIgeT0iNDUiIHdpZHRoPSI0MS42IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyMDYiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YJzwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI0OCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE4OS42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5ZPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjQ5Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTcyIiB5PSIxMzUiIHdpZHRoPSI2OCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxNDkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iI0NDMDAwMCIgcG9pbnRlci1ldmVudHM9Im5vbmUiPndvcmQzPC90ZXh0PjwvZz48L2c+PC9zdmc+" alt="After moving X left: X moved under Z" />
+
+<p><b>Select <code>X</code> and move right</b>: <code>X</code> has a right sister node <code>Y</code>, so case ① applies and the two swap.</p>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQwIDE2MyIgd2lkdGg9IjI0MCIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9Ijk4LjUiIHkxPSIzMCIgeDI9IjM0IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iOTguNSIgeTE9IjMwIiB4Mj0iMTYzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMzQiIHkxPSI3NSIgeDI9IjM0IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMTYzIiB5MT0iNzUiIHgyPSIxMjAiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxNjMiIHkxPSI3NSIgeDI9IjIwNiIgeTI9Ijg3IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyMDYiIHkxPSIxMjAiIHgyPSIyMDYiIHkyPSIxMzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNTAiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI3Ny43IiB5PSIwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iOTguNSIgeT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlhQPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjUxIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTcuNiIgeT0iNDUiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iNTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlo8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNTIiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIwIiB5PSI5MCIgd2lkdGg9IjY4IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIzNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMTwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI1MyI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE0Mi4yIiB5PSI0NSIgd2lkdGg9IjQxLjYiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjE2MyIgeT0iNTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlgnPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjU0Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTAzLjYiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTIwIiB5PSIxMDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPlk8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNTUiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI4NiIgeT0iMTM1IiB3aWR0aD0iNjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEyMCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj53b3JkMzwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI1NiI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjE4OS42IiB5PSI5MCIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjIwNiIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5YPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjU3Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTcyIiB5PSIxMzUiIHdpZHRoPSI2OCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjA2IiB5PSIxNDkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iI0NDMDAwMCIgcG9pbnRlci1ldmVudHM9Im5vbmUiPndvcmQyPC90ZXh0PjwvZz48L2c+PC9zdmc+" alt="After moving X right: X and Y swapped" />
+
+<p>
+  All three results are in the picture. If there is no sister node on that side and the mother node has
+  none on that side either, the toolbar button becomes disabled and the shortcut does nothing.
+</p>
+
+<h4 id="doc-style">2.7 Font and colour</h4>
+<p class="tip">Adding a declaration line at the end changes a node label's italic, bold, strikethrough or colour.</p>
+<p>
+  In linguistics some words are conventionally italic (small <i>v</i>, <i>pro</i>, traces).
+  <b>Add one declaration line of its own at the end</b>, listing node numbers in brackets, to change those
+  nodes' label styles:
+</p>
+<pre class="code-block">Italic(1, 3)
+Bold(2)
+Strike(4)
+Red(5)</pre>
+<p>
+  All five kinds of declaration look the same: <b>a colour name is itself a declaration word</b>, the
+  brackets may list several numbers separated by commas in any order, and declaration words are
+  <b>case-insensitive</b> (<code>ITALIC(1)</code> equals <code>italic(1)</code>), exported with initial
+  capitals. There are nine colours: <code>Red</code>, <code>Yellow</code>, <code>Blue</code>,
+  <code>Green</code>, <code>Orange</code>, <code>Magenta</code>, <code>Purple</code>,
+  <code>Black</code>, <code>White</code>.
+  A node has at most one colour: if several colour declarations hit it, the later one wins.
+  For how the numbers are counted see <a href="#doc-arrow">1.6 Drawing an arrow</a>.
+</p>
+<p>
+  With no colour declarations at all, words are drawn red and the other nodes blue (that is only the
+  default rendering, not a hidden declaration). The buttons on the <b>“Colour” row</b> add and remove those
+  declarations for you, so the effect can be undone and the text edited by hand at any time:
+  <b>All blue</b> removes every colour declaration (the tree returns to the default rendering),
+  <b>Words red</b> writes a red declaration for every word, and <b>Node red</b> / <b>Node blue</b> act on
+  the selected node. On the same row <b>Node italic</b> and <b>Node strike</b> are toggles: pressing one
+  applies that style to the selected node, pressing it again removes it. Bold has no button and can only be
+  written as a declaration.
+</p>
+<p>
+  Declarations can only go at the end, one per line. In rule notation they come after all edges and
+  movement arrows; in bracket notation they come after the whole tree:
+</p>
+<pre class="code-block">[vP [v [V know]] [pro [N him]] [NP syntax]]
+Italic(1, 2)
+Strike(3)
+Red(4)</pre>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjIzIDE2MyIgd2lkdGg9IjIyMyIgaGVpZ2h0PSIxNjMiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMjMiIGhlaWdodD0iMTYzIiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9IjEwNi44MDAwMDAwMDAwMDAwMSIgeTE9IjMwIiB4Mj0iMjkuNiIgeTI9IjQyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjEwNi44MDAwMDAwMDAwMDAwMSIgeTE9IjMwIiB4Mj0iMTAyLjQiIHkyPSI0MiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxMDYuODAwMDAwMDAwMDAwMDEiIHkxPSIzMCIgeDI9IjE4NC4wMDAwMDAwMDAwMDAwMyIgeTI9IjQyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjI5LjYiIHkxPSI3NSIgeDI9IjI5LjYiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIyOS42IiB5MT0iMTIwIiB4Mj0iMjkuNiIgeTI9IjEzMiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxMDIuNCIgeTE9Ijc1IiB4Mj0iMTAyLjQiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSIxMDIuNCIgeTE9IjEyMCIgeDI9IjEwMi40IiB5Mj0iMTMyIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS4yIj48L2xpbmU+PGxpbmUgeDE9IjE4NC4wMDAwMDAwMDAwMDAwMyIgeTE9Ijc1IiB4Mj0iMTg0LjAwMDAwMDAwMDAwMDAzIiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNTgiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI4Ni4wMDAwMDAwMDAwMDAwMSIgeT0iMCIgd2lkdGg9IjQxLjYiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEwNi44MDAwMDAwMDAwMDAwMSIgeT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPnZQPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjU5Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTMuMjAwMDAwMDAwMDAwMDAzIiB5PSI0NSIgd2lkdGg9IjMyLjgiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjI5LjYiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIiBmb250LXN0eWxlPSJpdGFsaWMiPnY8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNjAiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxMy4yMDAwMDAwMDAwMDAwMDMiIHk9IjkwIiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjkuNiIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNkMzJmMmYiIHBvaW50ZXItZXZlbnRzPSJub25lIj5WPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjYxIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMCIgeT0iMTM1IiB3aWR0aD0iNTkuMiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjkuNiIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj5rbm93PC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjYyIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iNzcuMiIgeT0iNDUiIHdpZHRoPSI1MC40MDAwMDAwMDAwMDAwMDYiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSJ0cmFuc3BhcmVudCIgcG9pbnRlci1ldmVudHM9ImFsbCI+PC9yZWN0Pjx0ZXh0IHg9IjEwMi40IiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSIgZm9udC1zdHlsZT0iaXRhbGljIj5wcm88L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNjMiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI4NiIgeT0iOTAiIHdpZHRoPSIzMi44IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMDIuNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5OPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjY0Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iNzcuMiIgeT0iMTM1IiB3aWR0aD0iNTAuNDAwMDAwMDAwMDAwMDA2IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxMDIuNCIgeT0iMTQ5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj5oaW08L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNjUiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIxNjMuMjAwMDAwMDAwMDAwMDIiIHk9IjQ1IiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMTg0LjAwMDAwMDAwMDAwMDAzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSIgdGV4dC1kZWNvcmF0aW9uPSJsaW5lLXRocm91Z2giPk5QPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjY2Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iMTQ1LjYwMDAwMDAwMDAwMDAyIiB5PSI5MCIgd2lkdGg9Ijc2LjgwMDAwMDAwMDAwMDAxIiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIxODQuMDAwMDAwMDAwMDAwMDMiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+c3ludGF4PC90ZXh0PjwvZz48L2c+PC9zdmc+" alt="v and pro are italic, NP is struck through, V is red" />
+<p>
+  In this tree <code>vP=0</code>, its three daughter nodes are <code>v=1</code>, <code>pro=2</code> and
+  <code>NP=3</code>, and the daughter of <code>v</code> is <code>V=4</code>. So <code>v</code> and
+  <code>pro</code> become italic, <code>NP</code> is struck through and <code>V</code> turns red.
+</p>
+<p>Numbers are recomputed as the structure changes, so adding or deleting nodes never leaves styles on the wrong node.</p>
+
+<h3 id="doc-source">3. About the source code</h3>
+<p>
+  Typing source straight into the code box has exactly the same effect as editing graphically — the two
+  sides always stay in sync. The two buttons above the code box switch between the two equivalent
+  notations. Switching does not change the tree, only the way it is written.
+</p>
+<table>
+  <tbody>
+    <tr><td><b>Bracket</b></td><td>The notation common in linguistics. Compatible with jsSyntaxTree code.</td></tr>
+    <tr><td><b>Rules</b></td><td>One edge per line. Recommended for drawing movement arrows and for making nodes italic.</td></tr>
+  </tbody>
+</table>
+
+<h4 id="doc-bracket">3.1 Bracket notation</h4>
+<p>This notation follows the labelled bracket notation common in linguistics.</p>
+<table>
+  <tbody>
+    <tr><td><code>[S [NP Dogs][VP barks]]</code></td><td>Square brackets mark nodes; a bare label is a leaf node.</td></tr>
+    <tr><td><code>[N_s Dogs]</code></td><td>Whatever follows <code>_</code> is written as a subscript.</td></tr>
+    <tr><td><code>[N^s Cats]</code></td><td>Whatever follows <code>^</code> is written as a superscript.</td></tr>
+    <tr><td><code>["Main clause" [S][V][O]]</code></td><td>When a label contains spaces, quotes, <code>_</code> or <code>^</code>, wrap the whole label in double quotes.</td></tr>
+    <tr><td><code>[S NP VP]</code></td><td>Adjacent bare labels merge into <b>one</b> multi-word leaf node, which the editor draws as a triangle to stand for elided structure.</td></tr>
+    <tr><td><code>[S [NP] [VP]]</code></td><td>This is two leaf nodes with one word each. It looks identical to the row above, but means something different.</td></tr>
+    <tr><td><code>[A [B C][D E][F G -&gt;6]]</code></td><td>A movement arrow; the number is a node number. Less readable than rule notation.</td></tr>
+    <tr><td><code>[X'' [X word]]</code></td><td>An empty node in brackets means “a category that is not expanded”. It is <b>not</b> a word, and <b>Words red</b> will not colour it.</td></tr>
+  </tbody>
+</table>
+
+<h4 id="doc-rules">3.2 Rule notation</h4>
+<p>One “mother node → daughter node” edge per line; good for checking edge by edge. Take this tree:</p>
+<pre class="code-block">[XP [D w1] [X' [X w2] [Y w3]]]</pre>
+<p>In rule notation it reads:</p>
+<pre class="code-block">0 XP -&gt; D
+0 XP -&gt; X'
+1 D -&gt; w1
+2 X' -&gt; X
+2 X' -&gt; Y
+4 X -&gt; w2
+5 Y -&gt; w3</pre>
+<p>Each line reads: <b>mother node number · mother node label · arrow · daughter node label</b>.</p>
+<table>
+  <tbody>
+    <tr><td><b>The root</b></td><td>Its number is always 0.</td></tr>
+    <tr><td><b>Other nodes</b></td><td>A node's number is the <b>line number</b> of the line where it first appears to the right of an arrow.</td></tr>
+    <tr><td><b>Line numbers</b></td><td>Shown in the gutter to the left of the code box, not in the text, so copying a selection never brings them along. The gutter numbers every line, including blank lines and arrow lines.</td></tr>
+    <tr><td><b>Reference order</b></td><td>A mother node must have appeared earlier, so its number is always smaller than the current line number. The lines of one mother need not be adjacent.</td></tr>
+    <tr><td><b>Labels</b></td><td>Wrap in double quotes when a label contains spaces, quotes, <code>_</code> or <code>^</code>. Subscripts and superscripts follow the label, e.g. <code>NP_1</code>, <code>N^s</code>, <code>"the mailman"_1</code>.</td></tr>
+    <tr><td><b>Wrong numbers</b></td><td>Inserting or deleting a line shifts the references below it; the editor repairs the leading numbers for you, so there is no need to count.</td></tr>
+  </tbody>
+</table>
+<p>
+  The numbers in that tree are <code>XP=0 D=1 X'=2 w1=3 X=4 Y=5 w2=6 w3=7</code>, that is 1 to 7 in the
+  gutter on the left. So “move w3 to where w2 is” is a line of its own:
+</p>
+<pre class="code-block">7 --&gt; 6</pre>
+<table>
+  <tbody>
+    <tr><td><b>Shape</b></td><td><code>fromNumber --&gt; toNumber</code>, after all the edges.</td></tr>
+    <tr><td><b>Start</b></td><td>Must be a leaf node, because in this notation arrows hang off leaves.</td></tr>
+    <tr><td><b>Target</b></td><td>Can be any node, including the root (written <code>--&gt; 0</code>).</td></tr>
+    <tr><td><b>Numbering</b></td><td><b>The two notations differ</b>: bracket notation uses word ordinals (which word, from 1), rule notation uses node numbers (root 0, others the line number).</td></tr>
+  </tbody>
+</table>
+
+<h3 id="doc-notes">4. Things to keep in mind</h3>
+<ul>
+  <li>
+    <b>Only words are coloured red.</b> The test is whether the node is written as a bare label, that is
+    whether it is the only daughter node of its mother or carries a movement arrow. An empty node in
+    brackets means “a category that is not expanded” and is drawn blue like a non-leaf node.
+    In <code>[XP [D [X'' [X word] [Y]]] [X']]</code>, for instance, only <code>word</code> is a word, while
+    <code>Y</code> and <code>X'</code> are blue.
+    Red words are only the default rendering and can be changed: on the <b>“Colour” row</b>, <b>All blue</b>
+    colours every node blue, <b>Words red</b> colours the words red, and <b>Node red</b> / <b>Node blue</b>
+    act on the selected node.
+  </li>
+  <li>
+    <b>Adjacent bare labels become one multi-word leaf node.</b> So <code>[S NP VP]</code> means S has a
+    single leaf node <code>"NP VP"</code>, not two leaf nodes NP and VP. To mean two leaf nodes, write
+    <code>[S [NP] [VP]]</code>. The two look identical but mean different things.
+  </li>
+  <li>
+    <b>A label cannot contain a double quote</b>, because the notation has no escape. The editor strips
+    double quotes as you type.
+  </li>
+  <li>
+    <b>Once a leaf node gets daughter nodes, its movement arrow is cleared</b>, because the notation cannot
+    express “a non-leaf node carrying an arrow”.
+  </li>
+  <li>
+    Bracket notation also accepts <code>--&gt;</code>, <code>&lt;-</code> and <code>&lt;&gt;</code> as
+    movement-arrow input; the editor reads them, but always rewrites them as <code>-&gt;</code>.
+  </li>
+  <li>
+    <b>Rule notation needs at least one edge.</b> A tree that is a single lone node (such as <code>[X]</code>)
+    is empty in rule notation.
+  </li>
+  <li>
+    <b>What you type in the code box may not match the export exactly</b> — spaces, arrow style, and rule
+    notation line numbers, for instance. That is expected: the code box never rewrites text as you type,
+    because that would break the caret. The one exception is the leading numbers in rule notation, which the
+    editor repairs on its own.
+  </li>
+</ul>
+`;
 
 // ===== src/notation.js =========================================
 // 括号记法（labelled bracket notation）与模型之间的双向转换
@@ -5303,8 +5769,8 @@ let lang = initialLang();
 // 每种语言各有自己的默认称谓：中文「母系」、英文「中性」（见 src/i18n.js 的 DEFAULT_TERM）
 let termsKind = DEFAULT_TERM[lang];
 
-/** 教程正文目前只有中文版（英文版见工作区 i18n/README.md），所以正文的替换一直用中文那套 */
-const DOCS_LANG = "zh";
+// 教程正文现在中英两份都有（中文那份在 index.html 里、英文那份在 src/docs-en.js），
+// 所以正文直接跟着界面语言走 —— 这份文件里不再需要"正文语言"这个开关。
 
 /** 页面上挂 data-i18n / data-example / data-terms 的静态文案，按当前语言填一遍 */
 function applyPageText() {
@@ -5336,19 +5802,32 @@ function bindToc() {
 }
 
 const docsEl = document.querySelector(".docs");
-// 留一份母系原文（教程正文目前只有中文版），每次切换都从它出发，来回切不会串味
-const docsBase = docsEl && typeof docsEl.innerHTML === "string" ? docsEl.innerHTML : null;
+// 教程正文有两份：中文那份就是 index.html 里的原样（这里抓一份快照），英文那份在 src/docs-en.js。
+// 每次切换都从快照出发重算，来回切不会串味（换称谓也是同一套机制）。
+const docsHtml = {
+  zh: docsEl && typeof docsEl.innerHTML === "string" ? docsEl.innerHTML : null,
+  en: DOCS_EN,
+};
+
+/**
+ * 教程正文目前有中英两份；`DOCS_LANG` 指哪一份就渲染哪一份。
+ * ⚠️ 正文的**替换表必须按正文自己的语言取**：中文正文配中文三套、英文正文配英文三套，
+ * 否则换成英文界面时中文正文会被英文替换表"换坏"（那里的词根本对不上）。
+ */
+function docsFor(langKey) {
+  const html = docsHtml[langKey];
+  if (html == null) return null;
+  const pairs = TERMS[langKey][termsKind] || null;
+  return pairs ? applyTerms(langKey, pairs, html) : html;
+}
 
 /** 把当前语言 + 当前称谓套到编辑器界面与教程正文上 */
 function applyTermsAndLanguage() {
   const pairs = TERMS[lang][termsKind] || null;
   editor.setTerms(pairs);
 
-  if (docsEl && docsBase != null) {
-    let html = docsBase;
-    // 正文的语言和界面语言可能不同（英文版还没翻），所以替换表按正文自己的语言取
-    const docsPairs = TERMS[DOCS_LANG][termsKind] || null;
-    if (docsPairs) for (const [a, b] of docsPairs) html = html.split(a).join(b);
+  const html = docsFor(lang);
+  if (docsEl && html != null) {
     docsEl.innerHTML = html;
     bindToc();
   }

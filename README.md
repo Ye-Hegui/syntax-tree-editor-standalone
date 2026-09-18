@@ -157,6 +157,7 @@ src/style.js                         斜体 / 粗体 / 删除线 / 颜色声明 
 src/layout.js                        布局与对齐，不依赖 DOM / layout and alignment, DOM-free
 src/render.js                        渲染为可交互 SVG / renders an interactive SVG
 src/i18n.js                          界面文案表（中/英）与三套称谓用词 / UI strings (zh/en) and the term sets
+src/docs-en.js                       教程正文的英文版 / English version of the tutorial body
 src/editor.js                        核心组件 SyntaxTreeEditor / the core component
 src/main.js                          演示页引导 / demo page bootstrap
 test/smoke.mjs                       纯逻辑测试 / pure logic tests
@@ -207,9 +208,10 @@ example/                             教程配图，生成后在构建时内联 
 - 标签里不能有双引号，记法没有转义写法 · Labels cannot contain double quotes; no escape syntax
 - 规则记法至少要有一条边，孤立节点在规则记法里是空的 · Rule notation needs at least one edge; a lone node is empty in it
 - 尚不支持英文界面，将在后续版本中开发 · An English interface is not yet supported; it is planned for a future release
-  （**已实现**：界面现在中英双语，可随时切换；只有网页底部的教程正文还没翻完。
-  见 [`CHANGELOG.md`](CHANGELOG.md) 的 v1.2.2 一节 · **Done**: the UI is bilingual now; only the tutorial
-  body at the bottom of the page is still Chinese — see the v1.2.2 entry in [`CHANGELOG.md`](CHANGELOG.md)）
+  （**已实现**：界面与教程正文现在都是中英双语，页头右上角随时切换。
+  见 [`CHANGELOG.md`](CHANGELOG.md) 的 v1.2.2 与 v1.2.3 两节 · **Done**: the UI *and* the tutorial body
+  are bilingual now, switched from the top-right of the page — see the v1.2.2 and v1.2.3 entries in
+  [`CHANGELOG.md`](CHANGELOG.md)）
 
 ## 许可证 / License
 

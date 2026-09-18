@@ -1,5 +1,6 @@
 import { SyntaxTreeEditor } from "./editor.js";
-import { LANGS, TERM_KINDS, TERM_LABELS, TERMS, DEFAULT_TERM, i18nText } from "./i18n.js";
+import { LANGS, TERM_KINDS, TERM_LABELS, TERMS, DEFAULT_TERM, i18nText, applyTerms } from "./i18n.js";
+import { DOCS_EN } from "./docs-en.js";
 
 const EXAMPLES = [
   // 0 经典结构（首页默认）—— 最小的一棵完整树，后面讲操作都用它
@@ -75,8 +76,8 @@ let lang = initialLang();
 // 每种语言各有自己的默认称谓：中文「母系」、英文「中性」（见 src/i18n.js 的 DEFAULT_TERM）
 let termsKind = DEFAULT_TERM[lang];
 
-/** 教程正文目前只有中文版（英文版见工作区 i18n/README.md），所以正文的替换一直用中文那套 */
-const DOCS_LANG = "zh";
+// 教程正文现在中英两份都有（中文那份在 index.html 里、英文那份在 src/docs-en.js），
+// 所以正文直接跟着界面语言走 —— 这份文件里不再需要"正文语言"这个开关。
 
 /** 页面上挂 data-i18n / data-example / data-terms 的静态文案，按当前语言填一遍 */
 function applyPageText() {
@@ -108,19 +109,32 @@ function bindToc() {
 }
 
 const docsEl = document.querySelector(".docs");
-// 留一份母系原文（教程正文目前只有中文版），每次切换都从它出发，来回切不会串味
-const docsBase = docsEl && typeof docsEl.innerHTML === "string" ? docsEl.innerHTML : null;
+// 教程正文有两份：中文那份就是 index.html 里的原样（这里抓一份快照），英文那份在 src/docs-en.js。
+// 每次切换都从快照出发重算，来回切不会串味（换称谓也是同一套机制）。
+const docsHtml = {
+  zh: docsEl && typeof docsEl.innerHTML === "string" ? docsEl.innerHTML : null,
+  en: DOCS_EN,
+};
+
+/**
+ * 教程正文目前有中英两份；`DOCS_LANG` 指哪一份就渲染哪一份。
+ * ⚠️ 正文的**替换表必须按正文自己的语言取**：中文正文配中文三套、英文正文配英文三套，
+ * 否则换成英文界面时中文正文会被英文替换表"换坏"（那里的词根本对不上）。
+ */
+function docsFor(langKey) {
+  const html = docsHtml[langKey];
+  if (html == null) return null;
+  const pairs = TERMS[langKey][termsKind] || null;
+  return pairs ? applyTerms(langKey, pairs, html) : html;
+}
 
 /** 把当前语言 + 当前称谓套到编辑器界面与教程正文上 */
 function applyTermsAndLanguage() {
   const pairs = TERMS[lang][termsKind] || null;
   editor.setTerms(pairs);
 
-  if (docsEl && docsBase != null) {
-    let html = docsBase;
-    // 正文的语言和界面语言可能不同（英文版还没翻），所以替换表按正文自己的语言取
-    const docsPairs = TERMS[DOCS_LANG][termsKind] || null;
-    if (docsPairs) for (const [a, b] of docsPairs) html = html.split(a).join(b);
+  const html = docsFor(lang);
+  if (docsEl && html != null) {
     docsEl.innerHTML = html;
     bindToc();
   }
