@@ -55,7 +55,7 @@ header .note {
   border-radius: 0 6px 6px 0;
 }
 
-/* 页头一行：标题在左，语言切换在右上角。
+/* 页头一行：标题在左，右上角是「语言切换 + 三个链接」两行。
    语言按钮沿用 .terms-group 的样式，这里只把它调成适合深色页头的配色。 */
 .head-bar {
   display: flex;
@@ -64,9 +64,18 @@ header .note {
   gap: 16px;
 }
 
+/* 右上角那一列：上边是语言按钮，下边是项目地址 / 在线使用 / 组件下载 */
+.head-right {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-top: 2px;
+}
+
 .head-lang {
   flex: none;
-  margin-top: 2px;
 }
 
 .head-lang button {
@@ -83,6 +92,26 @@ header .note {
   color: #125475;
   background: #fff;
   border-color: #fff;
+}
+
+/* 三个链接：跟在语言按钮下面一行，配色跟页头一致（浅色、悬停变白并加下划线） */
+.head-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 0.76rem;
+  line-height: 1.2;
+}
+
+.head-links a {
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+}
+
+.head-links a:hover {
+  color: #fff;
+  text-decoration: underline;
 }
 
 header .note code {
@@ -837,10 +866,17 @@ footer {
             简单而轻量化的句法树编辑器
           </p>
         </div>
-        <!-- 语言切换放右上角：两个按钮，当前语言高亮（data-lang 的值来自 src/i18n.js 的 LANGS） -->
-        <div class="head-lang terms-group">
-          <button type="button" data-lang="zh" class="is-on">中文</button>
-          <button type="button" data-lang="en">English</button>
+        <!-- 右上角：语言切换在上一行，三个链接在它下面一行（页脚也保留一份，方便滚到底的人点） -->
+        <div class="head-right">
+          <div class="head-lang terms-group">
+            <button type="button" data-lang="zh" class="is-on">中文</button>
+            <button type="button" data-lang="en">English</button>
+          </div>
+          <span class="head-links">
+            <a href="https://github.com/Ye-Hegui/syntax-tree-editor-standalone/" data-i18n="page.link.repo">项目地址</a>
+            <a href="https://ye-hegui.github.io/syntax-tree-editor-standalone/" data-i18n="page.link.online">在线使用</a>
+            <a href="https://disk.pku.edu.cn/link/AADCFA80E10F2B4D49B2FA4A8A0C9BB2CF" data-i18n="page.link.download">组件下载</a>
+          </span>
         </div>
       </div>
     </header>
@@ -1335,12 +1371,6 @@ Red(4)</pre>
     <footer>
       <span data-i18n="page.footer">独立的编辑器实现，输入格式沿用 phpSyntaxTree / jsSyntaxTree 通行的括号记法；
       代码为本项目自写，不包含原项目源码。</span>
-      <br />
-      <span class="footer-links">
-        <a href="https://github.com/Ye-Hegui/syntax-tree-editor-standalone/" data-i18n="page.link.repo">项目地址</a>
-        <a href="https://ye-hegui.github.io/syntax-tree-editor-standalone/" data-i18n="page.link.online">在线使用</a>
-        <a href="https://disk.pku.edu.cn/link/AADCFA80E10F2B4D49B2FA4A8A0C9BB2CF" data-i18n="page.link.download">组件下载</a>
-      </span>
       <br />
       v1.2.4 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
     </footer>

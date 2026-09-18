@@ -39,6 +39,10 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1
 
 ### 改动 / Changed
 
+- **三个链接从页脚挪到页头右上角**（作者 2026-09-18 要的：项目地址 / 在线使用 / 组件下载，
+  排在语言切换的下面一行）；页脚只留版权行，不再重复 ·
+  **The three links moved from the footer to the top-right of the header** (the author's request: repository /
+  live demo / download, on the line below the language switch); the footer now only carries the licence line
 - **基线的红蓝 = 声明写出来的红蓝**：默认画法不再另用一套色值，改成一**共用同一张色值表**，
   以原来基线那两个为准（`Red` = `#CC0000`、`Blue` = `#0000CC`，画布外观不变）。
   所以什么都不写（靠基线）和手写 `Blue(words)` 看起来完全一样，不会出现"一棵树两种蓝" ·
@@ -71,8 +75,8 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1
   `COLOR_VALUES` 决定色值），渲染、按钮判定与测试都从这里取 ·
   The baseline and the default rendering now share a single source (`baselineColor()` in `style.js` decides
   red-or-blue, `COLOR_VALUES` supplies the value), used by the renderer, the button logic and the tests
-- `screenshots/` 六张**不用重拍**（默认画布的颜色回到原样）·
-  The six screenshots needed no retake (the default canvas keeps its original colours)
+- `screenshots/` 六张**已重拍**（页头多了三个链接那一行）·
+  The six screenshots were **retaken** (the header gained the row of three links)
 
 ## v1.2.3（内部开发版，未发布 / internal, unreleased）
 

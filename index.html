@@ -16,10 +16,17 @@
             简单而轻量化的句法树编辑器
           </p>
         </div>
-        <!-- 语言切换放右上角：两个按钮，当前语言高亮（data-lang 的值来自 src/i18n.js 的 LANGS） -->
-        <div class="head-lang terms-group">
-          <button type="button" data-lang="zh" class="is-on">中文</button>
-          <button type="button" data-lang="en">English</button>
+        <!-- 右上角：语言切换在上一行，三个链接在它下面一行（页脚也保留一份，方便滚到底的人点） -->
+        <div class="head-right">
+          <div class="head-lang terms-group">
+            <button type="button" data-lang="zh" class="is-on">中文</button>
+            <button type="button" data-lang="en">English</button>
+          </div>
+          <span class="head-links">
+            <a href="https://github.com/Ye-Hegui/syntax-tree-editor-standalone/" data-i18n="page.link.repo">项目地址</a>
+            <a href="https://ye-hegui.github.io/syntax-tree-editor-standalone/" data-i18n="page.link.online">在线使用</a>
+            <a href="https://disk.pku.edu.cn/link/AADCFA80E10F2B4D49B2FA4A8A0C9BB2CF" data-i18n="page.link.download">组件下载</a>
+          </span>
         </div>
       </div>
       <p class="sub note" data-i18n="page.note">
@@ -519,12 +526,6 @@ Red(4)</pre>
     <footer>
       <span data-i18n="page.footer">独立的编辑器实现，输入格式沿用 phpSyntaxTree / jsSyntaxTree 通行的括号记法；
       代码为本项目自写，不包含原项目源码。</span>
-      <br />
-      <span class="footer-links">
-        <a href="https://github.com/Ye-Hegui/syntax-tree-editor-standalone/" data-i18n="page.link.repo">项目地址</a>
-        <a href="https://ye-hegui.github.io/syntax-tree-editor-standalone/" data-i18n="page.link.online">在线使用</a>
-        <a href="https://disk.pku.edu.cn/link/AADCFA80E10F2B4D49B2FA4A8A0C9BB2CF" data-i18n="page.link.download">组件下载</a>
-      </span>
       <br />
       v1.2.4 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
     </footer>
