@@ -6,6 +6,11 @@
   "author": "Ye Hegui",
   "type": "module",
   "description": "图与代码双向可编辑的语法树编辑器（零依赖，纯 ES Modules，两套记法）",
+  "homepage": "https://ye-hegui.github.io/syntax-tree-editor-standalone/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ye-Hegui/syntax-tree-editor-standalone.git"
+  },
   "scripts": {
     "build": "node tools/build-standalone.mjs",
     "check": "node tools/check-project.mjs",

@@ -199,6 +199,9 @@ export const STRINGS = {
     "page.toc.title": "目录",
     "page.footer": "独立的编辑器实现，输入格式沿用 phpSyntaxTree / jsSyntaxTree 通行的括号记法；代码为本项目自写，不包含原项目源码。",
     "page.licence": "以 MIT 许可证发布",
+    "page.link.repo": "项目地址",
+    "page.link.online": "在线使用",
+    "page.link.download": "组件下载",
   },
 
   en: {
@@ -310,6 +313,9 @@ export const STRINGS = {
     "page.toc.title": "Contents",
     "page.footer": "An independent implementation. The input format follows the bracket notation common to phpSyntaxTree / jsSyntaxTree; all code is original.",
     "page.licence": "released under the MIT licence",
+    "page.link.repo": "Repository",
+    "page.link.online": "Live demo",
+    "page.link.download": "Download",
   },
 };
 

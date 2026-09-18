@@ -207,6 +207,9 @@ example/                             教程配图，生成后在构建时内联 
 - 标签里不能有双引号，记法没有转义写法 · Labels cannot contain double quotes; no escape syntax
 - 规则记法至少要有一条边，孤立节点在规则记法里是空的 · Rule notation needs at least one edge; a lone node is empty in it
 - 尚不支持英文界面，将在后续版本中开发 · An English interface is not yet supported; it is planned for a future release
+  （**已实现**：界面现在中英双语，可随时切换；只有网页底部的教程正文还没翻完。
+  见 [`CHANGELOG.md`](CHANGELOG.md) 的 v1.2.2 一节 · **Done**: the UI is bilingual now; only the tutorial
+  body at the bottom of the page is still Chinese — see the v1.2.2 entry in [`CHANGELOG.md`](CHANGELOG.md)）
 
 ## 许可证 / License
 
@@ -215,3 +218,14 @@ Released under the **MIT License**, see [`LICENSE`](LICENSE). Free to use, modif
 
 输入格式沿用 phpSyntaxTree / jsSyntaxTree 通行的括号记法。本项目为独立实现，未使用其源码。
 The input format follows the bracket notation common to phpSyntaxTree / jsSyntaxTree. This is an independent implementation and uses none of their source code.
+
+## 链接 / Links
+
+- **项目地址 / Repository**：<https://github.com/Ye-Hegui/syntax-tree-editor-standalone/>
+- **在线使用 / Live demo**：<https://ye-hegui.github.io/syntax-tree-editor-standalone/>
+- **组件下载 / Download**：<https://disk.pku.edu.cn/link/AADCFA80E10F2B4D49B2FA4A8A0C9BB2CF>
+
+想在本地跑：双击单文件版 `Syntax Tree Editor Standalone.html` 即可（不联网、不起服务器）；
+开发时用 `npm.cmd run serve`（或任意静态服务器）打开 `index.html`。
+To run it locally, just double-click `Syntax Tree Editor Standalone.html` (no network, no server needed);
+for development, open `index.html` through `npm.cmd run serve` (or any static server).
