@@ -65,7 +65,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/docs-en.js`
 > —
-> 528 行 / 30275 字节
+> 528 行 / 30310 字节
 
 **函数**
 
@@ -75,7 +75,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/editor.js`
 > 核心组件 SyntaxTreeEditor：交互、快捷键、撤销、双向同步、空白画布、装订线。
-> 1804 行 / 68735 字节
+> 1811 行 / 69116 字节
 
 私有方法以 `#` 开头，只在类内部使用。
 
@@ -96,7 +96,7 @@ Syntax Tree Editor Standalone/
 | 101 | `offsetToLineCol` | — |
 | 114 | `lineColToOffset` | — |
 | 143 | `rulesToSvg` | 一行出图：**文本 → SVG 字符串**，不需要页面上先有一个编辑器实例。 |
-| 1796 | `countSubtree` | — |
+| 1803 | `countSubtree` | — |
 
 **类**
 
@@ -187,9 +187,9 @@ Syntax Tree Editor Standalone/
 | 1609 | `#relabel` | — |
 | 1621 | `#term` | 界面文案要在切换语言/称谓时重新生成的，都登记在这里。 |
 | 1626 | `#onKeyDown` | — |
-| 1730 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
-| 1760 | `#selectFromCaret` | — |
-| 1782 | `#selectByOffset` | — |
+| 1737 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
+| 1767 | `#selectFromCaret` | — |
+| 1789 | `#selectByOffset` | — |
 
 ### `src/i18n.js`
 > —
@@ -454,7 +454,7 @@ Syntax Tree Editor Standalone/
 
 ### `test/editor.test.mjs`
 > 交互层测试（跑在 DOM 垫片上）。
-> 2266 行 / 98744 字节
+> 2279 行 / 99460 字节
 
 **函数**
 
@@ -470,18 +470,18 @@ Syntax Tree Editor Standalone/
 | 55 | `key` | — |
 | 59 | `typeText` | — |
 | 66 | `NODES_IN` | — |
-| 737 | `ALIGN_TREE` | S 底下挂两棵不等深的子树，用来区分三种对齐 |
-| 739 | `rowsOf` | 深度：S0 A1 B2 C3 x4 D1 E2 y3 |
-| 897 | `MOVE_TREE` | 用户给的例子 |
-| 898 | `AFTER_LEFT` | — |
-| 899 | `AFTER_RIGHT` | — |
-| 902 | `selectT` | — |
-| 1035 | `fillOf` | — |
-| 1042 | `declLines` | — |
-| 1331 | `USER_RULES` | — |
-| 1642 | `NEUTRAL` | — |
-| 1643 | `FATHER` | — |
-| 1760 | `ARROW_TREE` | — |
+| 750 | `ALIGN_TREE` | S 底下挂两棵不等深的子树，用来区分三种对齐 |
+| 752 | `rowsOf` | 深度：S0 A1 B2 C3 x4 D1 E2 y3 |
+| 910 | `MOVE_TREE` | 用户给的例子 |
+| 911 | `AFTER_LEFT` | — |
+| 912 | `AFTER_RIGHT` | — |
+| 915 | `selectT` | — |
+| 1048 | `fillOf` | — |
+| 1055 | `declLines` | — |
+| 1344 | `USER_RULES` | — |
+| 1655 | `NEUTRAL` | — |
+| 1656 | `FATHER` | — |
+| 1773 | `ARROW_TREE` | — |
 
 ### `test/rules.test.mjs`
 > 规则记法测试。
@@ -581,7 +581,7 @@ Syntax Tree Editor Standalone/
 
 ### `tools/gen-examples.mjs`
 > —
-> 50 行 / 2440 字节
+> 51 行 / 2535 字节
 
 **函数**
 

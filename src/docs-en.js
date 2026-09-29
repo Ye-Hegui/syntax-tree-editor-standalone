@@ -279,7 +279,7 @@ export const DOCS_EN = `
 <p>
   “Move up” is greyed out here, because <code>X'</code>'s mother node <code>XP</code> still has
   <code>Z</code> as well; “Force up” is not bound by that, so press
-  <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd>. It does four things:
+  <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>↑</kbd> (or just click the toolbar button). It does four things:
 </p>
 <table>
   <tbody>

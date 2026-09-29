@@ -157,7 +157,7 @@ new SyntaxTreeEditor(elOrSelector, {
 | `clear()` | 清成空白画布 |
 | `setOptions(partial)` | 改选项后重绘 |
 | `setAlign(v)` / `setCenter(v)` / `setTerms(pairs)` / `setLanguage(lang)` / `setStyle({italic,bold,strike})` | 改对齐、水平位置、界面称谓、界面语言（`"zh"`/`"en"`）、选中节点的字体样式。**只动界面文字，对树没有任何影响** |
-| `createRoot()` `addChild()` `addSibling()` `addLevel()` `collapseLevel()` `forceCollapseLevel()` `moveLeft()` `moveRight()` `remove()` `setLabel(t)` | 结构编辑，都作用于当前选中节点。`collapseLevel()`（**上移**，`Shift+Tab`）是前提很严的"减一层"；`forceCollapseLevel()`（**强制上移**，`Alt+Shift+Tab`）不看那些前提，代价是**删掉该节点的所有姊妹节点**（连同子树）—— 唯一禁用条件是"选中节点是根节点"，做完选中的是**改名后的母亲节点** |
+| `createRoot()` `addChild()` `addSibling()` `addLevel()` `collapseLevel()` `forceCollapseLevel()` `moveLeft()` `moveRight()` `remove()` `setLabel(t)` | 结构编辑，都作用于当前选中节点。`collapseLevel()`（**上移**，`Shift+Tab`）是前提很严的"减一层"；`forceCollapseLevel()`（**强制上移**，`Alt+Shift+↑`）不看那些前提，代价是**删掉该节点的所有姊妹节点**（连同子树）—— 唯一禁用条件是"选中节点是根节点"，做完选中的是**改名后的母亲节点** |
 | `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）。**不引入新的染色机制**，只是增删颜色声明。`markWordsRed()`（**单词标红**）按作者 2026-09-18 的三步走：① 删掉所有**词**的颜色声明；② 看其余节点是否都只是蓝色；③ 都是蓝 ⇒ 连那些蓝色声明一起清掉（文本只剩树那一行），否则**只**删词上的、别的颜色全留。`markAllBlue()`（**全部标蓝**）先删掉所有声明、再给每个节点写蓝色 ⇒ 只留一句 `Blue(all)`。单个那两个只增删**选中节点自己**的声明，不碰别的节点。灰掉判定与实现共用同一套判断（见 `#canCleanWordColors`），没有变化时不压撤销历史 |
 | `toggleSelectedItalic()` `toggleSelectedStrike()` | 同一行右边的两个字体开关：给选中节点切换斜体 / 删除线（等价于加或删一行 `Italic(编号)` / `Strike(编号)` 声明），再按一次取消。粗体刻意没有按钮，只能用声明写 |
 | `undo()` / `redo()` | 撤销 / 重做 |
@@ -303,6 +303,7 @@ cmd /c "npm run build"   ← 重新生成单文件版
 | `README.md` 被写坏（15191 字节 vs 正常 13031） | 用 PowerShell 的 `-replace \| Set-Content` 改文本文件 | **改文本文件只用编辑工具**；弄坏了用 `git checkout --` 回滚重做 |
 | 批量截图只出一张就退出 | Edge 往 stderr 打无害日志，`$ErrorActionPreference = "Stop"` 把它当致命错误 | 跑无头浏览器时设 `Continue`，或把那一路 stderr 丢掉 |
 | 截图底部被切掉 | 界面加了新控件，窗口高度没跟着加 | 界面每加一行，截图窗口高度 +50px 左右 |
+| 新键位"按下去没反应" | 键位被**系统**抢走了（`Alt`+`Tab` / `Alt`+`Shift`+`Tab` 是 Windows 切换窗口），事件根本到不了页面 | 定键位前先过一遍占用表（系统：`Alt`+`Tab`、`Win`+`↑`；浏览器：`Ctrl`+`Tab`、`Alt`+`←/→`）；被占的键位**再绑一个能按得动的**，按钮上写能用的那个（`Alt`+`←/→` 就是这么办的，见 `#onKeyDown()`） |
 
 ### 6.3 当前的问题 / 待办
 

@@ -529,7 +529,7 @@ export class SyntaxTreeEditor {
     ), "title", "tip.level.remove");
     this.#term(this.btnCollapseLevel.labelEl, "textContent", "btn.level.remove");
     // 强制上移放在「上移」右边：也是"减一层"，但不看前提，代价是删掉所有姊妹节点
-    this.btnForceCollapseLevel = this.#term(button(this.#t("btn.level.force"), "Alt+Shift+Tab", this.#t("tip.level.force"), () =>
+    this.btnForceCollapseLevel = this.#term(button(this.#t("btn.level.force"), "Alt+Shift+↑", this.#t("tip.level.force"), () =>
       this.forceCollapseLevel(),
     ), "title", "tip.level.force");
     this.#term(this.btnForceCollapseLevel.labelEl, "textContent", "btn.level.force");
@@ -1640,6 +1640,13 @@ export class SyntaxTreeEditor {
       ev.key === "ArrowRight" ? this.moveRight() : this.moveLeft();
       return;
     }
+    // 强制上移。作者先要的是 Alt+Shift+Tab，但那个键在 Windows 上被系统拿去切窗口、
+    // 浏览器收不到，所以作者 2026-09-29 又选了 Alt+Shift+↑（两个都认，Mac 上前者能用）。
+    if (ev.altKey && ev.shiftKey && ev.key === "ArrowUp") {
+      ev.preventDefault();
+      this.forceCollapseLevel();
+      return;
+    }
 
     // 空白画布：只认"创建根节点"
     if (!this.root) {
@@ -1705,9 +1712,9 @@ export class SyntaxTreeEditor {
         ev.shiftKey ? this.addSibling() : this.addChild();
         return;
       case "Tab":
-        // Tab 是"下移"：加一层投射；Shift+Tab 是它的逆；Alt+Shift+Tab 是"强制上移"（删姊妹节点）
+        // Tab 是"下移"：加一层投射；Shift+Tab 是它的逆；Alt+Shift+Tab / Alt+Shift+↑ 是"强制上移"
         ev.preventDefault();
-        if (ev.altKey) this.forceCollapseLevel();
+        if (ev.altKey && ev.shiftKey) this.forceCollapseLevel();
         else if (ev.shiftKey) this.collapseLevel();
         else this.addLevel();
         return;

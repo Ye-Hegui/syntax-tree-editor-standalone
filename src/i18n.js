@@ -166,7 +166,7 @@ export const STRINGS = {
     "hint.tips": "复制粘贴源代码用括号记法，画箭头建议用规则记法。 ",
     "hint.keys":
       "Enter 加女儿节点 · Shift+Enter 加姊妹节点 · Tab 下移(加一层投射) · Shift+Tab 上移 · " +
-      "Alt+Shift+Tab 强制上移 · " +
+      "Alt+Shift+↑ 强制上移 · " +
       "↑ 母亲节点 · ↓ 第一个女儿节点 · ←→ 姊妹节点，到边了跨到堂表姊妹节点 · " +
       "F2 或双击改名 · Alt+←/→ 左移右移",
 
@@ -284,7 +284,7 @@ export const STRINGS = {
     "hint.tips": "Use bracket notation for pasting source; rule notation for drawing arrows. ",
     "hint.keys":
       "Enter adds a daughter · Shift+Enter adds a sister · Tab adds a level · Shift+Tab removes one · " +
-      "Alt+Shift+Tab forces one up · " +
+      "Alt+Shift+↑ forces one up · " +
       "↑ mother · ↓ leftmost daughter · ←→ sister nodes, crossing to cousins at the edges · " +
       "F2 or double-click renames · Alt+←/→ move left/right",
 

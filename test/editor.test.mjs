@@ -326,6 +326,19 @@ await t("Alt+Shift+Tab 强制上移：删掉姊妹节点、母亲节点改名、
   assert.equal(ed.selected.label, "X");
 });
 
+await t("Alt+Shift+↑ 也能强制上移（Windows 上 Alt+Tab 被系统抢走，这是能按得动的那个）", async () => {
+  const ed = mount("[G [M [S1] [X [C1] [C2]] [S2]] [A]]");
+  clickNode(ed, preorder(ed.root).find((n) => n.label === "X"));
+  key(ed, "ArrowUp", { altKey: true, shiftKey: true });
+  assert.equal(ed.getValue(), "[G [X [C1] [C2]] [A]]");
+  // 光按 ↑（不带修饰键）仍然是"跳到母亲节点"，别被这条新键位抢走
+  const ed2 = mount("[G [M [X [C]]]]");
+  clickNode(ed2, preorder(ed2.root).find((n) => n.label === "X"));
+  key(ed2, "ArrowUp");
+  assert.equal(ed2.selected.label, "M");
+  assert.equal(ed2.getValue(), "[G [M [X C]]]", "单纯 ↑ 不该动结构");
+});
+
 await t("强制上移：根节点不行（按钮灰掉、按键无效、不压历史）", async () => {
   const ed = mount("[G [M [X [C]]]]");
   clickNode(ed, ed.root);
@@ -2172,7 +2185,7 @@ await t("每个工具栏按钮下边的快捷键说明都对", async () => {
     "＋姊妹节点": "Shift+Enter",
     "下移": "Tab",
     "上移": "Shift+Tab",
-    "强制上移": "Alt+Shift+Tab",
+    "强制上移": "Alt+Shift+↑",
     "右移": "Alt+→",
     "左移": "Alt+←",
     "删除": "Delete",

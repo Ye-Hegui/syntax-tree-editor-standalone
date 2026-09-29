@@ -9,12 +9,12 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3`, `v1.2.
 
 ### 新增 / Added
 
-- **「强制上移」按钮**（在「上移」右边，快捷键 `Alt`+`Shift`+`Tab`）：不管「上移」那些前提，
+- **「强制上移」按钮**（在「上移」右边，快捷键 `Alt`+`Shift`+`↑`）：不管「上移」那些前提，
   直接把选中节点这一层投射层抽掉。它一共做四件事：① 删掉选中节点的所有姊妹节点及其子树；
   ② 把选中节点的女儿节点升到母亲节点底下（顺序不变）；③ 母亲节点改用选中节点的名字
   （标签与下标、上标一起搬，字体样式不搬）；④ 删掉选中节点自己。操作结束后**选中的是改名后的母亲节点**。
   根节点不能强制上移（没有母亲节点可以改名）；选中的节点没有女儿节点也可以用，结果是一格同名空范畴 ·
-  **A “Force up” button** (right of “Move up”, `Alt`+`Shift`+`Tab`): it drops the selected node's
+  **A “Force up” button** (right of “Move up”, `Alt`+`Shift`+`↑`): it drops the selected node's
   projection level without any of the conditions “Move up” requires. Four steps: ① delete every sister node
   of the selected node together with its subtree; ② lift the selected node's daughter nodes under the mother
   node, order unchanged; ③ rename the mother node after the selected node (label, subscript and superscript
@@ -24,6 +24,12 @@ Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3`, `v1.2.
 - 教程正文中英两版都补了「强制上移」一节（排在「上移」之后），并新增示例图 `example/forceup.svg` ·
   Both tutorial versions gained a “Force up” section right after “Move up”, with a new example image
   `example/forceup.svg`
+- ⚠️ 这个功能的键位**原本定的是 `Alt`+`Shift`+`Tab`，但那个键在 Windows 上是系统切换窗口的快捷键，
+  网页收不到**，所以作者 2026-09-29 改选了 `Alt`+`Shift`+`↑`（`Alt`+`Shift`+`Tab` 仍然照常响应，
+  在 macOS 上一类系统不抢这个键的地方能用）·
+  **The key was first specified as `Alt`+`Shift`+`Tab`, but Windows reserves that combination for
+  switching windows and never delivers it to the page**, so on 2026-09-29 the author picked
+  `Alt`+`Shift`+`↑` instead; `Alt`+`Shift`+`Tab` is still handled as well, for systems that do not grab it
 
 ## v1.2.4（内部开发版，未发布 / internal, unreleased）
 
