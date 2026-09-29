@@ -15,6 +15,8 @@ import {
   canAddPrimeLevel,
   collapsePrimeLevel,
   canCollapsePrimeLevel,
+  forceCollapseLevel,
+  canForceCollapseLevel,
   cloneSubtree,
 } from "../src/model.js";
 import { parse, serialize, toText, NotationError } from "../src/notation.js";
@@ -926,6 +928,69 @@ t("母亲节点就是根时，上移会让选中的节点变成新的根", () =>
   const next = collapsePrimeLevel(root, xp);
   assert.equal(next.label, "X'", "X' 应该成为新的根");
   assert.equal(toText(next), "[X' [X word]]");
+});
+
+t("强移上移：母亲节点改名、女儿升上来、自己和所有姊妹节点都删掉", () => {
+  // 作者给的例子：X 是选中节点，M 是母亲节点，S1/S2 是它的姊妹节点，A/B 是母亲节点的姊妹节点
+  const root = parse("[G [M [S1] [X [C1] [C2]] [S2]] [A] [B]]");
+  const x = preorder(root).find((n) => n.label === "X");
+  assert.equal(canForceCollapseLevel(root, x), true);
+  const next = forceCollapseLevel(root, x);
+  assert.equal(next, root.children[0], "新选中的应该是改名后的母亲节点");
+  assert.equal(next.label, "X");
+  assert.equal(
+    toText(root),
+    "[G [X [C1] [C2]] [A] [B]]",
+    "X 的姊妹节点没了、母亲节点的姊妹节点还在、位置没动",
+  );
+});
+
+t("强制上移是移动不是拷贝：女儿节点的 id 原样保留（箭头不用重映射）", () => {
+  const root = parse("[G [M [X [C1] [C2]] [S]]]");
+  const x = preorder(root).find((n) => n.label === "X");
+  const before = new Map(preorder(root).map((n) => [n.label, n.id]));
+  const next = forceCollapseLevel(root, x);
+  assert.equal(next.children.length, 2);
+  assert.equal(next.children[0].id, before.get("C1"), "C1 应该是原来那个对象");
+  assert.equal(next.children[1].id, before.get("C2"));
+  assert.equal(next.children[0].label, "C1");
+});
+
+t("强制上移保序：女儿节点按原顺序紧跟在自己后面", () => {
+  const root = parse("[M [S1] [X [C1] [C2] [C3]] [S2]]");
+  const x = preorder(root).find((n) => n.label === "X");
+  forceCollapseLevel(root, x);
+  assert.equal(toText(root), "[X [C1] [C2] [C3]]");
+});
+
+t("强制上移：没有女儿节点也可以（结果是一格空范畴）", () => {
+  const root = parse("[G [M [S] [X] [T]] [A]]");
+  const x = preorder(root).find((n) => n.label === "X");
+  assert.equal(canForceCollapseLevel(root, x), true, "没有女儿节点不是禁用的理由");
+  forceCollapseLevel(root, x);
+  assert.equal(toText(root), "[G [X] [A]]");
+});
+
+t("强制上移：下标、上标跟着标签一起搬，字体样式不搬", () => {
+  const root = parse("[G [M [X_1 [C]]]]");
+  const x = preorder(root).find((n) => n.label === "X");
+  x.sup = "2"; // 文本里一个节点只能写一种，模型里两种都试一遍
+  x.italic = true;
+  x.color = "red";
+  const next = forceCollapseLevel(root, x);
+  assert.equal(next.label, "X");
+  assert.equal(next.sub, "1");
+  assert.equal(next.sup, "2");
+  assert.equal(next.italic, false, "样式不搬：新节点还是母亲节点原来的样式");
+  assert.equal(next.color, null);
+  assert.equal(toText(root), "[G [X_1 C]]");
+});
+
+t("强制上移：根节点不行（没有母亲节点可改），树也不该被动", () => {
+  const root = parse("[G [M [S] [X [C]]]]");
+  assert.equal(canForceCollapseLevel(root, root), false);
+  assert.equal(forceCollapseLevel(root, root), null);
+  assert.equal(toText(root), "[G [M [S] [X C]]]", "无效操作不许改树");
 });
 
 t("链顶就是根时无法下移", () => {

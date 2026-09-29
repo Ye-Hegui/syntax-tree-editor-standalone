@@ -315,6 +315,47 @@ await t("第一个姊妹节点无法上移（不产生历史）", async () => {
   assert.equal(ed.undoStack.length, before, "无效操作不该压入历史");
 });
 
+await t("Alt+Shift+Tab 强制上移：删掉姊妹节点、母亲节点改名、选中改名后的母亲节点", async () => {
+  const ed = mount("[G [M [S1] [X [C1] [C2]] [S2]] [A] [B]]");
+  const x = preorder(ed.root).find((n) => n.label === "X");
+  clickNode(ed, x);
+  assert.equal(ed.btnForceCollapseLevel.disabled, false);
+  key(ed, "Tab", { altKey: true, shiftKey: true });
+  assert.equal(ed.getValue(), "[G [X [C1] [C2]] [A] [B]]");
+  assert.equal(ed.selected, ed.root.children[0], "选中项应该是改名后的母亲节点");
+  assert.equal(ed.selected.label, "X");
+});
+
+await t("强制上移：根节点不行（按钮灰掉、按键无效、不压历史）", async () => {
+  const ed = mount("[G [M [X [C]]]]");
+  clickNode(ed, ed.root);
+  assert.equal(ed.btnForceCollapseLevel.disabled, true);
+  const before = ed.undoStack.length;
+  const text = ed.getValue();
+  key(ed, "Tab", { altKey: true, shiftKey: true });
+  assert.equal(ed.getValue(), text);
+  assert.equal(ed.undoStack.length, before, "无效操作不该压入历史");
+});
+
+await t("强制上移不看「上移」的前提：母亲节点还有别的女儿也照做", async () => {
+  const ed = mount("[XP [Z wordZ] [X' [Y wordY] [X wordX]]]");
+  const xp = preorder(ed.root).find((n) => n.label === "X'");
+  clickNode(ed, xp);
+  // 同样是这一格，「上移」灰着（母亲节点 XP 有两个女儿），「强制上移」亮着
+  assert.equal(ed.btnCollapseLevel.disabled, true);
+  assert.equal(ed.btnForceCollapseLevel.disabled, false);
+  key(ed, "Tab", { altKey: true, shiftKey: true });
+  assert.equal(ed.getValue(), "[X' [Y wordY] [X wordX]]", "Z 被删掉，XP 改名成 X'");
+});
+
+await t("强制上移可以撤销", async () => {
+  const original = "[G [M [S1] [X [C1] [C2]] [S2]] [A]]";
+  const ed = mount(original);
+  clickNode(ed, preorder(ed.root).find((n) => n.label === "X"));
+  key(ed, "Tab", { altKey: true, shiftKey: true });
+  key(ed, "z", { ctrlKey: true });
+  assert.equal(ed.getValue(), original);
+});
 await t("Enter 加女儿并直接进入改名", async () => {
   const ed = mount("[S [A][B]]");
   clickNode(ed, ed.root.children[1]);
@@ -2131,6 +2172,7 @@ await t("每个工具栏按钮下边的快捷键说明都对", async () => {
     "＋姊妹节点": "Shift+Enter",
     "下移": "Tab",
     "上移": "Shift+Tab",
+    "强制上移": "Alt+Shift+Tab",
     "右移": "Alt+→",
     "左移": "Alt+←",
     "删除": "Delete",

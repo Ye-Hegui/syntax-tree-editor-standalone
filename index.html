@@ -83,6 +83,7 @@
                 <li><a href="#doc-keys">方向键选中</a></li>
                 <li><a href="#doc-level">下移</a></li>
                 <li><a href="#doc-up">上移</a></li>
+                <li><a href="#doc-forceup">强制上移</a></li>
                 <li><a href="#doc-move">左移和右移</a></li>
                 <li><a href="#doc-style">字体与颜色</a></li>
               </ol>
@@ -308,7 +309,39 @@
         </p>
         <p>上移需要同时满足两个条件：母亲节点只有被选中的那一个女儿节点，且母亲节点的标签是选中节点名称加一个撇。</p>
 
-        <h4 id="doc-move">6. 左移和右移</h4>
+        <h4 id="doc-forceup">6. 强制上移</h4>
+        <p class="tip">强制上移是不管前提、直接抽掉一层投射层的操作。</p>
+        <p>
+          上移的条件很严，很多想抽掉一层的时候它是灰的。强制上移把这层投射层直接抽掉，
+          代价是<b>选中节点的姊妹节点会连同它们的子树一起删掉</b>。
+        </p>
+        <p>还是用同一棵树，这一次选中 <code>X'</code>：</p>
+        <img class="doc-shot" src="example/base.svg" alt="出发点" />
+        <p>
+          这时「上移」是灰的，因为 <code>X'</code> 的母亲节点 <code>XP</code> 底下还有 <code>Z</code>；
+          「强制上移」不受这个限制，按 <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd> 就能用。
+          它一共做四件事：
+        </p>
+        <table>
+          <tbody>
+            <tr><td>①</td><td>删掉 <code>X'</code> 的所有姊妹节点（这里是 <code>Z</code>）及其子树。</td></tr>
+            <tr><td>②</td><td>把 <code>X'</code> 的女儿节点升到母亲节点 <code>XP</code> 底下，顺序不变。</td></tr>
+            <tr><td>③</td><td>把母亲节点 <code>XP</code> 改名为 <code>X'</code>，下标、上标跟着一起搬。</td></tr>
+            <tr><td>④</td><td>删掉 <code>X'</code> 自己 —— 这时它已经没有女儿节点了。</td></tr>
+          </tbody>
+        </table>
+        <img class="doc-shot" src="example/forceup.svg" alt="对 X' 强制上移之后：Z 被删掉，XP 改名成 X'" />
+        <p>
+          对着图看两个变化：母亲节点留在原来的位置上，只是换了名字；<code>X'</code> 的两个女儿节点
+          原样升到它底下，<code>X</code> 和 <code>Y</code> 的相对顺序也没变。
+          操作结束后选中的是<b>改名后的母亲节点</b>，接着点别的按钮就是对它在操作。
+        </p>
+        <p>
+          选中的节点没有女儿节点也可以用，这时结果是一格和它同名的空范畴。
+          唯一不能强制上移的是根节点 —— 它没有母亲节点可以改名。
+        </p>
+
+        <h4 id="doc-move">7. 左移和右移</h4>
         <p class="tip">左移和右移可以把节点在同级之间移动。</p>
         <p>这两个操作作用在当前选中的节点上，而且完全对称。每一个方向都分两种情况。</p>
         <table>
@@ -353,7 +386,7 @@
           按快捷键也不会有任何改动。
         </p>
 
-                        <h4 id="doc-style">7. 字体与颜色</h4>
+                        <h4 id="doc-style">8. 字体与颜色</h4>
         <p class="tip">在末尾添加一行声明，可以修改节点标签的斜体、粗体、删除线或颜色。</p>
         <p>
           语言学里有些词习惯写成斜体（比如小 <i>v</i>、<i>pro</i>、语迹）。
@@ -533,7 +566,7 @@ Red(4)</pre>
         <a href="https://disk.pku.edu.cn/link/AADCFA80E10F2B4D49B2FA4A8A0C9BB2CF" data-i18n="page.link.download">组件下载</a>
       </span>
       <br />
-      v1.2.4 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
+      v1.2.5 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
     </footer>
   </body>
 </html>

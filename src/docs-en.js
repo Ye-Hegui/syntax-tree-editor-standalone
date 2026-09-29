@@ -39,6 +39,7 @@ export const DOCS_EN = `
         <li><a href="#doc-keys">Selecting with the arrow keys</a></li>
         <li><a href="#doc-level">Move down</a></li>
         <li><a href="#doc-up">Move up</a></li>
+        <li><a href="#doc-forceup">Force up</a></li>
         <li><a href="#doc-move">Move left and right</a></li>
         <li><a href="#doc-style">Font and colour</a></li>
       </ol>
@@ -266,7 +267,41 @@ export const DOCS_EN = `
 </p>
 <p>Move up needs both conditions at once: the mother node has only the selected node as its daughter, and the mother's label is the selected node's name plus one prime.</p>
 
-<h4 id="doc-move">2.6 Move left and right</h4>
+<h4 id="doc-forceup">2.6 Force up</h4>
+<p class="tip">Force up removes one projection level regardless of the conditions.</p>
+<p>
+  Move up has strict conditions, so it is greyed out whenever you actually want to drop a level.
+  Force up simply removes that level, at the price of <b>deleting the selected node's sister nodes
+  together with their whole subtrees</b>.
+</p>
+<p>Using the same tree again, this time select <code>X'</code>:</p>
+<img class="doc-shot" src="example/base.svg" alt="Starting point" />
+<p>
+  “Move up” is greyed out here, because <code>X'</code>'s mother node <code>XP</code> still has
+  <code>Z</code> as well; “Force up” is not bound by that, so press
+  <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd>. It does four things:
+</p>
+<table>
+  <tbody>
+    <tr><td>①</td><td>Delete every sister node of <code>X'</code> (here <code>Z</code>) and its subtree.</td></tr>
+    <tr><td>②</td><td>Lift the daughter nodes of <code>X'</code> under the mother node <code>XP</code>, keeping their order.</td></tr>
+    <tr><td>③</td><td>Rename the mother node <code>XP</code> to <code>X'</code>, moving subscript and superscript across too.</td></tr>
+    <tr><td>④</td><td>Delete <code>X'</code> itself — it has no daughter nodes left by now.</td></tr>
+  </tbody>
+</table>
+<img class="doc-shot" src="example/forceup.svg" alt="After forcing X' up: Z is gone and XP has been renamed to X'" />
+<p>
+  Two changes to look at: the mother node stays exactly where it was and only changes its name, and the
+  two daughter nodes of <code>X'</code> come up under it unchanged, <code>X</code> before <code>Y</code>
+  as before. Afterwards the selection is the <b>renamed mother node</b>, so the next button you press
+  acts on it.
+</p>
+<p>
+  The selected node may also have no daughter nodes at all; the result is then an empty category with
+  its name. The only node that cannot be forced up is the root, which has no mother node to rename.
+</p>
+
+<h4 id="doc-move">2.7 Move left and right</h4>
 <p class="tip">Move left and move right move a node among its sisters.</p>
 <p>Both act on the selected node and are fully symmetric. Each direction has two cases.</p>
 <table>
@@ -310,7 +345,7 @@ export const DOCS_EN = `
   none on that side either, the toolbar button becomes disabled and the shortcut does nothing.
 </p>
 
-<h4 id="doc-style">2.7 Font and colour</h4>
+<h4 id="doc-style">2.8 Font and colour</h4>
 <p class="tip">Adding a declaration line at the end changes a node label's italic, bold, strikethrough or colour.</p>
 <p>
   In linguistics some words are conventionally italic (small <i>v</i>, <i>pro</i>, traces).

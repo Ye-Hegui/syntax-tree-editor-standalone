@@ -108,7 +108,7 @@
 
 | 模块 | 导出 |
 | --- | --- |
-| `src/model.js` | `node` `walk` `preorder` `findParent` `nodeIds` `cloneSubtree` `ESCAPE_LABEL` `addChild` `removeNode` `canAddPrimeLevel` `addPrimeLevel` `canCollapsePrimeLevel` `collapsePrimeLevel` `moveNodeLeft` `moveNodeRight` |
+| `src/model.js` | `node` `walk` `preorder` `findParent` `nodeIds` `cloneSubtree` `ESCAPE_LABEL` `addChild` `removeNode` `canAddPrimeLevel` `addPrimeLevel` `canCollapsePrimeLevel` `collapsePrimeLevel` `canForceCollapseLevel` `forceCollapseLevel` `moveNodeLeft` `moveNodeRight` |
 | `src/i18n.js` | `STRINGS` `LANGS` `LANG_LABELS` `TERMS` `TERM_KINDS` `TERM_LABELS` `DEFAULT_TERM` `i18nText` `applyTerms` —— 界面文案表与三套称谓用词，纯数据加两个纯函数，不依赖 DOM |
 | `src/docs-en.js` | `DOCS_EN` —— 教程正文（网页底部那一篇）的英文版，整篇 HTML 一个常量；**只导出、不 import**（扁平打包会去掉 import）。改它要守三条：`doc-*` 锚点与中文版一致、`example/*.svg` 原样保留、亲属称谓用 mother/sister/daughter |
 | `src/notation.js` | `parse` `serialize` `toText` `NotationError` |
@@ -157,7 +157,7 @@ new SyntaxTreeEditor(elOrSelector, {
 | `clear()` | 清成空白画布 |
 | `setOptions(partial)` | 改选项后重绘 |
 | `setAlign(v)` / `setCenter(v)` / `setTerms(pairs)` / `setLanguage(lang)` / `setStyle({italic,bold,strike})` | 改对齐、水平位置、界面称谓、界面语言（`"zh"`/`"en"`）、选中节点的字体样式。**只动界面文字，对树没有任何影响** |
-| `createRoot()` `addChild()` `addSibling()` `addLevel()` `collapseLevel()` `moveLeft()` `moveRight()` `remove()` `setLabel(t)` | 结构编辑，都作用于当前选中节点 |
+| `createRoot()` `addChild()` `addSibling()` `addLevel()` `collapseLevel()` `forceCollapseLevel()` `moveLeft()` `moveRight()` `remove()` `setLabel(t)` | 结构编辑，都作用于当前选中节点。`collapseLevel()`（**上移**，`Shift+Tab`）是前提很严的"减一层"；`forceCollapseLevel()`（**强制上移**，`Alt+Shift+Tab`）不看那些前提，代价是**删掉该节点的所有姊妹节点**（连同子树）—— 唯一禁用条件是"选中节点是根节点"，做完选中的是**改名后的母亲节点** |
 | `markAllBlue()` `markWordsRed()` `markSelectedRed()` `markSelectedBlue()` | 颜色标记（「标色」那一行的按钮）。**不引入新的染色机制**，只是增删颜色声明。`markWordsRed()`（**单词标红**）按作者 2026-09-18 的三步走：① 删掉所有**词**的颜色声明；② 看其余节点是否都只是蓝色；③ 都是蓝 ⇒ 连那些蓝色声明一起清掉（文本只剩树那一行），否则**只**删词上的、别的颜色全留。`markAllBlue()`（**全部标蓝**）先删掉所有声明、再给每个节点写蓝色 ⇒ 只留一句 `Blue(all)`。单个那两个只增删**选中节点自己**的声明，不碰别的节点。灰掉判定与实现共用同一套判断（见 `#canCleanWordColors`），没有变化时不压撤销历史 |
 | `toggleSelectedItalic()` `toggleSelectedStrike()` | 同一行右边的两个字体开关：给选中节点切换斜体 / 删除线（等价于加或删一行 `Italic(编号)` / `Strike(编号)` 声明），再按一次取消。粗体刻意没有按钮，只能用声明写 |
 | `undo()` / `redo()` | 撤销 / 重做 |
@@ -311,11 +311,12 @@ cmd /c "npm run build"   ← 重新生成单文件版
    而且 `doc-*` 锚点必须两边一致 —— `check-project.mjs` 有专门一节在比。
    位置与文件结构见 `src/docs-en.js` 顶部的注释。
 2. **`screenshots/` 六张**：界面每变一次（语言切换挪到页头右上角、英文称谓改用
-   Maternal / Neutral / Paternal、底部加了三个链接）都要重拍；配方在 `HANDOVER.md` 第六部分。
+   Maternal / Neutral / Paternal、底部加了三个链接、工具栏多了「强制上移」）都要重拍；
+   配方在 `HANDOVER.md` 第六部分。
 3. **内部特性（转义节点 / `%Empty`）的规格不在本仓库** —— 作者要求不公开，规格与来龙去脉记在
    工作区 `HANDOVER.md` 第九部分 ⑤。上面 6.1 第 1 条讲的是它的**渲染手法**（不含语法）；
    本文件只留这个名字，不给语法，README / 教程 / CHANGELOG 里一个字都没有。
-4. **版本号**：`package.json` 与页脚是 `1.2.4`（内部开发号，未发布）；对外最新仍是 `1.2.0`。
+4. **版本号**：`package.json` 与页脚是 `1.2.5`（内部开发号，未发布）；对外最新仍是 `1.2.0`。
    三处一致性（`package.json` / 页脚 / `CHANGELOG` 顶部）由自检强制。
 
 ### 不要做的事

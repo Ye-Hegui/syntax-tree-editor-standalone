@@ -265,6 +265,66 @@ export function collapsePrimeLevel(root, n) {
   return root;
 }
 
+// ------------------------------------------------------------ 强制上移
+
+/**
+ * 能不能强制上移。唯一的条件是：**选中节点不能是根节点**（必须有母亲节点可改）。
+ *
+ * 和「上移」（`canCollapsePrimeLevel`）不同，这里**不看**那些严格前提
+ * （母亲只有自己一个女儿、标签恰好多一个撇）—— 代价是删掉所有姊妹节点。
+ */
+export function canForceCollapseLevel(root, n) {
+  if (!root || !n || n === root) return false;
+  return Boolean(findParent(root, n));
+}
+
+/**
+ * 强制上移（Alt+Shift+Tab）：把"母亲节点"这一格的名字换成选中节点的名字，
+ * 让选中节点的女儿们升到母亲底下，然后把选中节点和它的所有姊妹都删掉。
+ *
+ * 作者给的逐步图（以选中 X 为例，M 是它的母亲，A/B 是 M 的姊妹）：
+ *
+ *   抽之前                          抽之后
+ *         G                              G
+ *       / | \                          / | \
+ *     M   A   B                      X*   A   B      ← X* = 改名后的 M，位置没动
+ *    /|\                            / \
+ *  S1 X S2                        C1   C2
+ *    / \
+ *  C1   C2
+ *
+ * 步骤（和作者的图一一对应）：
+ *   ① 删掉 M 里除 X 以外的所有女儿 —— 也就是 X 的所有姊妹（连同它们的子树）
+ *   ② 把 X 的女儿们移到 M 底下、**紧跟 X 之后**（保序）
+ *   ③ M 改用 X 的名字（标签 + 下标/上标一起搬；X 的斜体、颜色等样式不搬）
+ *   ④ 把 X 从 M 的女儿里摘掉 —— 此时它已经没有女儿了
+ *
+ * ⚠️ 是**移动**不是拷贝：女儿们的节点对象原样换了个母亲，id 不变，
+ * 所以子树里的位移箭头不需要重映射。
+ *
+ * @returns {object|null} 改名后的母亲节点（调用方拿它当新的选中），不适用时返回 null
+ */
+export function forceCollapseLevel(root, n) {
+  if (!canForceCollapseLevel(root, n)) return null;
+
+  const mother = findParent(root, n);
+  const daughters = n.children.slice(); // 先留一份（保序）
+
+  // ① X 的姊妹全删
+  mother.children = mother.children.filter((c) => c === n);
+  // ② 女儿们挂在 X 之后
+  mother.children.push(...daughters);
+  // ③ 母亲改用 X 的名字
+  mother.label = n.label;
+  mother.sub = n.sub;
+  mother.sup = n.sup;
+  // ④ 摘掉 X
+  mother.children = mother.children.filter((c) => c !== n);
+  n.children = [];
+
+  return mother;
+}
+
 // ------------------------------------------------------------ 左移 / 右移
 
 /**

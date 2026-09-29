@@ -26,7 +26,7 @@ Download `Syntax Tree Editor Standalone.html` from [Releases](../../releases/lat
 - 两套记法（括号 / 规则），双向同步，随时切换 · Two notations (bracket / rule), bidirectionally synced
 - 三种垂直对齐，两种水平位置 · Three vertical alignments, two horizontal positions
 - 方向键选中：↑ 母亲节点、↓ 最左女儿节点、← → 左右姊妹节点 · Arrow-key selection
-- 结构操作：下移、上移、左移、右移、增删节点 · Structural edits: move down / up / left / right, add and delete
+- 结构操作：下移、上移、强制上移、左移、右移、增删节点 · Structural edits: move down / up / force up / left / right, add and delete
 - 位移箭头、斜体 / 粗体 / 删除线 / 九种颜色，多词叶子自动画成三角 · Movement arrows, italic / bold / strikethrough / nine colours, multi-word leaves drawn as triangles
 - 一键标色：全部标蓝、单词标红、节点标红、节点标蓝；节点斜体 / 节点删除线是开关 · One-click colouring (all blue, words red, node red, node blue) plus per-node italic and strikethrough toggles
 - 导出 SVG / 两倍 PNG，完整撤销重做 · Export SVG / 2x PNG, full undo and redo
@@ -128,9 +128,9 @@ npm.cmd test         四套测试 + 一致性自检 / four test suites plus the 
 
 | 测试套件 / Test suite | 负责 / Responsibility |
 | --- | --- |
-| `test/smoke.mjs`（111 项） | 纯逻辑：模型、两套记法、布局、箭头，不需要浏览器<br>Pure logic: model, both notations, layout, arrows; no browser needed |
+| `test/smoke.mjs`（117 项） | 纯逻辑：模型、两套记法、布局、箭头，不需要浏览器<br>Pure logic: model, both notations, layout, arrows; no browser needed |
 | `test/rules.test.mjs`（31 项） | 规则记法的解析、序列化、错误信息<br>Rule notation parsing, serialisation and errors |
-| `test/editor.test.mjs`（172 项） | 交互层，跑在最小 DOM 垫片上<br>Interaction layer, on a minimal DOM shim |
+| `test/editor.test.mjs`（176 项） | 交互层，跑在最小 DOM 垫片上<br>Interaction layer, on a minimal DOM shim |
 | `test/standalone.test.mjs`（13 项） | 单文件版：模块没有遗漏、内联后可以运行<br>Standalone file: nothing missing, still runnable after inlining |
 
 修改 `src/`、`index.html` 或 `style.css` 之后必须重新构建。`npm.cmd test` 会将磁盘上的构建产物与重新构建的结果逐字节比对，缺少重新构建将直接报错。

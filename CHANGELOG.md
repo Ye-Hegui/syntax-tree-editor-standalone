@@ -1,7 +1,29 @@
 # 更新日志 / Changelog
 
-版本号采用语义化版本。`v1.2.1`、`v1.2.2`、`v1.2.3`、`v1.2.4` 都是**内部开发号，没有对外发布**；对外发布的最新版本仍是 `v1.2.0`。
-Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3` and `v1.2.4` are all **internal development numbers and have not been released**; the latest published version is still `v1.2.0`.
+版本号采用语义化版本。`v1.2.1`、`v1.2.2`、`v1.2.3`、`v1.2.4`、`v1.2.5` 都是**内部开发号，没有对外发布**；对外发布的最新版本仍是 `v1.2.0`。
+Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3`, `v1.2.4` and `v1.2.5` are all **internal development numbers and have not been released**; the latest published version is still `v1.2.0`.
+
+## v1.2.5（内部开发版，未发布 / internal, unreleased）
+
+这个版本**只有一件事：新增「强制上移」**。
+
+### 新增 / Added
+
+- **「强制上移」按钮**（在「上移」右边，快捷键 `Alt`+`Shift`+`Tab`）：不管「上移」那些前提，
+  直接把选中节点这一层投射层抽掉。它一共做四件事：① 删掉选中节点的所有姊妹节点及其子树；
+  ② 把选中节点的女儿节点升到母亲节点底下（顺序不变）；③ 母亲节点改用选中节点的名字
+  （标签与下标、上标一起搬，字体样式不搬）；④ 删掉选中节点自己。操作结束后**选中的是改名后的母亲节点**。
+  根节点不能强制上移（没有母亲节点可以改名）；选中的节点没有女儿节点也可以用，结果是一格同名空范畴 ·
+  **A “Force up” button** (right of “Move up”, `Alt`+`Shift`+`Tab`): it drops the selected node's
+  projection level without any of the conditions “Move up” requires. Four steps: ① delete every sister node
+  of the selected node together with its subtree; ② lift the selected node's daughter nodes under the mother
+  node, order unchanged; ③ rename the mother node after the selected node (label, subscript and superscript
+  move too; font styles do not); ④ delete the selected node itself. Afterwards the **renamed mother node** is
+  selected. The root cannot be forced up (no mother node to rename), and a selected node without daughter
+  nodes is fine — the result is an empty category carrying its name
+- 教程正文中英两版都补了「强制上移」一节（排在「上移」之后），并新增示例图 `example/forceup.svg` ·
+  Both tutorial versions gained a “Force up” section right after “Move up”, with a new example image
+  `example/forceup.svg`
 
 ## v1.2.4（内部开发版，未发布 / internal, unreleased）
 

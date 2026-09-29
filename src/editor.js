@@ -21,6 +21,8 @@ import {
   addPrimeLevel,
   canCollapsePrimeLevel,
   collapsePrimeLevel,
+  canForceCollapseLevel,
+  forceCollapseLevel,
   ESCAPE_LABEL,
   isEscapeLabel,
 } from "./model.js";
@@ -526,6 +528,11 @@ export class SyntaxTreeEditor {
       this.collapseLevel(),
     ), "title", "tip.level.remove");
     this.#term(this.btnCollapseLevel.labelEl, "textContent", "btn.level.remove");
+    // 强制上移放在「上移」右边：也是"减一层"，但不看前提，代价是删掉所有姊妹节点
+    this.btnForceCollapseLevel = this.#term(button(this.#t("btn.level.force"), "Alt+Shift+Tab", this.#t("tip.level.force"), () =>
+      this.forceCollapseLevel(),
+    ), "title", "tip.level.force");
+    this.#term(this.btnForceCollapseLevel.labelEl, "textContent", "btn.level.force");
     toolbar.appendChild(mk("span", "ste-sep"));
     // 左移在左、右移在右，和方向键一致
     this.btnMoveLeft = this.#term(button(
@@ -803,8 +810,11 @@ export class SyntaxTreeEditor {
       } else if (ev.key === "Tab") {
         ev.preventDefault();
         const shift = ev.shiftKey;
+        const alt = ev.altKey;
         this.#commitEdit(true);
-        shift ? this.collapseLevel() : this.addLevel();
+        if (alt) this.forceCollapseLevel();
+        else if (shift) this.collapseLevel();
+        else this.addLevel();
       }
     });
     // 鼠标点到别处而失焦：照常提交，但不要抢回焦点（用户是主动点走的）
@@ -1125,6 +1135,7 @@ export class SyntaxTreeEditor {
         this.btnMoveRight,
         this.btnAddLevel,
         this.btnCollapseLevel,
+        this.btnForceCollapseLevel,
         this.btnAllBlue,
         this.btnWordsRed,
         this.btnSelectedRed,
@@ -1166,6 +1177,7 @@ export class SyntaxTreeEditor {
     this.btnMoveLeft.disabled = !this.#canMoveLeft();
     this.btnAddLevel.disabled = !canAddPrimeLevel(this.root, n);
     this.btnCollapseLevel.disabled = !canCollapsePrimeLevel(this.root, n);
+    this.btnForceCollapseLevel.disabled = !canForceCollapseLevel(this.root, n);
     this.btnUndo.disabled = this.undoStack.length === 0;
     this.btnRedo.disabled = this.redoStack.length === 0;
 
@@ -1362,6 +1374,23 @@ export class SyntaxTreeEditor {
     this.#mutate(() => {
       const next = collapsePrimeLevel(this.root, this.selected);
       if (next) this.root = next; // 母亲节点就是根时，自己变成新的根
+    });
+  }
+
+  /**
+   * 强制上移（Alt+Shift+Tab）：不看「上移」那些严格前提，把选中节点这一格整个抽掉 ——
+   * 母亲节点改用它的名字，它的女儿节点升到母亲底下，它和它所有的姊妹节点一起删掉。
+   * 代价写在按钮上：姊妹节点连同子树全没了，所以不是"能不能"，是"要不要"。
+   * 例（对 X 强制上移，M 是母亲，A/B 是 M 的姊妹）：
+   *   [G [M [S1] [X [C1] [C2]] [S2]] [A] [B]]  ->  [G [X [C1] [C2]] [A] [B]]
+   * 结束后选中改名后的母亲节点。
+   */
+  forceCollapseLevel() {
+    if (!this.root || !this.selected) return;
+    if (!canForceCollapseLevel(this.root, this.selected)) return;
+    this.#mutate(() => {
+      const next = forceCollapseLevel(this.root, this.selected);
+      if (next) this.selected = next; // 改名后的母亲节点接管"选中"
     });
   }
 
@@ -1676,9 +1705,11 @@ export class SyntaxTreeEditor {
         ev.shiftKey ? this.addSibling() : this.addChild();
         return;
       case "Tab":
-        // Tab 是"下移"：加一层投射；Shift+Tab 是它的逆
+        // Tab 是"下移"：加一层投射；Shift+Tab 是它的逆；Alt+Shift+Tab 是"强制上移"（删姊妹节点）
         ev.preventDefault();
-        ev.shiftKey ? this.collapseLevel() : this.addLevel();
+        if (ev.altKey) this.forceCollapseLevel();
+        else if (ev.shiftKey) this.collapseLevel();
+        else this.addLevel();
         return;
       case "F2":
         ev.preventDefault();

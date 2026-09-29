@@ -26,6 +26,9 @@ const CASES = [
   { name: "right-x", value: "[XP [Z word1] [X' [Y word3] [X word2]]]" },
   // 2.5 样式声明（斜体 / 删除线 / 颜色）
   { name: "style", value: "[vP [v [V know]] [pro [N him]] [NP syntax]]\nItalic(1, 2)\nStrike(3)\nRed(4)" },
+  // 4 强制上移：对 base 里的 X' 强制上移之后（姊妹节点 Z 被删掉，XP 改名成 X'）。
+  // 放在最后，免得影响前面那些例子的 id（图里的 data-id 会进 diff）
+  { name: "forceup", value: "[X' [X word2] [Y word3]]" },
 ];
 
 installDom();

@@ -97,6 +97,7 @@ export const STRINGS = {
     "btn.sibling": "＋姊妹节点",
     "btn.level.add": "下移",
     "btn.level.remove": "上移",
+    "btn.level.force": "强制上移",
     "btn.move.left": "左移",
     "btn.move.right": "右移",
     "btn.remove": "删除",
@@ -110,6 +111,8 @@ export const STRINGS = {
     "tip.sibling": "增加一个姊妹节点",
     "tip.level.add": "增加一层投射层，选中的节点连同它支配的整棵子树一起下沉一层",
     "tip.level.remove": "去掉紧挨着自己上面的那一层投射层",
+    "tip.level.force":
+      "强制上移：删掉它的所有姊妹节点，把它的女儿节点升到母亲节点底下，母亲节点改用它的名字，再删掉它自己",
     "tip.move.left": "如果有左姊妹节点就和它交换位置；如果自己是最左边的女儿节点，就搬到母亲节点的左姊妹节点底下",
     "tip.move.right": "如果有右姊妹节点就和它交换位置；如果自己是最右边的女儿节点，就搬到母亲节点的右姊妹节点底下",
     "tip.remove": "删除该节点及其整棵子树",
@@ -163,6 +166,7 @@ export const STRINGS = {
     "hint.tips": "复制粘贴源代码用括号记法，画箭头建议用规则记法。 ",
     "hint.keys":
       "Enter 加女儿节点 · Shift+Enter 加姊妹节点 · Tab 下移(加一层投射) · Shift+Tab 上移 · " +
+      "Alt+Shift+Tab 强制上移 · " +
       "↑ 母亲节点 · ↓ 第一个女儿节点 · ←→ 姊妹节点，到边了跨到堂表姊妹节点 · " +
       "F2 或双击改名 · Alt+←/→ 左移右移",
 
@@ -211,6 +215,7 @@ export const STRINGS = {
     "btn.sibling": "＋ Sister",
     "btn.level.add": "Move down",
     "btn.level.remove": "Move up",
+    "btn.level.force": "Force up",
     "btn.move.left": "Move left",
     "btn.move.right": "Move right",
     "btn.remove": "Delete",
@@ -224,6 +229,8 @@ export const STRINGS = {
     "tip.sibling": "Add a sister node",
     "tip.level.add": "Add a projection level: the selected node and its whole subtree move down one level",
     "tip.level.remove": "Remove the projection level directly above this node",
+    "tip.level.force":
+      "Force up: delete all its sister nodes, lift its daughter nodes under the mother node, rename the mother after it, then delete it",
     "tip.move.left": "Swap with the left sister, or move under the mother's left sister if already leftmost",
     "tip.move.right": "Swap with the right sister, or move under the mother's right sister if already rightmost",
     "tip.remove": "Delete this node and its whole subtree",
@@ -277,6 +284,7 @@ export const STRINGS = {
     "hint.tips": "Use bracket notation for pasting source; rule notation for drawing arrows. ",
     "hint.keys":
       "Enter adds a daughter · Shift+Enter adds a sister · Tab adds a level · Shift+Tab removes one · " +
+      "Alt+Shift+Tab forces one up · " +
       "↑ mother · ↓ leftmost daughter · ←→ sister nodes, crossing to cousins at the edges · " +
       "F2 or double-click renames · Alt+←/→ move left/right",
 
