@@ -265,6 +265,8 @@ cmd /c "npm run build"   ← 重新生成单文件版
 5. 到 GitHub 的 Releases 新建 Release，tag 填 `vX.Y.Z`，把 `Syntax Tree Editor Standalone.html` 作为附件上传
 
 > 只改版本号、**不建 tag、不发 Release** 的版本是内部开发号（`CHANGELOG.md` 里要写明"未发布"）。
+> **测试版**用语义化版本的预发布号（`1.3.0-beta.1`），tag 写 `v1.3.0-beta.1`；
+> 建 Release 时勾上 **pre-release**（别勾 latest，否则会顶掉正式版）。
 > 推送前记得先开代理，Git 配了走 Clash 的本地端口。
 
 ## 六、最近实现的方法、踩过的坑、以及当前的问题
@@ -317,8 +319,9 @@ cmd /c "npm run build"   ← 重新生成单文件版
 3. **内部特性（转义节点 / `%Empty`）的规格不在本仓库** —— 作者要求不公开，规格与来龙去脉记在
    工作区 `HANDOVER.md` 第九部分 ⑤。上面 6.1 第 1 条讲的是它的**渲染手法**（不含语法）；
    本文件只留这个名字，不给语法，README / 教程 / CHANGELOG 里一个字都没有。
-4. **版本号**：`package.json` 与页脚是 `1.2.5`（内部开发号，未发布）；对外最新仍是 `1.2.0`。
-   三处一致性（`package.json` / 页脚 / `CHANGELOG` 顶部）由自检强制。
+4. **版本号**：`package.json` 与页脚是 `1.3.0-beta.1`（**公开测试版**，已提交、等推送）；
+   对外正式发布过的最新版本仍是 `1.2.0`。三处一致性（`package.json` / 页脚 / `CHANGELOG` 顶部）
+   由自检强制，而且自检的正则**认预发布号**（`1.3.0-beta.1` 这种，三处必须一模一样）。
 
 ### 不要做的事
 

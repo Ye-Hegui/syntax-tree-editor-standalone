@@ -1,7 +1,98 @@
 # 更新日志 / Changelog
 
-版本号采用语义化版本。`v1.2.1`、`v1.2.2`、`v1.2.3`、`v1.2.4`、`v1.2.5` 都是**内部开发号，没有对外发布**；对外发布的最新版本仍是 `v1.2.0`。
-Version numbers follow semantic versioning. `v1.2.1`, `v1.2.2`, `v1.2.3`, `v1.2.4` and `v1.2.5` are all **internal development numbers and have not been released**; the latest published version is still `v1.2.0`.
+版本号采用语义化版本。`v1.2.1` ～ `v1.2.5` 是内部开发号，内容全部包含在 `v1.3.0-beta.1` 里；对外正式发布过的最新版本仍是 `v1.2.0`。
+Version numbers follow semantic versioning. `v1.2.1` – `v1.2.5` were internal builds and are all contained in `v1.3.0-beta.1`; the latest officially released version is still `v1.2.0`.
+
+## v1.3.0-beta.1（2026-09-29 公开测试版 / public beta）
+
+这一版把 `v1.2.1` ～ `v1.2.5` 五个内部开发号的内容合起来发布，作为 1.3 的**公开测试版**：
+界面与教程双语、颜色声明多了 `all` / `words` 与一条隐式基线、下移/上移重写并新增「强制上移」。
+因为是测试版，欢迎把用起来别扭的地方提出来（见文末「已知限制」）。
+This release bundles the five internal builds `v1.2.1` – `v1.2.5` as the **public beta of 1.3**:
+a bilingual UI and tutorial, the `all` / `words` colour keywords with an implicit baseline, rewritten
+move down / up, and the new “Force up”. As a beta, feedback on anything awkward is welcome
+(see “Known limitations” at the end).
+
+### 新增 / Added
+
+- **界面语言切换（中文 / English）**：页头右上角一键切换，编辑器也支持 `setLanguage()` 与 `lang` 选项；
+  **教程正文也有英文版**，切换语言时整页一起变 ·
+  **UI language switch (中文 / English)** in the header, plus `setLanguage()` and the `lang` option;
+  the **tutorial body has an English version too**, and the whole page switches together
+- **「标色」一行**：全部标蓝 / 单词标红 / 节点标红 / 节点标蓝，以及节点斜体、节点删除线两个开关 ·
+  A **colour row**: all blue / words red / node red / node blue, plus per-node italic and
+  strikethrough toggles
+- **颜色声明的两种新写法**：括号里可以写 `all`（所有节点）与 `words`（所有「词」），例如 `Blue(words)`；
+  声明词一律大小写不敏感（`ITALIC(1)` 也认）；新增删除线声明 `Strike(N)` ·
+  **Two new forms in colour declarations**: the keywords `all` (every node) and `words` (every word),
+  e.g. `Blue(words)`; declaration words are now case-insensitive (`ITALIC(1)` works too); plus the
+  strikethrough declaration `Strike(N)`
+- **「强制上移」**（工具栏「上移」右侧，`Alt`+`Shift`+`↑`）：不看「上移」那些前提，
+  直接抽掉选中节点这一层 —— 它的姊妹节点连同子树一起删掉，女儿节点升到母亲节点底下，
+  母亲节点改用它的名字，最后删掉它自己 ·
+  **“Force up”** (right of “Move up”, `Alt`+`Shift`+`↑`): drops the selected node's projection level
+  without any of the preconditions “Move up” needs — its sister nodes and their subtrees are deleted,
+  its daughter nodes are lifted under the mother node, the mother is renamed after it, and it is deleted
+- **给 AI / 脚本的入口**：`rulesToSvg(text)` 函数与命令行 `node tools/render-rules.mjs 树.txt 树.svg`
+  （文本进、SVG 直接出来），说明见仓库里的 `AI-INTRO.md` ·
+  **An entry point for AI and scripts**: the `rulesToSvg(text)` function and the CLI
+  `node tools/render-rules.mjs tree.txt tree.svg`, documented in `AI-INTRO.md`
+
+### 修复 / Fixed
+
+- **「全部标蓝」点了之后词还是红的**：旧语义是"标蓝 = 删掉颜色声明"，而删掉之后词回到默认画法的红，
+  所以那个按钮对词等于没作用。现在"标蓝"是**写上**蓝色声明（`Blue(words)` 正好把词也刷蓝）·
+  **“All blue” left the words red**: it used to delete colour declarations, which sent words back to the
+  default red and made the button a no-op for them; both blue buttons now *write* a declaration
+- **连续按 <kbd>Tab</kbd> 时选中框停在原地**：现在它跟着选中节点的副本走，每次往下走一层 ·
+  **The selection box stayed put when Tab was pressed repeatedly**; it now follows the copy of the
+  selected node, one level down each time
+- **「称谓」切换漏了三处**：水平位置按钮、空白画布提示、垂直对齐的说明文字现在都会跟着变 ·
+  **Term switching missed three places** (the horizontal-position button, the blank-canvas hint and the
+  vertical-alignment tooltip); they follow the chosen term set now
+- **构建脚本会把整页 HTML 注入产物**：它用字符串替换拼装单文件版，`String.replace` 的 `$` 记号
+  会把页面内容当成替换模版，产物变成语法错误 ·
+  **The build script used string replacement**, and `String.replace`'s `$` patterns injected the whole
+  page into the script, turning the build output into a syntax error
+
+### 相对 v1.2.0 的行为变化（升级前请看这一节） / Behaviour changes since v1.2.0
+
+- **括号记法的位移箭头 `->N` 换了口径**：`N` 从「节点编号」改成「**词序号**」（从左到右第几个词，
+  与 jsSyntaxTree 的 column number 一致）。好处是能直接粘贴 jsSyntaxTree 的代码；
+  代价是**旧文本里的箭头数字要重写**，否则会指到别的地方。规则记法的 `-->N` 仍是节点编号 ·
+  **Bracket-notation arrows `->N` changed meaning**: `N` is now a **word ordinal** (the n-th word from
+  the left, matching jsSyntaxTree's column number) instead of a node number, so jsSyntaxTree code can be
+  pasted directly — but **arrow numbers in old files must be rewritten**. Rule notation keeps node numbers
+- **「下移」语义重写**：改成给投射链**顶端**套一层它自己的副本，整棵子树原样下沉一层，
+  链顶其余的女儿节点不再被提到新层；「上移」按同一套语义调整 ·
+  **“Move down” rewritten**: it now wraps the top of the projection chain in a copy of itself, so the
+  whole subtree sinks one level and the other daughter nodes of the chain top stay where they are;
+  “Move up” follows the same semantics
+- **「标蓝 / 标红」不再是"删声明"**：以前"标蓝"会把颜色声明删掉，而删掉之后词又回到默认的红，
+  于是那个按钮对词等于没作用。现在它们是**写上**声明；同时文本层多了一条**隐式基线**
+  （`Blue(all)` + `Red(words)`，永远不出现在文本里，你自己写的声明排在它后面）·
+  **The blue / red buttons no longer delete declarations**: “all blue” used to remove colour
+  declarations, which sent words back to the default red and made the button a no-op for them. They now
+  *write* declarations, and the text layer gained an **implicit baseline** (`Blue(all)` then
+  `Red(words)`, never shown in the text, with your own declarations after it)
+- **九种以外的颜色名现在报解析错误**（例如 `Chartreuse(1)`），以前被静默忽略 ·
+  **Colour names outside the nine are now a parse error** (e.g. `Chartreuse(1)`); they used to be
+  silently ignored
+
+### 已知限制 / Known limitations
+
+- 只能导出 SVG 与两倍分辨率的 PNG，**没有 PDF / LaTeX 导出** ·
+  Export is SVG and 2× PNG only; **no PDF or LaTeX**
+- 图上不能直接画箭头，要在代码面板里写声明；括号记法的箭头**两端都必须是叶子节点** ·
+  Arrows cannot be drawn on the canvas — they are written in the code panel, and in bracket notation
+  **both ends must be leaves**
+- 不能拖拽节点；标签里不能包含双引号（记法没有转义写法）；规则记法至少要有一条边 ·
+  No drag and drop; labels cannot contain double quotes (the notation has no escapes); rule notation
+  needs at least one edge
+- **英文界面与英文教程是这一版新加的**，个别措辞可能还要打磨，欢迎提 ·
+  **The English UI and tutorial are new in this release**; some wording may still need polish
+- 这是**测试版**：正式版 1.3 之前接口与文案仍可能微调 ·
+  This is a **beta**: APIs and wording may still change before the final 1.3
 
 ## v1.2.5（内部开发版，未发布 / internal, unreleased）
 

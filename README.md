@@ -6,6 +6,13 @@ A simple and lightweight syntax tree editor. Diagram and code stay in sync — j
 > 本项目由 deepseek 辅助开发。
 > This project is developed with the assistance of DeepSeek.
 
+> **当前版本：`v1.3.0-beta.1`（公开测试版）** —— 界面与教程中英双语、颜色声明支持 `all` / `words`、
+> 下移 / 上移重写并新增「强制上移」。相对 `v1.2.0` 有几处**行为变化**（最要紧的是括号记法的箭头
+> `->N` 改成了词序号），升级前请看 [CHANGELOG](CHANGELOG.md) 顶部那一节。
+> **Current version: `v1.3.0-beta.1` (public beta)** — bilingual UI and tutorial, `all` / `words` colour
+> keywords, rewritten move down / up and the new “Force up”. A few **behaviour changes** since `v1.2.0`
+> are listed at the top of the [CHANGELOG](CHANGELOG.md); please read it before upgrading.
+
 ![编辑器截图](screenshots/overview.png)
 
 ## 这是什么 / What this is
@@ -13,8 +20,8 @@ A simple and lightweight syntax tree editor. Diagram and code stay in sync — j
 在图上点击、改名、增删节点会同步修改代码；编辑代码，图也会立刻随之修改。
 Clicking, renaming, adding or deleting nodes on the diagram updates the code accordingly; editing the code updates the diagram immediately.
 
-整个编辑器是**一个 HTML 文件**：样式、脚本、示例图全部内联。不需要联网、不需要安装、不需要起服务器。底层是 8 个原生 ES Module，零第三方依赖。
-The whole editor is **a single HTML file**: styles, scripts and example images are all inlined. No network, no installation, no server needed. Underneath are 8 plain ES Modules with zero third-party dependencies.
+整个编辑器是**一个 HTML 文件**：样式、脚本、示例图全部内联。不需要联网、不需要安装、不需要起服务器。底层是 10 个原生 ES Module，零第三方依赖。
+The whole editor is **a single HTML file**: styles, scripts and example images are all inlined. No network, no installation, no server needed. Underneath are 10 plain ES Modules with zero third-party dependencies.
 
 ## 怎么用 / How to use
 

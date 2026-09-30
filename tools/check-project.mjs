@@ -136,10 +136,12 @@ section("版本号三处一致（package.json / 页脚 / CHANGELOG 顶部）");
 
 {
   // 发版流程要求这三处同步，但以前全靠人记；忘一处读者就会看到两个版本号。
+  // 版本号允许带预发布号（`1.3.0-beta.1`），三处必须**一模一样**。
   const pkg = JSON.parse(read("package.json"));
   const want = String(pkg.version);
-  const footer = /v(\d+\.\d+\.\d+)\s*·/.exec(INDEX);
-  const changelog = /^##\s+v(\d+\.\d+\.\d+)/m.exec(read("CHANGELOG.md"));
+  const VER = "v(\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?)";
+  const footer = new RegExp(VER + "\\s*·").exec(INDEX);
+  const changelog = new RegExp("^##\\s+" + VER, "m").exec(read("CHANGELOG.md"));
   const got = [
     ["package.json", want],
     ["index.html 页脚", footer ? footer[1] : "(找不到 vX.Y.Z)"],
