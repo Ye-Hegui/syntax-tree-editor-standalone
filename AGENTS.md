@@ -267,7 +267,8 @@ cmd /c "npm run build"   ← 重新生成单文件版
 > 只改版本号、**不建 tag、不发 Release** 的版本是内部开发号（`CHANGELOG.md` 里要写明"未发布"）。
 > **测试版**用语义化版本的预发布号（`1.3.0-beta.1`），tag 写 `v1.3.0-beta.1`；
 > 建 Release 时勾上 **pre-release**（别勾 latest，否则会顶掉正式版）。
-> 推送前记得先开代理，Git 配了走 Clash 的本地端口。
+> **推送不用等代理**（作者 2026-09-29：「我现在不用开 clash」）—— 直接 `git push`，
+> 报 `Connection was reset` / `Empty reply from server` 之类再去找作者开 Clash。
 
 ## 六、最近实现的方法、踩过的坑、以及当前的问题
 
