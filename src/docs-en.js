@@ -436,15 +436,28 @@ Red(4)</pre>
 <table>
   <tbody>
     <tr><td><code>[S [NP Dogs][VP barks]]</code></td><td>Square brackets mark nodes; a bare label is a leaf node.</td></tr>
-    <tr><td><code>[N_s Dogs]</code></td><td>Whatever follows <code>_</code> is written as a subscript.</td></tr>
-    <tr><td><code>[N^s Cats]</code></td><td>Whatever follows <code>^</code> is written as a superscript.</td></tr>
-    <tr><td><code>["Main clause" [S][V][O]]</code></td><td>When a label contains spaces, quotes, <code>_</code> or <code>^</code>, wrap the whole label in double quotes.</td></tr>
+    <tr><td><code>[N&lt;sub&gt;i&lt;/sub&gt; Dogs]</code></td><td>Whatever is inside <code>&lt;sub&gt;…&lt;/sub&gt;</code> is written as a subscript; the content may contain spaces.</td></tr>
+    <tr><td><code>[N&lt;sup&gt;2&lt;/sup&gt; Cats]</code></td><td>Whatever is inside <code>&lt;sup&gt;…&lt;/sup&gt;</code> is written as a superscript.</td></tr>
+    <tr><td><code>[N&lt;sub&gt;i&lt;/sub&gt;&lt;sup&gt;2&lt;/sup&gt; Cats]</code></td><td>A node can carry a subscript and a superscript at the same time; either order is accepted, and exports put the subscript first.</td></tr>
+    <tr><td><code>[N_s Dogs]</code> / <code>[N^s Cats]</code></td><td>Short forms: <code>_</code> takes a subscript, <code>^</code> a superscript (one word only — use the forms above when the content has spaces). Still accepted, but exports always write <code>&lt;sub&gt;</code> / <code>&lt;sup&gt;</code>.</td></tr>
+    <tr><td><code>["Main clause" [S][V][O]]</code></td><td>When a label contains spaces, quotes, <code>_</code>, <code>^</code> or a tag such as <code>&lt;sub&gt;</code>, wrap the whole label in double quotes.</td></tr>
     <tr><td><code>[S NP VP]</code></td><td>Adjacent bare labels merge into <b>one</b> multi-word leaf node, which the editor draws as a triangle to stand for elided structure.</td></tr>
     <tr><td><code>[S [NP] [VP]]</code></td><td>This is two leaf nodes with one word each. It looks identical to the row above, but means something different.</td></tr>
-    <tr><td><code>[A [B C][D E][F G -&gt;6]]</code></td><td>A movement arrow; the number is a node number. Less readable than rule notation.</td></tr>
+    <tr><td><code>[A [B C][D E][F G -&gt;6]]</code></td><td>A movement arrow; the number is a word ordinal. Less readable than rule notation.</td></tr>
     <tr><td><code>[X'' [X word]]</code></td><td>An empty node in brackets means “a category that is not expanded”. It is <b>not</b> a word, and <b>Words red</b> will not colour it.</td></tr>
   </tbody>
 </table>
+<p>
+  Subscripts and superscripts are drawn one size smaller: a subscript sits below and to the right of the
+  label, a superscript above and to the right. Distinguishing nodes by a subscript is a common habit, so
+  here is a tree whose <code>N</code> carries both <code>i</code> and <code>2</code>:
+</p>
+<pre class="code-block">[NP [D the] [N&lt;sub&gt;i&lt;/sub&gt;&lt;sup&gt;2&lt;/sup&gt; cat]]</pre>
+<img class="doc-shot" src="example/subsup.svg" alt="N carries subscript i and superscript 2; both are drawn" />
+<p>
+  The rename box understands both markers as well: select a node, press <kbd>F2</kbd> and type
+  <code>N&lt;sub&gt;i&lt;/sub&gt;</code> to turn it into a subscript.
+</p>
 
 <h4 id="doc-rules">3.2 Rule notation</h4>
 <p>One “mother node → daughter node” edge per line; good for checking edge by edge. Take this tree:</p>
@@ -464,7 +477,7 @@ Red(4)</pre>
     <tr><td><b>Other nodes</b></td><td>A node's number is the <b>line number</b> of the line where it first appears to the right of an arrow.</td></tr>
     <tr><td><b>Line numbers</b></td><td>Shown in the gutter to the left of the code box, not in the text, so copying a selection never brings them along. The gutter numbers every line, including blank lines and arrow lines.</td></tr>
     <tr><td><b>Reference order</b></td><td>A mother node must have appeared earlier, so its number is always smaller than the current line number. The lines of one mother need not be adjacent.</td></tr>
-    <tr><td><b>Labels</b></td><td>Wrap in double quotes when a label contains spaces, quotes, <code>_</code> or <code>^</code>. Subscripts and superscripts follow the label, e.g. <code>NP_1</code>, <code>N^s</code>, <code>"the mailman"_1</code>.</td></tr>
+    <tr><td><b>Labels</b></td><td>Wrap in double quotes when a label contains spaces, quotes, <code>_</code>, <code>^</code> or a tag such as <code>&lt;sub&gt;</code>. Subscripts and superscripts follow the label, exactly as in bracket notation: <code>NP&lt;sub&gt;1&lt;/sub&gt;</code>, <code>N&lt;sup&gt;s&lt;/sup&gt;</code>, <code>N&lt;sub&gt;the mailman&lt;/sub&gt;</code> (the short forms <code>NP_1</code> and <code>N^s</code> work too).</td></tr>
     <tr><td><b>Wrong numbers</b></td><td>Inserting or deleting a line shifts the references below it; the editor repairs the leading numbers for you, so there is no need to count.</td></tr>
   </tbody>
 </table>

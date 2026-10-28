@@ -54,9 +54,115 @@ const QUOTED = "QUOTED";
 const NUMBER = "NUMBER";
 const SUB = "SUB";
 const SUP = "SUP";
+const SUB_TEXT = "SUB_TEXT"; // <sub>…</sub> 里的内容
+const SUP_TEXT = "SUP_TEXT"; // <sup>…</sup> 里的内容
 const MOVEMENT = "MOVEMENT";
 
 const VALUE_TOKENS = new Set([STRING, QUOTED, NUMBER]);
+
+// ---------------------------------------------------------------- 下标 / 上标
+
+/**
+ * 下标的两种写法：
+ *   N_s                      `_` 后面跟一个 token（老写法，留着兼容）
+ *   N<sub>s</sub>            显式的开始 / 结束记号 —— 内容可以含空格、`_`、`^`、逗号……
+ *
+ * 上标同理（`^s` / `N<sup>s</sup>`）。一个节点可以**同时**有下标和上标，两种写法可以混用，
+ * 顺序随意（`N<sub>i</sub>^2` 与 `N^2<sub>i</sub>` 等价）。每种最多写一次。
+ *
+ * ⚠️ 记号一律**小写**、必须成对；`"%Empty"` 那种引号里的一切都是普通文字，
+ * 所以 `"a<sub>b</sub>"` 是一个标签为 `a<sub>b</sub>` 的节点。
+ */
+export const SUB_OPEN = "<sub>";
+export const SUB_CLOSE = "</sub>";
+export const SUP_OPEN = "<sup>";
+export const SUP_CLOSE = "</sup>";
+
+const TAG_OPENERS = [
+  { open: SUB_OPEN, close: SUB_CLOSE, type: SUB_TEXT, sup: false },
+  { open: SUP_OPEN, close: SUP_CLOSE, type: SUP_TEXT, sup: true },
+];
+
+/** 标签文本里出现这些就算"像记号"，整体必须加引号，否则再解析回来会被当成下标 */
+const TAG_LIKE = new RegExp(
+  [SUB_OPEN, SUB_CLOSE, SUP_OPEN, SUP_CLOSE].map((s) => s.replace(/[/]/g, "\\/")).join("|"),
+);
+
+/** 把下标/上标写成规范的记号形式（只写有内容的那个/那些） */
+export function subSupText(n) {
+  let out = "";
+  if (n.sub != null && n.sub !== "") out += SUB_OPEN + n.sub + SUB_CLOSE;
+  if (n.sup != null && n.sup !== "") out += SUP_OPEN + n.sup + SUP_CLOSE;
+  return out;
+}
+
+/**
+ * 把 `X<sub>i</sub><sup>2</sup>` 这种"标签+下标/上标"的文字拆成 { label, sub, sup }。
+ *
+ * 用在改名框与 `setLabel()`（图形界面要能加下标）。和记法里的解析不同，这里
+ * **宽松**：写不成记号的部分就当普通标签文字（举例：正打到一半的 `X<sub>` 先当标签），
+ * 这样边打字边重绘不会报错、也不会把已输入的内容吞掉。
+ */
+export function parseLabelSpec(text) {
+  const raw = String(text ?? "");
+  const out = { label: "", sub: null, sup: null };
+  let i = 0;
+  let label = "";
+  while (i < raw.length) {
+    // 引号里的一切都算标签文字（和记法里的引号规则一致）
+    if (raw[i] === '"') {
+      const end = raw.indexOf('"', i + 1);
+      if (end < 0) {
+        label += raw.slice(i + 1);
+        i = raw.length;
+        break;
+      }
+      label += raw.slice(i + 1, end);
+      i = end + 1;
+      continue;
+    }
+    if (raw[i] === "_" || raw[i] === "^") {
+      // 老写法：_x / ^x（读到空白或下一个记号为止，和规则记法一致）
+      const isSup = raw[i] === "^";
+      let j = i + 1;
+      const startsTag = (at) => TAG_OPENERS.some((t) => raw.startsWith(t.open, at));
+      while (j < raw.length && !/\s/.test(raw[j]) && raw[j] !== "_" && raw[j] !== "^" && !startsTag(j)) j++;
+      const v = raw.slice(i + 1, j).trim();
+      if (v !== "") {
+        if (isSup) out.sup = v;
+        else out.sub = v;
+        i = j;
+        continue;
+      }
+    }
+    const tag = TAG_OPENERS.find((t) => raw.startsWith(t.open, i));
+    if (tag) {
+      const end = raw.indexOf(tag.close, i + tag.open.length);
+      if (end < 0) {
+        // 还没写完（正在打字）：先原样当标签文字
+        label += raw.slice(i);
+        i = raw.length;
+        break;
+      }
+      const v = raw.slice(i + tag.open.length, end).trim();
+      if (tag.sup) out.sup = v === "" ? null : v;
+      else out.sub = v === "" ? null : v;
+      i = end + tag.close.length;
+      continue;
+    }
+    label += raw[i];
+    i++;
+  }
+  out.label = label;
+  return out;
+}
+
+/** { label, sub, sup } -> 规范文字（标签该加引号就加，下标/上标一律写成记号形式） */
+export function labelSpecText(spec, mode = "node") {
+  const label = String(spec.label ?? "");
+  return quote(label, mode, isEscapeLabel(label) && !spec.escape) + subSupText(spec);
+}
+
 
 // ---------------------------------------------------------------- 词法分析
 
@@ -98,6 +204,20 @@ function tokenize(input) {
       i = close + 1;
       continue;
     }
+    // <sub>…</sub> / <sup>…</sup>：整个连内容一起读成一个 token（内容里可以有空格）
+    if (ch === "<") {
+      const tag = TAG_OPENERS.find((t) => input.startsWith(t.open, i));
+      if (tag) {
+        const bodyStart = i + tag.open.length;
+        const end = input.indexOf(tag.close, bodyStart);
+        if (end < 0) throw new NotationError(`"${tag.open}" 没有闭合（要写成 ${tag.open}…${tag.close}）`, i);
+        tokens.push({ type: tag.type, value: input.slice(bodyStart, end), start: i, end: end + tag.close.length });
+        i = end + tag.close.length;
+        continue;
+      }
+      const stray = TAG_OPENERS.find((t) => input.startsWith(t.close, i));
+      if (stray) throw new NotationError(`多余的 "${stray.close}"（前面没有 ${stray.open}）`, i);
+    }
     // 位移箭头默认写成 ->。`-->` `<-` `<>` 是旧写法，保留可读，一律按 -> 处理
     if (input.startsWith("-->", i)) {
       tokens.push({ type: MOVEMENT, start: i, end: i + 3 });
@@ -127,9 +247,13 @@ function tokenize(input) {
       continue;
     }
 
-    // 裸字符串：直到空白或控制字符为止
+    // 裸字符串：直到空白、控制字符或下标/上标记号为止
     let j = i;
-    while (j < input.length && !WS.has(input[j]) && !CTRL.has(input[j])) j++;
+    while (j < input.length && !WS.has(input[j]) && !CTRL.has(input[j])) {
+      if (input[j] === "<" && TAG_OPENERS.some((t) => input.startsWith(t.open, j) || input.startsWith(t.close, j)))
+        break;
+      j++;
+    }
     tokens.push({ type: STRING, value: input.slice(i, j), start: i, end: j });
     i = j;
   }
@@ -139,14 +263,43 @@ function tokenize(input) {
 
 // ---------------------------------------------------------------- 语法分析
 
+/**
+ * 读标签后面的一串下标/上标：`_x` / `^x` / `<sub>…</sub>` / `<sup>…</sup>`，
+ * 可以混用、顺序随意，每种最多一次。没有就返回 null。
+ */
 function parseSubSup(tokens, i) {
-  const t = tokens[i];
-  if (!t || (t.type !== SUB && t.type !== SUP)) return null;
-  const isSup = t.type === SUP;
-  const v = tokens[i + 1];
-  if (!v || !VALUE_TOKENS.has(v.type))
-    throw new NotationError(`"${isSup ? "^" : "_"}" 之后需要下标或上标内容`, t.start);
-  return { isSup, value: String(v.value), next: i + 2 };
+  const out = { sub: null, sup: null };
+  let j = i;
+  let seen = false;
+  while (j < tokens.length) {
+    const t = tokens[j];
+    let isSup;
+    let value;
+    if (t.type === SUB || t.type === SUP) {
+      isSup = t.type === SUP;
+      const v = tokens[j + 1];
+      if (!v || !VALUE_TOKENS.has(v.type))
+        throw new NotationError(`"${isSup ? "^" : "_"}" 之后需要下标或上标内容`, t.start);
+      value = String(v.value);
+      j += 2;
+    } else if (t.type === SUB_TEXT || t.type === SUP_TEXT) {
+      isSup = t.type === SUP_TEXT;
+      value = String(t.value).trim();
+      if (value === "") throw new NotationError(`"${isSup ? SUP_OPEN : SUB_OPEN}" 里没有内容`, t.start);
+      j += 1;
+    } else {
+      break;
+    }
+    if (isSup) {
+      if (out.sup != null) throw new NotationError("上标只能写一次", t.start);
+      out.sup = value;
+    } else {
+      if (out.sub != null) throw new NotationError("下标只能写一次", t.start);
+      out.sub = value;
+    }
+    seen = true;
+  }
+  return seen ? { sub: out.sub, sup: out.sup, next: j } : null;
 }
 
 function parseNode(tokens, i) {
@@ -163,8 +316,8 @@ function parseNode(tokens, i) {
 
   const ss = parseSubSup(tokens, i);
   if (ss) {
-    if (ss.isSup) n.sup = ss.value;
-    else n.sub = ss.value;
+    n.sub = ss.sub;
+    n.sup = ss.sup;
     i = ss.next;
   }
 
@@ -215,8 +368,8 @@ function parseValue(tokens, i) {
 
   const ss = parseSubSup(tokens, i);
   if (ss) {
-    if (ss.isSup) n.sup = ss.value;
-    else n.sub = ss.value;
+    n.sub = ss.sub;
+    n.sup = ss.sup;
     i = ss.next;
   }
 
@@ -238,6 +391,8 @@ function tokenText(t) {
     case CLOSE: return "]";
     case SUB: return "_";
     case SUP: return "^";
+    case SUB_TEXT: return SUB_OPEN + t.value + SUB_CLOSE;
+    case SUP_TEXT: return SUP_OPEN + t.value + SUP_CLOSE;
     case MOVEMENT: return "->";
     default: return String(t.value);
   }
@@ -295,6 +450,7 @@ function needsQuote(s, mode) {
   const str = s == null ? "" : String(s);
   if (str.length === 0) return true;
   if (/[\[\]^_"]/.test(str)) return true;
+  if (TAG_LIKE.test(str)) return true; // 含 <sub> 之类：不加引号会被当成下标/上标
   if (/^(-->|->|<-|<>)/.test(str)) return true;
 
   if (mode === "node") {
@@ -346,10 +502,8 @@ export function serialize(root) {
     if (bracketed) out += "[";
     // 标签正好是 %Empty 又不是转义节点时，必须带引号写，否则再解析回来就变成转义节点了
     out += quote(n.label, bracketed ? "node" : "leaf", isEscapeLabel(n.label) && !n.escape);
-
-    const hasSub = n.sub != null && n.sub !== "";
-    const ss = hasSub ? n.sub : n.sup != null && n.sup !== "" ? n.sup : null;
-    if (ss != null) out += (hasSub ? "_" : "^") + quote(ss, "token");
+    // 下标 / 上标一律写成显式记号（作者 2026-09-30 定的规范形式），两种可以同时存在
+    out += subSupText(n);
 
     if (!isLeaf) {
       const lone = n.children.length === 1;

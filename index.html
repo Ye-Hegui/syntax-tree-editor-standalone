@@ -471,15 +471,24 @@ Red(4)</pre>
         <table>
           <tbody>
             <tr><td><code>[S [NP Dogs][VP barks]]</code></td><td>方括号表示节点，裸标签表示叶子节点。</td></tr>
-            <tr><td><code>[N_s Dogs]</code></td><td><code>_</code> 后面的内容会写成下标。</td></tr>
-            <tr><td><code>[N^s Cats]</code></td><td><code>^</code> 后面的内容会写成上标。</td></tr>
-            <tr><td><code>["Main clause" [S][V][O]]</code></td><td>标签里含空格、引号、<code>_</code> 或 <code>^</code> 时，用双引号将标签整体括起来。</td></tr>
+            <tr><td><code>[N&lt;sub&gt;i&lt;/sub&gt; Dogs]</code></td><td><code>&lt;sub&gt;…&lt;/sub&gt;</code> 里的内容写成下标，内容里可以有空格。</td></tr>
+            <tr><td><code>[N&lt;sup&gt;2&lt;/sup&gt; Cats]</code></td><td><code>&lt;sup&gt;…&lt;/sup&gt;</code> 里的内容写成上标。</td></tr>
+            <tr><td><code>[N&lt;sub&gt;i&lt;/sub&gt;&lt;sup&gt;2&lt;/sup&gt; Cats]</code></td><td>下标和上标可以同时存在，两种顺序都行，导出时下标在前。</td></tr>
+            <tr><td><code>[N_s Dogs]</code> / <code>[N^s Cats]</code></td><td>简写：<code>_</code> 后面跟下标、<code>^</code> 后面跟上标（只能是一个词，含空格就得用上面的写法）。仍然认得，但导出统一写成 <code>&lt;sub&gt;</code> / <code>&lt;sup&gt;</code>。</td></tr>
+            <tr><td><code>["Main clause" [S][V][O]]</code></td><td>标签里含空格、引号、<code>_</code>、<code>^</code> 或 <code>&lt;sub&gt;</code> 这类记号时，用双引号将标签整体括起来。</td></tr>
             <tr><td><code>[S NP VP]</code></td><td>相邻的裸标签会合成<b>一个</b>多词叶子节点，编辑器把该节点画成三角形，表示省略的下层结构。</td></tr>
             <tr><td><code>[S [NP] [VP]]</code></td><td>这才是两个各含一个词的叶子节点。和上一行画出来一模一样，但结构含义不同。</td></tr>
-            <tr><td><code>[A [B C][D E][F G -&gt;6]]</code></td><td>位移箭头，数字是节点编号。写起来不如规则记法直观。</td></tr>
+            <tr><td><code>[A [B C][D E][F G -&gt;6]]</code></td><td>位移箭头，数字是词序号。写起来不如规则记法直观。</td></tr>
             <tr><td><code>[X'' [X word]]</code></td><td>方括号包起来的空节点表示「没有展开的范畴」，该节点<b>不是</b>词，<b>词红</b>按钮不会给它标红。</td></tr>
           </tbody>
         </table>
+        <p>
+          下标上标在图上画成小一号的字：下标往右下角挪、上标往右上角挪。
+          同名的节点靠下标区分是很常见的用法，例如下面这棵树的 <code>N</code> 同时带 <code>i</code> 和 <code>2</code>：
+        </p>
+        <pre class="code-block">[NP [D the] [N&lt;sub&gt;i&lt;/sub&gt;&lt;sup&gt;2&lt;/sup&gt; cat]]</pre>
+        <img class="doc-shot" src="example/subsup.svg" alt="N 同时带下标 i 与上标 2，两者都画出来" />
+        <p>改名框里也能直接打这两种记号：选中节点按 <kbd>F2</kbd>，输入 <code>N&lt;sub&gt;i&lt;/sub&gt;</code> 就会变成下标。</p>
 
         <h4 id="doc-rules">2. 规则记法</h4>
         <p>每行写一条「母亲节点 → 女儿节点」的边，适合逐条核对。下面这棵树：</p>
@@ -499,7 +508,7 @@ Red(4)</pre>
             <tr><td><b>其余节点</b></td><td>编号等于该节点第一次出现在箭头右边的那一行的<b>行号</b>。</td></tr>
             <tr><td><b>行号</b></td><td>显示在代码框左边的装订线上，不在文本里，框选复制不会带上行号。装订线给每一行都编号，包括空行和箭头行。</td></tr>
             <tr><td><b>引用顺序</b></td><td>母亲节点必须先在前面出现过，编号一定小于当前行号。同一个母亲节点的行不必连续。</td></tr>
-            <tr><td><b>标签</b></td><td>含空格、引号、<code>_</code> 或 <code>^</code> 时用双引号括起来。下标上标写在标签后面，例如 <code>NP_1</code>、<code>N^s</code>、<code>"the mailman"_1</code>。</td></tr>
+            <tr><td><b>标签</b></td><td>含空格、引号、<code>_</code>、<code>^</code> 或 <code>&lt;sub&gt;</code> 这类记号时用双引号括起来。下标上标写在标签后面，和括号记法一样：<code>NP&lt;sub&gt;1&lt;/sub&gt;</code>、<code>N&lt;sup&gt;s&lt;/sup&gt;</code>、<code>N&lt;sub&gt;the mailman&lt;/sub&gt;</code>（简写 <code>NP_1</code>、<code>N^s</code> 也认得）。</td></tr>
             <tr><td><b>编号错误</b></td><td>中间插一行或删一行会让下面的引用错位，编辑器会自动把行首编号改回正确值，不需要自己数。</td></tr>
           </tbody>
         </table>
@@ -566,7 +575,7 @@ Red(4)</pre>
         <a href="https://disk.pku.edu.cn/link/AADCFA80E10F2B4D49B2FA4A8A0C9BB2CF" data-i18n="page.link.download">组件下载</a>
       </span>
       <br />
-      v1.3.0-beta.1 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
+      v1.3.0-beta.2 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
     </footer>
   </body>
 </html>

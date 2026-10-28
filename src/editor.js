@@ -27,6 +27,7 @@ import {
   isEscapeLabel,
 } from "./model.js";
 import { parse, serialize, NotationError } from "./notation.js";
+import { parseLabelSpec, labelSpecText, subSupText } from "./notation.js";
 import { parseRules, serializeRules, RuleError } from "./rules.js";
 import { layout, ALIGN_MODES, CENTER_MODES, wordNodes } from "./layout.js";
 import { COLOR_VALUES } from "./style.js";
@@ -95,6 +96,14 @@ function download(blob, filename) {
 function stripUnsupported(text) {
   // 双引号在括号记法里无法转义，只能是引号本身
   return String(text).replace(/"/g, "");
+}
+
+/**
+ * 节点的"标签 + 下标 / 上标"文字，给改名框用。
+ * 不加引号 —— 框里不该逼用户打引号；解析那边（`parseLabelSpec`）两种都认。
+ */
+function nodeSpecText(n) {
+  return String(n.label ?? "") + subSupText(n);
 }
 
 /** 字符偏移 -> {行, 列}（都从 0 开始） */
@@ -1482,9 +1491,17 @@ export class SyntaxTreeEditor {
    * 改标签（并且同步转义标记）。规则只有一条：标签**正好**是 %Empty 就是转义节点，
    * 别的写法一律是普通标签 —— 想让 %Empty 只当普通标签，在代码框里写带引号的 "%Empty"。
    */
+  /**
+   * 改一个节点的"标签 + 下标 / 上标"。
+   * 文字里可以带 `_x` / `^x` 或 `<sub>…</sub>` / `<sup>…</sup>`（宽松解析：
+   * 写不成记号的就当标签文字，这样边打字边重绘不会报错）。
+   */
   #setNodeLabel(n, text) {
-    n.label = text;
-    n.escape = isEscapeLabel(text);
+    const spec = parseLabelSpec(text);
+    n.label = spec.label;
+    n.sub = spec.sub;
+    n.sup = spec.sup;
+    n.escape = isEscapeLabel(spec.label);
   }
 
   /** 套用标签（范畴快捷按钮 / 外部调用）。空白画布上会用它当根节点开一棵树 */
@@ -1495,7 +1512,7 @@ export class SyntaxTreeEditor {
       return;
     }
     const n = this.selected || this.root;
-    if (!n || n.label === clean) return;
+    if (!n || labelSpecText(n) === clean) return;
     this.#mutate(() => {
       this.#setNodeLabel(n, clean);
     });
@@ -1508,10 +1525,11 @@ export class SyntaxTreeEditor {
     const it = this.lay && this.lay.info.get(n);
     if (!it) return;
     this.#pushUndo();
-    this.editBackup = n.label;
+    // 备份与显示都用"标签 + 下标/上标"的规范写法，这样下标也能在框里改
+    this.editBackup = nodeSpecText(n);
     this.editing = n;
     this.input.hidden = false;
-    this.input.value = n.label;
+    this.input.value = this.editBackup;
     this.#positionEditor();
     this.input.focus();
     this.input.select();
@@ -1541,7 +1559,7 @@ export class SyntaxTreeEditor {
     const n = this.editing;
     this.editing = null;
     this.input.hidden = true;
-    if (n.label === this.editBackup) this.undoStack.pop(); // 没有实际改动，撤掉这条历史
+    if (nodeSpecText(n) === this.editBackup) this.undoStack.pop(); // 没有实际改动，撤掉这条历史
     this.#refresh({ syncText: true });
     if (refocus) this.scroller.focus();
   }
@@ -1551,13 +1569,12 @@ export class SyntaxTreeEditor {
     const n = this.editing;
     this.editing = null;
     this.input.hidden = true;
-    n.label = this.editBackup;
-    n.escape = isEscapeLabel(this.editBackup);
+    // 备份是"标签 + 下标/上标"的规范文字，解析回去即可（下标也一起还原）
+    this.#setNodeLabel(n, this.editBackup);
     this.undoStack.pop();
     this.#refresh({ syncText: true });
     if (refocus) this.scroller.focus();
   }
-
   // ------------------------------------------------------------ 事件
 
   #onCanvasDown(ev) {

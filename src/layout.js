@@ -73,15 +73,17 @@ export function layout(root, measure, options = {}) {
   const levelHeight = Math.round(o.fontSize * 2.8 * o.vscale);
   const subSize = Math.round(o.fontSize * 0.72);
 
-  /** @type {Map<object, {node:object,textW:number,subW:number,labelW:number,w:number,x:number,y:number,cx:number,depth:number,row:number}>} */
+  /** @type {Map<object, {node:object,textW:number,subW:number,supW:number,labelW:number,w:number,x:number,y:number,cx:number,depth:number,row:number}>} */
   const info = new Map();
 
   function measureNode(n) {
     const textW = measure(n.label, o.fontSize, o.fontFamily);
-    const hasSS = (n.sub != null && n.sub !== "") || (n.sup != null && n.sup !== "");
-    const ssText = hasSS ? String(n.sub != null && n.sub !== "" ? n.sub : n.sup) : "";
-    const subW = hasSS ? measure(ssText, subSize, o.fontFamily) + 4 : 0;
-    let labelW = Math.max(textW + subW + o.padX * 2, o.minLabelWidth);
+    // 下标和上标可以同时存在（`N<sub>i</sub><sup>2</sup>`），所以各算各的宽度，并排放。
+    const hasSub = n.sub != null && n.sub !== "";
+    const hasSup = n.sup != null && n.sup !== "";
+    const subW = hasSub ? measure(String(n.sub), subSize, o.fontFamily) + 4 : 0;
+    const supW = hasSup ? measure(String(n.sup), subSize, o.fontFamily) + 4 : 0;
+    let labelW = Math.max(textW + subW + supW + o.padX * 2, o.minLabelWidth);
     // 导出时转义节点不画方框，也就不该占横向位置：
     // 否则它那 76.8px 的幽灵宽度会把儿女整体推偏，分叉点看着就不对称了。
     // （画布上仍然按方框算宽 —— 那边 %Empty 是要显示的，0 宽会让文字压到邻居。）
@@ -90,6 +92,7 @@ export function layout(root, measure, options = {}) {
       node: n,
       textW,
       subW,
+      supW,
       labelW,
       w: labelW,
       x: 0,

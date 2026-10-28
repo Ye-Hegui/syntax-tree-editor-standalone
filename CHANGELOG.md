@@ -1,7 +1,61 @@
 # 更新日志 / Changelog
 
-版本号采用语义化版本。`v1.2.1` ～ `v1.2.5` 是内部开发号，内容全部包含在 `v1.3.0-beta.1` 里；对外正式发布过的最新版本仍是 `v1.2.0`。
-Version numbers follow semantic versioning. `v1.2.1` – `v1.2.5` were internal builds and are all contained in `v1.3.0-beta.1`; the latest officially released version is still `v1.2.0`.
+版本号采用语义化版本。`v1.2.1` ～ `v1.2.5` 是内部开发号，内容全部包含在 `v1.3.0-beta.1` 里；
+之后是两个公开测试版 `v1.3.0-beta.1` / `v1.3.0-beta.2`；对外正式发布过的最新版本仍是 `v1.2.0`。
+Version numbers follow semantic versioning. `v1.2.1` – `v1.2.5` were internal builds, all contained in
+`v1.3.0-beta.1`; after that came the public betas `v1.3.0-beta.1` and `v1.3.0-beta.2`. The latest
+officially released version is still `v1.2.0`.
+
+## v1.3.0-beta.2（2026-09-30 公开测试版 / public beta）
+
+这个版本只有一件事：**下标 / 上标可以写成 `<sub>…</sub>` / `<sup>…</sup>`**，
+而且同一个节点可以**同时**带下标和上标（以前只能画一个）。
+This release does one thing: **subscripts and superscripts can be written as `<sub>…</sub>` /
+`<sup>…</sup>`**, and a single node may now carry **both at once** (previously only one was drawn).
+
+### 新增 / Added
+
+- **新写法**：`<sub>…</sub>` 标下标、`<sup>…</sup>` 标上标。内容是**到结束记号为止**的一整段，
+  所以里面可以有空格、逗号、`_`、`^`（老写法 `N_s` / `N^s` 只能跟一个词，含空格就写不了）·
+  **New markers**: `<sub>…</sub>` for a subscript, `<sup>…</sup>` for a superscript. The content runs to
+  the closing marker, so it may contain spaces, commas, `_` and `^` (the old `N_s` / `N^s` forms take a
+  single word only)
+- **同一个节点可以同时有下标和上标**（`N<sub>i</sub><sup>2</sup>`）：画布上两个都画出来 ——
+  下标往右下挪、上标往右上挪，节点宽度按两者之和算 ·
+  **A node can carry both at once** (`N<sub>i</sub><sup>2</sup>`): both are drawn — the subscript shifts
+  down-right, the superscript up-right, and the node width accounts for both
+- **两套记法都支持**：括号记法里写在标签后面，规则记法里写在每个标签后面（母亲与女儿都行）·
+  **Both notations support it**: in bracket notation after a label, in rule notation after either label
+- **改名框也能打下标**：选中节点按 <kbd>F2</kbd>，输入 `N<sub>i</sub>`（简写 `N_i` 也认）就行；
+  框里会把现有的下标上标一起显示出来，方便改 ·
+  **The rename box understands them too**: select a node, press <kbd>F2</kbd> and type
+  `N<sub>i</sub>` (the short `N_i` works as well); existing sub/superscripts are shown in the box
+
+### 改动 / Changed
+
+- **导出一律写成 `<sub>…</sub>` / `<sup>…</sup>`**（作者 2026-09-30 定的规范形式）：
+  `[N_s Dogs]` 照样读得进去，但任何改动后回写会变成 `[N<sub>s</sub> Dogs]`。
+  想与 jsSyntaxTree 之类的旧工具互通时，注意它们不认这个写法 ·
+  **Exports always use `<sub>…</sub>` / `<sup>…</sup>`** (the canonical form the author picked on
+  2026-09-30): `[N_s Dogs]` still parses, but any edit writes back `[N<sub>s</sub> Dogs]`. Keep this in
+  mind when exchanging files with older tools such as jsSyntaxTree, which do not understand the tags
+- **标签里含 `<sub>` 这类字样会自动加引号**：`"a<sub>b</sub>"` 是**一个普通标签**，不是下标；
+  不加引号就会歧义，所以导出时替你补上 ·
+  **A label containing tag-like text is quoted automatically**: `"a<sub>b</sub>"` is **one plain label**,
+  not a subscript; exports add the quotes for you because the unquoted form would be ambiguous
+- **规则记法匹配母亲节点时连下标/上标一起比**（以前只比标签，`N<sub>1</sub>` 与 `N<sub>2</sub>`
+  在同一棵树里可能被认错）·
+  **Rule notation now matches a mother by label *and* sub/superscript** (it used to compare labels only,
+  so `N<sub>1</sub>` and `N<sub>2</sub>` could be confused inside one tree)
+
+### 已知限制 / Known limitations
+
+- `<sub>` / `<sup>` **只支持一层、必须成对、小写才认**（`<SUB>` 只是普通文字）；
+  内容里不能出现 `</sub>` / `</sup>` 本身 ·
+  Only one level, must be paired, and only the lower-case spelling is a marker (`<SUB>` is plain text);
+  the content cannot contain `</sub>` / `</sup>` itself
+- 括号记法里每个节点最多一个下标、一个上标（写两次会报错）·
+  At most one subscript and one superscript per node (a second one is an error)
 
 ## v1.3.0-beta.1（2026-09-29 公开测试版 / public beta）
 

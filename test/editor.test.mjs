@@ -63,6 +63,17 @@ function typeText(ed, text, caret) {
   ed.textarea.dispatchEvent(makeEvent("input"));
 }
 
+/** 往"内联改名框"里输入（不是代码面板） */
+function typeLabel(ed, text) {
+  ed.input.value = text;
+  ed.input.dispatchEvent(makeEvent("input"));
+}
+
+/** 在改名框里按 Enter 提交（注意：`key()` 是发给画布的） */
+function commitLabel(ed) {
+  ed.input.dispatchEvent(makeEvent("keydown", { key: "Enter" }));
+}
+
 const NODES_IN = (text) => text.replace(/[^\[\]]/g, "").length / 2 + 1;
 
 console.log("\n[挂载与渲染]");
@@ -414,6 +425,62 @@ await t("F2 改名", async () => {
   key(ed, "F2");
   assert.equal(ed.input.hidden, false);
   assert.equal(ed.input.value, "A");
+});
+
+await t("改名框里可以打下标：<sub>…</sub> 直接变成下标（作者 2026-09-30 要的）", async () => {
+  const ed = mount("[S [A] [B]]");
+  clickNode(ed, ed.root.children[0]);
+  key(ed, "F2");
+  typeLabel(ed, "N<sub>i</sub>");
+  assert.equal(ed.root.children[0].label, "N");
+  assert.equal(ed.root.children[0].sub, "i");
+  commitLabel(ed);
+  assert.equal(ed.getValue(), "[S [N<sub>i</sub>] [B]]");
+  // 老写法也认
+  clickNode(ed, ed.root.children[0]);
+  key(ed, "F2");
+  typeLabel(ed, "M_j");
+  commitLabel(ed);
+  assert.equal(ed.getValue(), "[S [M<sub>j</sub>] [B]]");
+});
+
+await t("改名框会把下标一起显示出来，改名字时上下标都保留", async () => {
+  const ed = mount("[S [N<sub>i</sub><sup>2</sup>] [B]]");
+  const n = ed.root.children[0];
+  assert.equal(n.sub, "i");
+  assert.equal(n.sup, "2");
+  clickNode(ed, n);
+  key(ed, "F2");
+  assert.equal(ed.input.value, "N<sub>i</sub><sup>2</sup>", "框里应该看得到下标上标");
+  typeLabel(ed, "NP<sub>i</sub><sup>2</sup>");
+  commitLabel(ed);
+  assert.equal(ed.getValue(), "[S [NP<sub>i</sub><sup>2</sup>] [B]]");
+});
+
+await t("改名框里正打到一半的记号不会炸，也不会吞掉已输入的内容", async () => {
+  const ed = mount("[S [A] [B]]");
+  clickNode(ed, ed.root.children[0]);
+  key(ed, "F2");
+  typeLabel(ed, "N<sub>i"); // 还没写 </sub>
+  assert.equal(ed.root.children[0].label, "N<sub>i", "先当普通标签文字");
+  assert.equal(ed.root.children[0].sub, null);
+});
+
+await t("setLabel() 也认 <sub>…</sub>（外部调用 / 范畴按钮同一条路）", async () => {
+  const ed = mount("[S [A] [B]]");
+  clickNode(ed, ed.root.children[0]);
+  ed.setLabel("N<sub>1</sub>");
+  assert.equal(ed.getValue(), "[S [N<sub>1</sub>] [B]]");
+});
+
+await t("画布上同时画出下标和上标（两个 text）", async () => {
+  const ed = mount("[S [N<sub>i</sub><sup>2</sup>]]");
+  const g = [...nodeGroups(ed)].find((x) => Number(x.dataset.id) === ed.root.children[0].id);
+  const texts = [...g.querySelectorAll("text")].map((x) => x.textContent);
+  assert.deepEqual(texts, ["N", "i", "2"], `实际画出来的是 ${JSON.stringify(texts)}`);
+  // 上标比下标高（y 更小）
+  const [, sub, sup] = [...g.querySelectorAll("text")];
+  assert.ok(Number(sup.getAttribute("y")) < Number(sub.getAttribute("y")), "上标应该在下标上方");
 });
 
 await t("删除节点连子树一起删", async () => {

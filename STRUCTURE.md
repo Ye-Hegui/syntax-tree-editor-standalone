@@ -65,7 +65,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/docs-en.js`
 > —
-> 528 行 / 30310 字节
+> 541 行 / 31915 字节
 
 **函数**
 
@@ -75,7 +75,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/editor.js`
 > 核心组件 SyntaxTreeEditor：交互、快捷键、撤销、双向同步、空白画布、装订线。
-> 1811 行 / 69116 字节
+> 1828 行 / 69993 字节
 
 私有方法以 `#` 开头，只在类内部使用。
 
@@ -83,113 +83,114 @@ Syntax Tree Editor Standalone/
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 36 | `SVG_NS` | — |
-| 41 | `PALETTE` | 最后是斜体的小 v 和 pro（习惯上这两个词类用斜体写）。 |
-| 50 | `ITALIC_CHIPS` | — |
-| 57 | `ALIGN_CHOICES` | 所以不可能出现"布局支持某个模式、界面上却没有按钮"的情况。 |
-| 60 | `CENTER_CHOICES` | 水平位置：两种模式，说明见 layout.js 的 CENTER_MODES |
-| 63 | `TEXT_MODES` | 两套等价的记法，随时可切换 |
-| 68 | `TEXT_DEBOUNCE` | — |
-| 70 | `makeMeasurer` | — |
-| 85 | `download` | — |
-| 95 | `stripUnsupported` | — |
-| 101 | `offsetToLineCol` | — |
-| 114 | `lineColToOffset` | — |
-| 143 | `rulesToSvg` | 一行出图：**文本 → SVG 字符串**，不需要页面上先有一个编辑器实例。 |
-| 1803 | `countSubtree` | — |
+| 37 | `SVG_NS` | — |
+| 42 | `PALETTE` | 最后是斜体的小 v 和 pro（习惯上这两个词类用斜体写）。 |
+| 51 | `ITALIC_CHIPS` | — |
+| 58 | `ALIGN_CHOICES` | 所以不可能出现"布局支持某个模式、界面上却没有按钮"的情况。 |
+| 61 | `CENTER_CHOICES` | 水平位置：两种模式，说明见 layout.js 的 CENTER_MODES |
+| 64 | `TEXT_MODES` | 两套等价的记法，随时可切换 |
+| 69 | `TEXT_DEBOUNCE` | — |
+| 71 | `makeMeasurer` | — |
+| 86 | `download` | — |
+| 96 | `stripUnsupported` | — |
+| 105 | `nodeSpecText` | 节点的"标签 + 下标 / 上标"文字，给改名框用。 |
+| 110 | `offsetToLineCol` | — |
+| 123 | `lineColToOffset` | — |
+| 152 | `rulesToSvg` | 一行出图：**文本 → SVG 字符串**，不需要页面上先有一个编辑器实例。 |
+| 1820 | `countSubtree` | — |
 
 **类**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 156 | `SyntaxTreeEditor` | — |
+| 165 | `SyntaxTreeEditor` | — |
 
 **方法与字段**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 157 | `constructor` | — |
-| 222 | `setValue` | 用括号记法设置整棵树。 |
-| 236 | `setStyle` | 设置选中节点的字体样式。italic / bold / strike 会写进记法末尾的 |
-| 272 | `#isDeclaredBlue` | — |
-| 277 | `#hasOtherColorThan` | — |
-| 282 | `#hasAnyColor` | — |
-| 291 | `#canCleanWordColors` | 「单词标红」还做不做得成事（灰掉判定要和 `markWordsRed()` 完全一致，否则会出现 |
-| 302 | `markAllBlue` | 全蓝：**清掉所有颜色声明，然后只写一句** —— 每个节点都写上蓝色声明，导出正好是 `Blue(all)`。 |
-| 329 | `markWordsRed` | 单词标红（作者 2026-09-18 定的三步，实现严格照做）： |
-| 351 | `markSelectedRed` | — |
-| 361 | `markSelectedBlue` | — |
-| 374 | `toggleSelectedItalic` | 节点斜体：切换选中节点的斜体（再点一次取消）。 |
-| 382 | `toggleSelectedStrike` | — |
-| 390 | `getValue` | — |
-| 398 | `loadValue` | 载入一棵新树，但**保留撤销历史** —— 按 Ctrl+Z 可以退回载入之前的那棵树。 |
-| 412 | `clear` | — |
-| 417 | `setOptions` | — |
-| 423 | `toSvgString` | — |
-| 458 | `exportSvg` | — |
-| 462 | `exportPng` | — |
-| 488 | `#buildDom` | ------------------------------------------------------------ DOM 骨架 |
-| 828 | `#reindex` | ------------------------------------------------------------ 渲染管线 |
-| 837 | `#layoutOptions` | layout 的选项。画布与导出共用这一份 —— 导出多传一个 `hideEscapes: true`， |
-| 852 | `#drawOptions` | drawTree 的选项。画布和导出共用这一份 —— 导出多传一个 `hideEscapes: true`， |
-| 865 | `#relayout` | — |
-| 899 | `#refresh` | — |
-| 911 | `#serializeCurrent` | — |
-| 916 | `#parseCurrent` | — |
-| 920 | `#syncTextModeButtons` | — |
-| 929 | `setTextMode` | — |
-| 944 | `#buildCodeBox` | 代码框 = 左边一条装订线（行号）+ 右边真正的 textarea。 |
-| 971 | `#syncGutter` | 按当前文本刷新装订线。 |
-| 985 | `#syncGutterScroll` | — |
-| 997 | `#repairRulesNumbers` | 规则记法里"编号就是行号"，所以在上面插一行、删一行都会让下面所有引用错位。 |
-| 1045 | `#syncTextareaSize` | — |
-| 1050 | `getRules` | — |
-| 1055 | `setRules` | — |
-| 1064 | `#syncCenterButtons` | — |
-| 1073 | `setCenter` | — |
-| 1080 | `#syncAlignButtons` | — |
-| 1092 | `#syncStyleButtons` | 斜体 / 删除线那两个按钮是开关，所以要反映选中节点的当前状态。 |
-| 1100 | `setAlign` | — |
-| 1107 | `#writeText` | — |
-| 1114 | `#emitChange` | — |
-| 1125 | `#updateStatus` | — |
-| 1200 | `#showError` | — |
-| 1209 | `#clearError` | — |
-| 1221 | `#select` | 切换选中态。 |
-| 1237 | `#snapshot` | ------------------------------------------------------------ 历史 |
-| 1245 | `#pushUndo` | — |
-| 1252 | `#restore` | — |
-| 1264 | `undo` | — |
-| 1270 | `redo` | — |
-| 1276 | `#mutate` | — |
-| 1289 | `createRoot` | 在空白画布上创建根节点，并直接进入改名状态。 |
-| 1307 | `addChild` | — |
-| 1325 | `addSibling` | — |
-| 1350 | `addLevel` | 下移（Tab）：给投射链增加一层投射层（详见 model.js 的 addPrimeLevel）。 |
-| 1371 | `collapseLevel` | 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、 |
-| 1388 | `forceCollapseLevel` | 强制上移（Alt+Shift+Tab）：不看「上移」那些严格前提，把选中节点这一格整个抽掉 —— |
-| 1398 | `#canMoveLeft` | — |
-| 1410 | `#canMoveRight` | — |
-| 1425 | `moveLeft` | 左移（Alt+← / Ctrl+←）：自己是最左边的女儿节点时，搬到母亲节点的左姊妹节点底下。 |
-| 1433 | `moveRight` | 右移（Alt+→ / Ctrl+→）：自己是最右边的女儿节点时，搬到母亲节点的右姊妹节点底下。 |
-| 1444 | `remove` | 删除选中的节点。 |
-| 1485 | `#setNodeLabel` | 改标签（并且同步转义标记）。规则只有一条：标签**正好**是 %Empty 就是转义节点， |
-| 1491 | `setLabel` | — |
-| 1506 | `#startEdit` | ------------------------------------------------------------ 内联改名 |
-| 1520 | `#positionEditor` | — |
-| 1539 | `#commitEdit` | 提交改名。 |
-| 1549 | `#cancelEdit` | — |
-| 1563 | `#onCanvasDown` | ------------------------------------------------------------ 事件 |
-| 1576 | `#onCanvasDblClick` | — |
-| 1587 | `setTerms` | 换一套亲属称谓。**只改界面上的文字**（按钮名、提示行、装订线说明）， |
-| 1597 | `setLanguage` | 换界面语言。**只改界面上的文字**，对树没有任何影响。 |
-| 1604 | `#t` | — |
-| 1609 | `#relabel` | — |
-| 1621 | `#term` | 界面文案要在切换语言/称谓时重新生成的，都登记在这里。 |
-| 1626 | `#onKeyDown` | — |
-| 1737 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
-| 1767 | `#selectFromCaret` | — |
-| 1789 | `#selectByOffset` | — |
+| 166 | `constructor` | — |
+| 231 | `setValue` | 用括号记法设置整棵树。 |
+| 245 | `setStyle` | 设置选中节点的字体样式。italic / bold / strike 会写进记法末尾的 |
+| 281 | `#isDeclaredBlue` | — |
+| 286 | `#hasOtherColorThan` | — |
+| 291 | `#hasAnyColor` | — |
+| 300 | `#canCleanWordColors` | 「单词标红」还做不做得成事（灰掉判定要和 `markWordsRed()` 完全一致，否则会出现 |
+| 311 | `markAllBlue` | 全蓝：**清掉所有颜色声明，然后只写一句** —— 每个节点都写上蓝色声明，导出正好是 `Blue(all)`。 |
+| 338 | `markWordsRed` | 单词标红（作者 2026-09-18 定的三步，实现严格照做）： |
+| 360 | `markSelectedRed` | — |
+| 370 | `markSelectedBlue` | — |
+| 383 | `toggleSelectedItalic` | 节点斜体：切换选中节点的斜体（再点一次取消）。 |
+| 391 | `toggleSelectedStrike` | — |
+| 399 | `getValue` | — |
+| 407 | `loadValue` | 载入一棵新树，但**保留撤销历史** —— 按 Ctrl+Z 可以退回载入之前的那棵树。 |
+| 421 | `clear` | — |
+| 426 | `setOptions` | — |
+| 432 | `toSvgString` | — |
+| 467 | `exportSvg` | — |
+| 471 | `exportPng` | — |
+| 497 | `#buildDom` | ------------------------------------------------------------ DOM 骨架 |
+| 837 | `#reindex` | ------------------------------------------------------------ 渲染管线 |
+| 846 | `#layoutOptions` | layout 的选项。画布与导出共用这一份 —— 导出多传一个 `hideEscapes: true`， |
+| 861 | `#drawOptions` | drawTree 的选项。画布和导出共用这一份 —— 导出多传一个 `hideEscapes: true`， |
+| 874 | `#relayout` | — |
+| 908 | `#refresh` | — |
+| 920 | `#serializeCurrent` | — |
+| 925 | `#parseCurrent` | — |
+| 929 | `#syncTextModeButtons` | — |
+| 938 | `setTextMode` | — |
+| 953 | `#buildCodeBox` | 代码框 = 左边一条装订线（行号）+ 右边真正的 textarea。 |
+| 980 | `#syncGutter` | 按当前文本刷新装订线。 |
+| 994 | `#syncGutterScroll` | — |
+| 1006 | `#repairRulesNumbers` | 规则记法里"编号就是行号"，所以在上面插一行、删一行都会让下面所有引用错位。 |
+| 1054 | `#syncTextareaSize` | — |
+| 1059 | `getRules` | — |
+| 1064 | `setRules` | — |
+| 1073 | `#syncCenterButtons` | — |
+| 1082 | `setCenter` | — |
+| 1089 | `#syncAlignButtons` | — |
+| 1101 | `#syncStyleButtons` | 斜体 / 删除线那两个按钮是开关，所以要反映选中节点的当前状态。 |
+| 1109 | `setAlign` | — |
+| 1116 | `#writeText` | — |
+| 1123 | `#emitChange` | — |
+| 1134 | `#updateStatus` | — |
+| 1209 | `#showError` | — |
+| 1218 | `#clearError` | — |
+| 1230 | `#select` | 切换选中态。 |
+| 1246 | `#snapshot` | ------------------------------------------------------------ 历史 |
+| 1254 | `#pushUndo` | — |
+| 1261 | `#restore` | — |
+| 1273 | `undo` | — |
+| 1279 | `redo` | — |
+| 1285 | `#mutate` | — |
+| 1298 | `createRoot` | 在空白画布上创建根节点，并直接进入改名状态。 |
+| 1316 | `addChild` | — |
+| 1334 | `addSibling` | — |
+| 1359 | `addLevel` | 下移（Tab）：给投射链增加一层投射层（详见 model.js 的 addPrimeLevel）。 |
+| 1380 | `collapseLevel` | 上移（Shift+Tab）：下移的逆。要求母亲节点只有自己这一个女儿节点、 |
+| 1397 | `forceCollapseLevel` | 强制上移（Alt+Shift+Tab）：不看「上移」那些严格前提，把选中节点这一格整个抽掉 —— |
+| 1407 | `#canMoveLeft` | — |
+| 1419 | `#canMoveRight` | — |
+| 1434 | `moveLeft` | 左移（Alt+← / Ctrl+←）：自己是最左边的女儿节点时，搬到母亲节点的左姊妹节点底下。 |
+| 1442 | `moveRight` | 右移（Alt+→ / Ctrl+→）：自己是最右边的女儿节点时，搬到母亲节点的右姊妹节点底下。 |
+| 1453 | `remove` | 删除选中的节点。 |
+| 1499 | `#setNodeLabel` | 改一个节点的"标签 + 下标 / 上标"。 |
+| 1508 | `setLabel` | — |
+| 1523 | `#startEdit` | ------------------------------------------------------------ 内联改名 |
+| 1538 | `#positionEditor` | — |
+| 1557 | `#commitEdit` | 提交改名。 |
+| 1567 | `#cancelEdit` | — |
+| 1580 | `#onCanvasDown` | ------------------------------------------------------------ 事件 |
+| 1593 | `#onCanvasDblClick` | — |
+| 1604 | `setTerms` | 换一套亲属称谓。**只改界面上的文字**（按钮名、提示行、装订线说明）， |
+| 1614 | `setLanguage` | 换界面语言。**只改界面上的文字**，对树没有任何影响。 |
+| 1621 | `#t` | — |
+| 1626 | `#relabel` | — |
+| 1638 | `#term` | 界面文案要在切换语言/称谓时重新生成的，都登记在这里。 |
+| 1643 | `#onKeyDown` | — |
+| 1754 | `#onTextInput` | ------------------------------------------------------------ 文本面板 |
+| 1784 | `#selectFromCaret` | — |
+| 1806 | `#selectByOffset` | — |
 
 ### `src/i18n.js`
 > —
@@ -211,7 +212,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/layout.js`
 > tidy tree 布局 + 三种垂直对齐。文字宽度靠注入的 measure()，不依赖 DOM。
-> 232 行 / 8545 字节
+> 235 行 / 8708 字节
 
 **函数**
 
@@ -277,7 +278,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/notation.js`
 > 括号记法 ↔ 模型：词法分析、递归下降解析、序列化、文本位置映射。
-> 385 行 / 13373 字节
+> 539 行 / 19480 字节
 
 括号记法的箭头用**词序号**（从左到右第几个词，从 1 开始，与 jsSyntaxTree 一致），样式声明用**节点编号**。
 
@@ -295,19 +296,30 @@ Syntax Tree Editor Standalone/
 | 54 | `NUMBER` | — |
 | 55 | `SUB` | — |
 | 56 | `SUP` | — |
-| 57 | `MOVEMENT` | — |
-| 59 | `VALUE_TOKENS` | — |
-| 63 | `tokenize` | ---------------------------------------------------------------- 词法分析 |
-| 142 | `parseSubSup` | ---------------------------------------------------------------- 语法分析 |
-| 152 | `parseNode` | — |
-| 199 | `parseValue` | — |
-| 235 | `tokenText` | — |
-| 247 | `parse` | — |
-| 278 | `NO_SPACE_BARE` | ---------------------------------------------------------------- 序列化 |
-| 294 | `needsQuote` | 判断标签能不能不加引号地写出来。三种上下文规则不同： |
-| 318 | `quote` | — |
-| 334 | `serialize` | 模型 -> 括号记法。 |
-| 382 | `toText` | — |
+| 57 | `SUB_TEXT` | — |
+| 58 | `SUP_TEXT` | — |
+| 59 | `MOVEMENT` | — |
+| 61 | `VALUE_TOKENS` | — |
+| 76 | `SUB_OPEN` | 下标的两种写法： |
+| 77 | `SUB_CLOSE` | — |
+| 78 | `SUP_OPEN` | — |
+| 79 | `SUP_CLOSE` | — |
+| 81 | `TAG_OPENERS` | — |
+| 87 | `TAG_LIKE` | — |
+| 92 | `subSupText` | — |
+| 106 | `parseLabelSpec` | 把 `X<sub>i</sub><sup>2</sup>` 这种"标签+下标/上标"的文字拆成 { label, sub, sup }。 |
+| 161 | `labelSpecText` | — |
+| 169 | `tokenize` | ---------------------------------------------------------------- 词法分析 |
+| 270 | `parseSubSup` | 读标签后面的一串下标/上标：`_x` / `^x` / `<sub>…</sub>` / `<sup>…</sup>`， |
+| 305 | `parseNode` | — |
+| 352 | `parseValue` | — |
+| 388 | `tokenText` | — |
+| 402 | `parse` | — |
+| 433 | `NO_SPACE_BARE` | ---------------------------------------------------------------- 序列化 |
+| 449 | `needsQuote` | 判断标签能不能不加引号地写出来。三种上下文规则不同： |
+| 474 | `quote` | — |
+| 490 | `serialize` | 模型 -> 括号记法。 |
+| 536 | `toText` | — |
 
 **类**
 
@@ -323,7 +335,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/render.js`
 > 把布局结果画成可交互 SVG。视觉属性全部内联，导出的图脱离页面也能看。
-> 409 行 / 17710 字节
+> 412 行 / 17949 字节
 
 **函数**
 
@@ -337,7 +349,7 @@ Syntax Tree Editor Standalone/
 
 ### `src/rules.js`
 > 规则记法 ↔ 模型：一行一条「母亲节点 → 女儿节点」。
-> 326 行 / 10676 字节
+> 366 行 / 12822 字节
 
 编号 = 行号，所以插行/删行会让下面引用错位；编辑器会自动改回去。
 
@@ -345,27 +357,27 @@ Syntax Tree Editor Standalone/
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 39 | `RULE_WS` | — |
-| 42 | `parseLabelToken` | — |
-| 99 | `makeNode` | — |
-| 108 | `parseLine` | — |
-| 156 | `resolveMother` | 找这一行的母亲节点。 |
-| 178 | `parseRules` | 规则记法 -> 模型。 |
-| 256 | `tokenOf` | — |
-| 274 | `serializeRules` | 模型 -> 规则记法 |
-| 323 | `toRulesText` | — |
+| 40 | `RULE_WS` | — |
+| 50 | `parseLabelToken` | 读一个"标签 [+ 下标 / 上标]"的 token。 |
+| 139 | `makeNode` | — |
+| 148 | `parseLine` | — |
+| 196 | `resolveMother` | 找这一行的母亲节点。 |
+| 220 | `parseRules` | 规则记法 -> 模型。 |
+| 298 | `tokenOf` | — |
+| 314 | `serializeRules` | 模型 -> 规则记法 |
+| 363 | `toRulesText` | — |
 
 **类**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 31 | `RuleError` | — |
+| 32 | `RuleError` | — |
 
 **方法与字段**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 32 | `constructor` | — |
+| 33 | `constructor` | — |
 
 ### `src/style.js`
 > —
@@ -454,7 +466,7 @@ Syntax Tree Editor Standalone/
 
 ### `test/editor.test.mjs`
 > 交互层测试（跑在 DOM 垫片上）。
-> 2279 行 / 99460 字节
+> 2346 行 / 102174 字节
 
 **函数**
 
@@ -469,23 +481,25 @@ Syntax Tree Editor Standalone/
 | 51 | `dblClickNode` | — |
 | 55 | `key` | — |
 | 59 | `typeText` | — |
-| 66 | `NODES_IN` | — |
-| 750 | `ALIGN_TREE` | S 底下挂两棵不等深的子树，用来区分三种对齐 |
-| 752 | `rowsOf` | 深度：S0 A1 B2 C3 x4 D1 E2 y3 |
-| 910 | `MOVE_TREE` | 用户给的例子 |
-| 911 | `AFTER_LEFT` | — |
-| 912 | `AFTER_RIGHT` | — |
-| 915 | `selectT` | — |
-| 1048 | `fillOf` | — |
-| 1055 | `declLines` | — |
-| 1344 | `USER_RULES` | — |
-| 1655 | `NEUTRAL` | — |
-| 1656 | `FATHER` | — |
-| 1773 | `ARROW_TREE` | — |
+| 67 | `typeLabel` | — |
+| 73 | `commitLabel` | — |
+| 77 | `NODES_IN` | — |
+| 817 | `ALIGN_TREE` | S 底下挂两棵不等深的子树，用来区分三种对齐 |
+| 819 | `rowsOf` | 深度：S0 A1 B2 C3 x4 D1 E2 y3 |
+| 977 | `MOVE_TREE` | 用户给的例子 |
+| 978 | `AFTER_LEFT` | — |
+| 979 | `AFTER_RIGHT` | — |
+| 982 | `selectT` | — |
+| 1115 | `fillOf` | — |
+| 1122 | `declLines` | — |
+| 1411 | `USER_RULES` | — |
+| 1722 | `NEUTRAL` | — |
+| 1723 | `FATHER` | — |
+| 1840 | `ARROW_TREE` | — |
 
 ### `test/rules.test.mjs`
 > 规则记法测试。
-> 310 行 / 10564 字节
+> 337 行 / 11502 字节
 
 **函数**
 
@@ -497,27 +511,27 @@ Syntax Tree Editor Standalone/
 
 ### `test/smoke.mjs`
 > 纯逻辑测试（不需要浏览器）。
-> 1139 行 / 50683 字节
+> 1200 行 / 53837 字节
 
 **函数**
 
 | 行 | 名称 | 说明 |
 | --- | --- | --- |
-| 29 | `t` | — |
-| 40 | `roundtrip` | — |
-| 45 | `dump` | — |
-| 55 | `sameTree` | — |
-| 59 | `stable` | — |
-| 152 | `measure` | — |
-| 154 | `layoutOf` | — |
-| 206 | `ALIGN_TREE` | 深度：S0 A1 B2 C3 x4 D1 E2 y3 |
-| 208 | `rowsOf` | — |
-| 317 | `wordsOf` | 规则：叶子 + 母亲节点的唯一的女儿节点（也就是记法里写成裸标签的那种）才算"词" |
-| 386 | `MOVE_TREE` | ② 自己是最边上的女儿 -> 搬到母亲节点那一侧的姊妹底下 |
-| 388 | `moveFixture` | — |
-| 612 | `TREE` | 这几条用同一棵树：[S [NP Dogs] [VP barks]] —— 词是 Dogs、barks，NP / VP / S 是范畴 |
-| 613 | `colorOf` | — |
-| 614 | `colorMap` | — |
+| 30 | `t` | — |
+| 41 | `roundtrip` | — |
+| 46 | `dump` | — |
+| 56 | `sameTree` | — |
+| 60 | `stable` | — |
+| 212 | `measure` | — |
+| 214 | `layoutOf` | — |
+| 266 | `ALIGN_TREE` | 深度：S0 A1 B2 C3 x4 D1 E2 y3 |
+| 268 | `rowsOf` | — |
+| 377 | `wordsOf` | 规则：叶子 + 母亲节点的唯一的女儿节点（也就是记法里写成裸标签的那种）才算"词" |
+| 446 | `MOVE_TREE` | ② 自己是最边上的女儿 -> 搬到母亲节点那一侧的姊妹底下 |
+| 448 | `moveFixture` | — |
+| 673 | `TREE` | 这几条用同一棵树：[S [NP Dogs] [VP barks]] —— 词是 Dogs、barks，NP / VP / S 是范畴 |
+| 674 | `colorOf` | — |
+| 675 | `colorMap` | — |
 
 ### `test/standalone.test.mjs`
 > 单文件构建产物测试：模块没漏、内联后真的能跑。
@@ -561,7 +575,7 @@ Syntax Tree Editor Standalone/
 
 ### `tools/check-project.mjs`
 > 一致性自检：文档 / 文件结构 / 构建产物不许对不上。
-> 219 行 / 9272 字节
+> 221 行 / 9431 字节
 
 **函数**
 
@@ -581,7 +595,7 @@ Syntax Tree Editor Standalone/
 
 ### `tools/gen-examples.mjs`
 > —
-> 51 行 / 2535 字节
+> 53 行 / 2723 字节
 
 **函数**
 

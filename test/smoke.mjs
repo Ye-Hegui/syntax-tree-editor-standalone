@@ -20,6 +20,7 @@ import {
   cloneSubtree,
 } from "../src/model.js";
 import { parse, serialize, toText, NotationError } from "../src/notation.js";
+import { parseLabelSpec, labelSpecText, subSupText } from "../src/notation.js";
 import { layout, wordNodes } from "../src/layout.js";
 import { COLOR_NAMES, baselineColor } from "../src/style.js";
 
@@ -103,6 +104,65 @@ t("下标 / 上标", () => {
   stable("[N_s Dogs]");
   stable("[N^s Cats]");
   stable("[T_2 [T past]]");
+});
+t("下标 / 上标的新写法 <sub>…</sub> / <sup>…</sup>（作者 2026-09-30 要的）", () => {
+  // 内容里有空格也认得出来（这是 <sub> 比 `_s` 强的地方）
+  const root = parse("[N<sub>the mailman</sub> Dogs]");
+  assert.equal(root.label, "N");
+  assert.equal(root.sub, "the mailman");
+  // 老写法读得进去，写出来是规范形式
+  const legacy = parse("[N_s Dogs]");
+  assert.equal(legacy.sub, "s");
+  assert.equal(toText(legacy), "[N<sub>s</sub> Dogs]");
+  // 下标和上标可以同时存在，两种写法混着写、顺序随意
+  const both = parse("[N^2<sub>i</sub> word]");
+  assert.equal(both.sub, "i");
+  assert.equal(both.sup, "2");
+  assert.equal(toText(both), "[N<sub>i</sub><sup>2</sup> word]");
+  assert.equal(toText(parse("[N<sub>i</sub>^2 word]")), "[N<sub>i</sub><sup>2</sup> word]");
+  stable("[N<sub>s</sub> Cats]");
+  stable("[NP [D a] [N<sub>1</sub><sup>2</sup> cat]]");
+  stable("[X<sub>1, 2</sub> y]");
+});
+t("引号里的一切都是普通文字：\"a<sub>b</sub>\" 不是下标", () => {
+  const root = parse('["a<sub>b</sub>" Y]');
+  assert.equal(root.label, "a<sub>b</sub>");
+  assert.equal(root.sub, null);
+  assert.equal(toText(root), '["a<sub>b</sub>" Y]', "标签里有记号字样时要加引号写");
+});
+t("<sub> 写坏了会报错（带位置）", () => {
+  const bad = (text, re) => {
+    try {
+      parse(text);
+    } catch (e) {
+      assert.ok(e instanceof NotationError, `${text} 应该抛 NotationError`);
+      assert.match(e.message, re, `${text} 的报错信息是 ${e.message}`);
+      return;
+    }
+    assert.fail(`${text} 应该报错`);
+  };
+  bad("[N<sub>s word]", /没有闭合/);
+  bad("[N</sub> word]", /多余的/);
+  bad("[N<sub></sub> word]", /里没有内容/);
+  bad("[N_s_t word]", /下标只能写一次/);
+  bad("[N^1^2 word]", /上标只能写一次/);
+});
+t("parseLabelSpec / labelSpecText：改名框用的宽松解析", () => {
+  assert.deepEqual(parseLabelSpec("N<sub>i</sub><sup>2</sup>"), { label: "N", sub: "i", sup: "2" });
+  assert.deepEqual(parseLabelSpec("N_i"), { label: "N", sub: "i", sup: null });
+  assert.deepEqual(parseLabelSpec("N^2_i"), { label: "N", sub: "i", sup: "2" });
+  assert.deepEqual(parseLabelSpec("N"), { label: "N", sub: null, sup: null });
+  // 正打到一半的记号先当标签文字（不然边打字边重绘会丢内容）
+  assert.deepEqual(parseLabelSpec("N<sub>i"), { label: "N<sub>i", sub: null, sup: null });
+  // 引号里不解析
+  assert.deepEqual(parseLabelSpec('"a<sub>b</sub>"'), { label: "a<sub>b</sub>", sub: null, sup: null });
+  assert.equal(labelSpecText({ label: "N", sub: "the mailman", sup: null }), "N<sub>the mailman</sub>");
+  assert.equal(
+    labelSpecText({ label: "a<sub>b</sub>", sub: null, sup: null }),
+    '"a<sub>b</sub>"',
+    "标签长得像记号时要加引号",
+  );
+  assert.equal(subSupText({ sub: "i", sup: "2" }), "<sub>i</sub><sup>2</sup>");
 });
 t("纯数字叶子无需引号", () => {
   assert.equal(roundtrip("[S 5]"), "[S 5]");
@@ -557,12 +617,13 @@ t("声明词大小写不敏感，导出统一成首字母大写", () => {
 console.log("\n[颜色声明]");
 
 t("Red(节点号) 能设置颜色，且在两套记法里往返", () => {
-  const src = "[CP [NP what_i] [C' [C is_j]]]\nRed(3)\nBlue(4)";
+  // 下标写成 `_i` 是老写法，读得进去；写出来一律是规范形式 `<sub>i</sub>`
+  const src = "[CP [NP what<sub>i</sub>] [C' [C is<sub>j</sub>]]]\nRed(3)\nBlue(4)";
   const root = parse(src);
   assert.equal(preorder(root).find((n) => n.label === "what").color, "red");
   assert.equal(preorder(root).find((n) => n.label === "C").color, "blue");
   assert.equal(toText(root), src);
-  const rules = "0 CP -> NP\n0 CP -> C'\n1 NP -> what_i\n2 C' -> C\n\nRed(3)";
+  const rules = "0 CP -> NP\n0 CP -> C'\n1 NP -> what<sub>i</sub>\n2 C' -> C\n\nRed(3)";
   assert.equal(toRulesText(parseRules(rules)), rules);
 });
 
@@ -974,7 +1035,7 @@ t("强制上移：没有女儿节点也可以（结果是一格空范畴）", ()
 t("强制上移：下标、上标跟着标签一起搬，字体样式不搬", () => {
   const root = parse("[G [M [X_1 [C]]]]");
   const x = preorder(root).find((n) => n.label === "X");
-  x.sup = "2"; // 文本里一个节点只能写一种，模型里两种都试一遍
+  x.sup = "2"; // 现在下标和上标可以同时存在，两种都试一遍
   x.italic = true;
   x.color = "red";
   const next = forceCollapseLevel(root, x);
@@ -983,7 +1044,7 @@ t("强制上移：下标、上标跟着标签一起搬，字体样式不搬", ()
   assert.equal(next.sup, "2");
   assert.equal(next.italic, false, "样式不搬：新节点还是母亲节点原来的样式");
   assert.equal(next.color, null);
-  assert.equal(toText(root), "[G [X_1 C]]");
+  assert.equal(toText(root), "[G [X<sub>1</sub><sup>2</sup> C]]");
 });
 
 t("强制上移：根节点不行（没有母亲节点可改），树也不该被动", () => {

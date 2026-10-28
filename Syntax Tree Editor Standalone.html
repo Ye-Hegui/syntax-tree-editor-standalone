@@ -1333,15 +1333,24 @@ Red(4)</pre>
         <table>
           <tbody>
             <tr><td><code>[S [NP Dogs][VP barks]]</code></td><td>方括号表示节点，裸标签表示叶子节点。</td></tr>
-            <tr><td><code>[N_s Dogs]</code></td><td><code>_</code> 后面的内容会写成下标。</td></tr>
-            <tr><td><code>[N^s Cats]</code></td><td><code>^</code> 后面的内容会写成上标。</td></tr>
-            <tr><td><code>["Main clause" [S][V][O]]</code></td><td>标签里含空格、引号、<code>_</code> 或 <code>^</code> 时，用双引号将标签整体括起来。</td></tr>
+            <tr><td><code>[N&lt;sub&gt;i&lt;/sub&gt; Dogs]</code></td><td><code>&lt;sub&gt;…&lt;/sub&gt;</code> 里的内容写成下标，内容里可以有空格。</td></tr>
+            <tr><td><code>[N&lt;sup&gt;2&lt;/sup&gt; Cats]</code></td><td><code>&lt;sup&gt;…&lt;/sup&gt;</code> 里的内容写成上标。</td></tr>
+            <tr><td><code>[N&lt;sub&gt;i&lt;/sub&gt;&lt;sup&gt;2&lt;/sup&gt; Cats]</code></td><td>下标和上标可以同时存在，两种顺序都行，导出时下标在前。</td></tr>
+            <tr><td><code>[N_s Dogs]</code> / <code>[N^s Cats]</code></td><td>简写：<code>_</code> 后面跟下标、<code>^</code> 后面跟上标（只能是一个词，含空格就得用上面的写法）。仍然认得，但导出统一写成 <code>&lt;sub&gt;</code> / <code>&lt;sup&gt;</code>。</td></tr>
+            <tr><td><code>["Main clause" [S][V][O]]</code></td><td>标签里含空格、引号、<code>_</code>、<code>^</code> 或 <code>&lt;sub&gt;</code> 这类记号时，用双引号将标签整体括起来。</td></tr>
             <tr><td><code>[S NP VP]</code></td><td>相邻的裸标签会合成<b>一个</b>多词叶子节点，编辑器把该节点画成三角形，表示省略的下层结构。</td></tr>
             <tr><td><code>[S [NP] [VP]]</code></td><td>这才是两个各含一个词的叶子节点。和上一行画出来一模一样，但结构含义不同。</td></tr>
-            <tr><td><code>[A [B C][D E][F G -&gt;6]]</code></td><td>位移箭头，数字是节点编号。写起来不如规则记法直观。</td></tr>
+            <tr><td><code>[A [B C][D E][F G -&gt;6]]</code></td><td>位移箭头，数字是词序号。写起来不如规则记法直观。</td></tr>
             <tr><td><code>[X'' [X word]]</code></td><td>方括号包起来的空节点表示「没有展开的范畴」，该节点<b>不是</b>词，<b>词红</b>按钮不会给它标红。</td></tr>
           </tbody>
         </table>
+        <p>
+          下标上标在图上画成小一号的字：下标往右下角挪、上标往右上角挪。
+          同名的节点靠下标区分是很常见的用法，例如下面这棵树的 <code>N</code> 同时带 <code>i</code> 和 <code>2</code>：
+        </p>
+        <pre class="code-block">[NP [D the] [N&lt;sub&gt;i&lt;/sub&gt;&lt;sup&gt;2&lt;/sup&gt; cat]]</pre>
+        <img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMTIzIDExOCIgd2lkdGg9IjEyMyIgaGVpZ2h0PSIxMTgiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMjMiIGhlaWdodD0iMTE4IiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9IjYwLjMwMDAwMDAwMDAwMDAwNCIgeTE9IjMwIiB4Mj0iMjUuMjAwMDAwMDAwMDAwMDAzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iNjAuMzAwMDAwMDAwMDAwMDA0IiB5MT0iMzAiIHgyPSI5NS40IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMjUuMjAwMDAwMDAwMDAwMDAzIiB5MT0iNzUiIHgyPSIyNS4yMDAwMDAwMDAwMDAwMDMiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSI5NS40IiB5MT0iNzUiIHgyPSI5NS40IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNzIiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIzOS41IiB5PSIwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iNjAuMyIgeT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPk5QPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjczIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iOC44MDAwMDAwMDAwMDAwMDQiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjUuMjAwMDAwMDAwMDAwMDAzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+RDwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI3NCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjAiIHk9IjkwIiB3aWR0aD0iNTAuNDAwMDAwMDAwMDAwMDA2IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyNS4yMDAwMDAwMDAwMDAwMDMiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+dGhlPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9Ijc1Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iNjguNCIgeT0iNDUiIHdpZHRoPSI1NCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iODQuODAwMDAwMDAwMDAwMDEiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5OPC90ZXh0Pjx0ZXh0IHg9Ijk0LjUiIHk9IjY1LjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5pPC90ZXh0Pjx0ZXh0IHg9IjEwNS4xMDAwMDAwMDAwMDAwMSIgeT0iNTIuODQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPjI8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNzYiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI3MC4yIiB5PSI5MCIgd2lkdGg9IjUwLjQwMDAwMDAwMDAwMDAwNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iOTUuNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj5jYXQ8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" alt="N 同时带下标 i 与上标 2，两者都画出来" />
+        <p>改名框里也能直接打这两种记号：选中节点按 <kbd>F2</kbd>，输入 <code>N&lt;sub&gt;i&lt;/sub&gt;</code> 就会变成下标。</p>
 
         <h4 id="doc-rules">2. 规则记法</h4>
         <p>每行写一条「母亲节点 → 女儿节点」的边，适合逐条核对。下面这棵树：</p>
@@ -1361,7 +1370,7 @@ Red(4)</pre>
             <tr><td><b>其余节点</b></td><td>编号等于该节点第一次出现在箭头右边的那一行的<b>行号</b>。</td></tr>
             <tr><td><b>行号</b></td><td>显示在代码框左边的装订线上，不在文本里，框选复制不会带上行号。装订线给每一行都编号，包括空行和箭头行。</td></tr>
             <tr><td><b>引用顺序</b></td><td>母亲节点必须先在前面出现过，编号一定小于当前行号。同一个母亲节点的行不必连续。</td></tr>
-            <tr><td><b>标签</b></td><td>含空格、引号、<code>_</code> 或 <code>^</code> 时用双引号括起来。下标上标写在标签后面，例如 <code>NP_1</code>、<code>N^s</code>、<code>"the mailman"_1</code>。</td></tr>
+            <tr><td><b>标签</b></td><td>含空格、引号、<code>_</code>、<code>^</code> 或 <code>&lt;sub&gt;</code> 这类记号时用双引号括起来。下标上标写在标签后面，和括号记法一样：<code>NP&lt;sub&gt;1&lt;/sub&gt;</code>、<code>N&lt;sup&gt;s&lt;/sup&gt;</code>、<code>N&lt;sub&gt;the mailman&lt;/sub&gt;</code>（简写 <code>NP_1</code>、<code>N^s</code> 也认得）。</td></tr>
             <tr><td><b>编号错误</b></td><td>中间插一行或删一行会让下面的引用错位，编辑器会自动把行首编号改回正确值，不需要自己数。</td></tr>
           </tbody>
         </table>
@@ -1428,7 +1437,7 @@ Red(4)</pre>
         <a href="https://disk.pku.edu.cn/link/AADCFA80E10F2B4D49B2FA4A8A0C9BB2CF" data-i18n="page.link.download">组件下载</a>
       </span>
       <br />
-      v1.3.0-beta.1 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
+      v1.3.0-beta.2 · <span data-i18n="page.licence">以 MIT 许可证发布</span>，Copyright (c) 2026 Ye Hegui。
     </footer>
   <script>
 (function () {
@@ -2945,15 +2954,28 @@ Red(4)</pre>
 <table>
   <tbody>
     <tr><td><code>[S [NP Dogs][VP barks]]</code></td><td>Square brackets mark nodes; a bare label is a leaf node.</td></tr>
-    <tr><td><code>[N_s Dogs]</code></td><td>Whatever follows <code>_</code> is written as a subscript.</td></tr>
-    <tr><td><code>[N^s Cats]</code></td><td>Whatever follows <code>^</code> is written as a superscript.</td></tr>
-    <tr><td><code>["Main clause" [S][V][O]]</code></td><td>When a label contains spaces, quotes, <code>_</code> or <code>^</code>, wrap the whole label in double quotes.</td></tr>
+    <tr><td><code>[N&lt;sub&gt;i&lt;/sub&gt; Dogs]</code></td><td>Whatever is inside <code>&lt;sub&gt;…&lt;/sub&gt;</code> is written as a subscript; the content may contain spaces.</td></tr>
+    <tr><td><code>[N&lt;sup&gt;2&lt;/sup&gt; Cats]</code></td><td>Whatever is inside <code>&lt;sup&gt;…&lt;/sup&gt;</code> is written as a superscript.</td></tr>
+    <tr><td><code>[N&lt;sub&gt;i&lt;/sub&gt;&lt;sup&gt;2&lt;/sup&gt; Cats]</code></td><td>A node can carry a subscript and a superscript at the same time; either order is accepted, and exports put the subscript first.</td></tr>
+    <tr><td><code>[N_s Dogs]</code> / <code>[N^s Cats]</code></td><td>Short forms: <code>_</code> takes a subscript, <code>^</code> a superscript (one word only — use the forms above when the content has spaces). Still accepted, but exports always write <code>&lt;sub&gt;</code> / <code>&lt;sup&gt;</code>.</td></tr>
+    <tr><td><code>["Main clause" [S][V][O]]</code></td><td>When a label contains spaces, quotes, <code>_</code>, <code>^</code> or a tag such as <code>&lt;sub&gt;</code>, wrap the whole label in double quotes.</td></tr>
     <tr><td><code>[S NP VP]</code></td><td>Adjacent bare labels merge into <b>one</b> multi-word leaf node, which the editor draws as a triangle to stand for elided structure.</td></tr>
     <tr><td><code>[S [NP] [VP]]</code></td><td>This is two leaf nodes with one word each. It looks identical to the row above, but means something different.</td></tr>
-    <tr><td><code>[A [B C][D E][F G -&gt;6]]</code></td><td>A movement arrow; the number is a node number. Less readable than rule notation.</td></tr>
+    <tr><td><code>[A [B C][D E][F G -&gt;6]]</code></td><td>A movement arrow; the number is a word ordinal. Less readable than rule notation.</td></tr>
     <tr><td><code>[X'' [X word]]</code></td><td>An empty node in brackets means “a category that is not expanded”. It is <b>not</b> a word, and <b>Words red</b> will not colour it.</td></tr>
   </tbody>
 </table>
+<p>
+  Subscripts and superscripts are drawn one size smaller: a subscript sits below and to the right of the
+  label, a superscript above and to the right. Distinguishing nodes by a subscript is a common habit, so
+  here is a tree whose <code>N</code> carries both <code>i</code> and <code>2</code>:
+</p>
+<pre class="code-block">[NP [D the] [N&lt;sub&gt;i&lt;/sub&gt;&lt;sup&gt;2&lt;/sup&gt; cat]]</pre>
+<img class="doc-shot" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3RlLXN2ZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMTIzIDExOCIgd2lkdGg9IjEyMyIgaGVpZ2h0PSIxMTgiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMjMiIGhlaWdodD0iMTE4IiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+PGc+PGxpbmUgeDE9IjYwLjMwMDAwMDAwMDAwMDAwNCIgeTE9IjMwIiB4Mj0iMjUuMjAwMDAwMDAwMDAwMDAzIiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iNjAuMzAwMDAwMDAwMDAwMDA0IiB5MT0iMzAiIHgyPSI5NS40IiB5Mj0iNDIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48bGluZSB4MT0iMjUuMjAwMDAwMDAwMDAwMDAzIiB5MT0iNzUiIHgyPSIyNS4yMDAwMDAwMDAwMDAwMDMiIHkyPSI4NyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuMiI+PC9saW5lPjxsaW5lIHgxPSI5NS40IiB5MT0iNzUiIHgyPSI5NS40IiB5Mj0iODciIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjIiPjwvbGluZT48L2c+PGc+PC9nPjxnPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNzIiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSIzOS41IiB5PSIwIiB3aWR0aD0iNDEuNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iNjAuMyIgeT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPk5QPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9IjczIj48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iOC44MDAwMDAwMDAwMDAwMDQiIHk9IjQ1IiB3aWR0aD0iMzIuOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iMjUuMjAwMDAwMDAwMDAwMDAzIiB5PSI1OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMDAwMENDIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+RDwvdGV4dD48L2c+PGcgY2xhc3M9InN0ZS1ub2RlIiBkYXRhLWlkPSI3NCI+PHJlY3QgY2xhc3M9InN0ZS1oaXQiIHg9IjAiIHk9IjkwIiB3aWR0aD0iNTAuNDAwMDAwMDAwMDAwMDA2IiBoZWlnaHQ9IjI4IiByeD0iNiIgZmlsbD0idHJhbnNwYXJlbnQiIHBvaW50ZXItZXZlbnRzPSJhbGwiPjwvcmVjdD48dGV4dCB4PSIyNS4yMDAwMDAwMDAwMDAwMDMiIHk9IjEwNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjQ0MwMDAwIiBwb2ludGVyLWV2ZW50cz0ibm9uZSI+dGhlPC90ZXh0PjwvZz48ZyBjbGFzcz0ic3RlLW5vZGUiIGRhdGEtaWQ9Ijc1Ij48cmVjdCBjbGFzcz0ic3RlLWhpdCIgeD0iNjguNCIgeT0iNDUiIHdpZHRoPSI1NCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iODQuODAwMDAwMDAwMDAwMDEiIHk9IjU5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5OPC90ZXh0Pjx0ZXh0IHg9Ijk0LjUiIHk9IjY1LjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiMwMDAwQ0MiIHBvaW50ZXItZXZlbnRzPSJub25lIj5pPC90ZXh0Pjx0ZXh0IHg9IjEwNS4xMDAwMDAwMDAwMDAwMSIgeT0iNTIuODQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzAwMDBDQyIgcG9pbnRlci1ldmVudHM9Im5vbmUiPjI8L3RleHQ+PC9nPjxnIGNsYXNzPSJzdGUtbm9kZSIgZGF0YS1pZD0iNzYiPjxyZWN0IGNsYXNzPSJzdGUtaGl0IiB4PSI3MC4yIiB5PSI5MCIgd2lkdGg9IjUwLjQwMDAwMDAwMDAwMDAwNiIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InRyYW5zcGFyZW50IiBwb2ludGVyLWV2ZW50cz0iYWxsIj48L3JlY3Q+PHRleHQgeD0iOTUuNCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNDQzAwMDAiIHBvaW50ZXItZXZlbnRzPSJub25lIj5jYXQ8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" alt="N carries subscript i and superscript 2; both are drawn" />
+<p>
+  The rename box understands both markers as well: select a node, press <kbd>F2</kbd> and type
+  <code>N&lt;sub&gt;i&lt;/sub&gt;</code> to turn it into a subscript.
+</p>
 
 <h4 id="doc-rules">3.2 Rule notation</h4>
 <p>One “mother node → daughter node” edge per line; good for checking edge by edge. Take this tree:</p>
@@ -2973,7 +2995,7 @@ Red(4)</pre>
     <tr><td><b>Other nodes</b></td><td>A node's number is the <b>line number</b> of the line where it first appears to the right of an arrow.</td></tr>
     <tr><td><b>Line numbers</b></td><td>Shown in the gutter to the left of the code box, not in the text, so copying a selection never brings them along. The gutter numbers every line, including blank lines and arrow lines.</td></tr>
     <tr><td><b>Reference order</b></td><td>A mother node must have appeared earlier, so its number is always smaller than the current line number. The lines of one mother need not be adjacent.</td></tr>
-    <tr><td><b>Labels</b></td><td>Wrap in double quotes when a label contains spaces, quotes, <code>_</code> or <code>^</code>. Subscripts and superscripts follow the label, e.g. <code>NP_1</code>, <code>N^s</code>, <code>"the mailman"_1</code>.</td></tr>
+    <tr><td><b>Labels</b></td><td>Wrap in double quotes when a label contains spaces, quotes, <code>_</code>, <code>^</code> or a tag such as <code>&lt;sub&gt;</code>. Subscripts and superscripts follow the label, exactly as in bracket notation: <code>NP&lt;sub&gt;1&lt;/sub&gt;</code>, <code>N&lt;sup&gt;s&lt;/sup&gt;</code>, <code>N&lt;sub&gt;the mailman&lt;/sub&gt;</code> (the short forms <code>NP_1</code> and <code>N^s</code> work too).</td></tr>
     <tr><td><b>Wrong numbers</b></td><td>Inserting or deleting a line shifts the references below it; the editor repairs the leading numbers for you, so there is no need to count.</td></tr>
   </tbody>
 </table>
@@ -3090,9 +3112,115 @@ const QUOTED = "QUOTED";
 const NUMBER = "NUMBER";
 const SUB = "SUB";
 const SUP = "SUP";
+const SUB_TEXT = "SUB_TEXT"; // <sub>…</sub> 里的内容
+const SUP_TEXT = "SUP_TEXT"; // <sup>…</sup> 里的内容
 const MOVEMENT = "MOVEMENT";
 
 const VALUE_TOKENS = new Set([STRING, QUOTED, NUMBER]);
+
+// ---------------------------------------------------------------- 下标 / 上标
+
+/**
+ * 下标的两种写法：
+ *   N_s                      `_` 后面跟一个 token（老写法，留着兼容）
+ *   N<sub>s</sub>            显式的开始 / 结束记号 —— 内容可以含空格、`_`、`^`、逗号……
+ *
+ * 上标同理（`^s` / `N<sup>s</sup>`）。一个节点可以**同时**有下标和上标，两种写法可以混用，
+ * 顺序随意（`N<sub>i</sub>^2` 与 `N^2<sub>i</sub>` 等价）。每种最多写一次。
+ *
+ * ⚠️ 记号一律**小写**、必须成对；`"%Empty"` 那种引号里的一切都是普通文字，
+ * 所以 `"a<sub>b</sub>"` 是一个标签为 `a<sub>b</sub>` 的节点。
+ */
+const SUB_OPEN = "<sub>";
+const SUB_CLOSE = "</sub>";
+const SUP_OPEN = "<sup>";
+const SUP_CLOSE = "</sup>";
+
+const TAG_OPENERS = [
+  { open: SUB_OPEN, close: SUB_CLOSE, type: SUB_TEXT, sup: false },
+  { open: SUP_OPEN, close: SUP_CLOSE, type: SUP_TEXT, sup: true },
+];
+
+/** 标签文本里出现这些就算"像记号"，整体必须加引号，否则再解析回来会被当成下标 */
+const TAG_LIKE = new RegExp(
+  [SUB_OPEN, SUB_CLOSE, SUP_OPEN, SUP_CLOSE].map((s) => s.replace(/[/]/g, "\\/")).join("|"),
+);
+
+/** 把下标/上标写成规范的记号形式（只写有内容的那个/那些） */
+function subSupText(n) {
+  let out = "";
+  if (n.sub != null && n.sub !== "") out += SUB_OPEN + n.sub + SUB_CLOSE;
+  if (n.sup != null && n.sup !== "") out += SUP_OPEN + n.sup + SUP_CLOSE;
+  return out;
+}
+
+/**
+ * 把 `X<sub>i</sub><sup>2</sup>` 这种"标签+下标/上标"的文字拆成 { label, sub, sup }。
+ *
+ * 用在改名框与 `setLabel()`（图形界面要能加下标）。和记法里的解析不同，这里
+ * **宽松**：写不成记号的部分就当普通标签文字（举例：正打到一半的 `X<sub>` 先当标签），
+ * 这样边打字边重绘不会报错、也不会把已输入的内容吞掉。
+ */
+function parseLabelSpec(text) {
+  const raw = String(text ?? "");
+  const out = { label: "", sub: null, sup: null };
+  let i = 0;
+  let label = "";
+  while (i < raw.length) {
+    // 引号里的一切都算标签文字（和记法里的引号规则一致）
+    if (raw[i] === '"') {
+      const end = raw.indexOf('"', i + 1);
+      if (end < 0) {
+        label += raw.slice(i + 1);
+        i = raw.length;
+        break;
+      }
+      label += raw.slice(i + 1, end);
+      i = end + 1;
+      continue;
+    }
+    if (raw[i] === "_" || raw[i] === "^") {
+      // 老写法：_x / ^x（读到空白或下一个记号为止，和规则记法一致）
+      const isSup = raw[i] === "^";
+      let j = i + 1;
+      const startsTag = (at) => TAG_OPENERS.some((t) => raw.startsWith(t.open, at));
+      while (j < raw.length && !/\s/.test(raw[j]) && raw[j] !== "_" && raw[j] !== "^" && !startsTag(j)) j++;
+      const v = raw.slice(i + 1, j).trim();
+      if (v !== "") {
+        if (isSup) out.sup = v;
+        else out.sub = v;
+        i = j;
+        continue;
+      }
+    }
+    const tag = TAG_OPENERS.find((t) => raw.startsWith(t.open, i));
+    if (tag) {
+      const end = raw.indexOf(tag.close, i + tag.open.length);
+      if (end < 0) {
+        // 还没写完（正在打字）：先原样当标签文字
+        label += raw.slice(i);
+        i = raw.length;
+        break;
+      }
+      const v = raw.slice(i + tag.open.length, end).trim();
+      if (tag.sup) out.sup = v === "" ? null : v;
+      else out.sub = v === "" ? null : v;
+      i = end + tag.close.length;
+      continue;
+    }
+    label += raw[i];
+    i++;
+  }
+  out.label = label;
+  return out;
+}
+
+/** { label, sub, sup } -> 规范文字（标签该加引号就加，下标/上标一律写成记号形式） */
+function labelSpecText(spec, mode = "node") {
+  const label = String(spec.label ?? "");
+  return quote(label, mode, isEscapeLabel(label) && !spec.escape) + subSupText(spec);
+}
+
 
 // ---------------------------------------------------------------- 词法分析
 
@@ -3134,6 +3262,20 @@ function tokenize(input) {
       i = close + 1;
       continue;
     }
+    // <sub>…</sub> / <sup>…</sup>：整个连内容一起读成一个 token（内容里可以有空格）
+    if (ch === "<") {
+      const tag = TAG_OPENERS.find((t) => input.startsWith(t.open, i));
+      if (tag) {
+        const bodyStart = i + tag.open.length;
+        const end = input.indexOf(tag.close, bodyStart);
+        if (end < 0) throw new NotationError(`"${tag.open}" 没有闭合（要写成 ${tag.open}…${tag.close}）`, i);
+        tokens.push({ type: tag.type, value: input.slice(bodyStart, end), start: i, end: end + tag.close.length });
+        i = end + tag.close.length;
+        continue;
+      }
+      const stray = TAG_OPENERS.find((t) => input.startsWith(t.close, i));
+      if (stray) throw new NotationError(`多余的 "${stray.close}"（前面没有 ${stray.open}）`, i);
+    }
     // 位移箭头默认写成 ->。`-->` `<-` `<>` 是旧写法，保留可读，一律按 -> 处理
     if (input.startsWith("-->", i)) {
       tokens.push({ type: MOVEMENT, start: i, end: i + 3 });
@@ -3163,9 +3305,13 @@ function tokenize(input) {
       continue;
     }
 
-    // 裸字符串：直到空白或控制字符为止
+    // 裸字符串：直到空白、控制字符或下标/上标记号为止
     let j = i;
-    while (j < input.length && !WS.has(input[j]) && !CTRL.has(input[j])) j++;
+    while (j < input.length && !WS.has(input[j]) && !CTRL.has(input[j])) {
+      if (input[j] === "<" && TAG_OPENERS.some((t) => input.startsWith(t.open, j) || input.startsWith(t.close, j)))
+        break;
+      j++;
+    }
     tokens.push({ type: STRING, value: input.slice(i, j), start: i, end: j });
     i = j;
   }
@@ -3175,14 +3321,43 @@ function tokenize(input) {
 
 // ---------------------------------------------------------------- 语法分析
 
+/**
+ * 读标签后面的一串下标/上标：`_x` / `^x` / `<sub>…</sub>` / `<sup>…</sup>`，
+ * 可以混用、顺序随意，每种最多一次。没有就返回 null。
+ */
 function parseSubSup(tokens, i) {
-  const t = tokens[i];
-  if (!t || (t.type !== SUB && t.type !== SUP)) return null;
-  const isSup = t.type === SUP;
-  const v = tokens[i + 1];
-  if (!v || !VALUE_TOKENS.has(v.type))
-    throw new NotationError(`"${isSup ? "^" : "_"}" 之后需要下标或上标内容`, t.start);
-  return { isSup, value: String(v.value), next: i + 2 };
+  const out = { sub: null, sup: null };
+  let j = i;
+  let seen = false;
+  while (j < tokens.length) {
+    const t = tokens[j];
+    let isSup;
+    let value;
+    if (t.type === SUB || t.type === SUP) {
+      isSup = t.type === SUP;
+      const v = tokens[j + 1];
+      if (!v || !VALUE_TOKENS.has(v.type))
+        throw new NotationError(`"${isSup ? "^" : "_"}" 之后需要下标或上标内容`, t.start);
+      value = String(v.value);
+      j += 2;
+    } else if (t.type === SUB_TEXT || t.type === SUP_TEXT) {
+      isSup = t.type === SUP_TEXT;
+      value = String(t.value).trim();
+      if (value === "") throw new NotationError(`"${isSup ? SUP_OPEN : SUB_OPEN}" 里没有内容`, t.start);
+      j += 1;
+    } else {
+      break;
+    }
+    if (isSup) {
+      if (out.sup != null) throw new NotationError("上标只能写一次", t.start);
+      out.sup = value;
+    } else {
+      if (out.sub != null) throw new NotationError("下标只能写一次", t.start);
+      out.sub = value;
+    }
+    seen = true;
+  }
+  return seen ? { sub: out.sub, sup: out.sup, next: j } : null;
 }
 
 function parseNode(tokens, i) {
@@ -3199,8 +3374,8 @@ function parseNode(tokens, i) {
 
   const ss = parseSubSup(tokens, i);
   if (ss) {
-    if (ss.isSup) n.sup = ss.value;
-    else n.sub = ss.value;
+    n.sub = ss.sub;
+    n.sup = ss.sup;
     i = ss.next;
   }
 
@@ -3251,8 +3426,8 @@ function parseValue(tokens, i) {
 
   const ss = parseSubSup(tokens, i);
   if (ss) {
-    if (ss.isSup) n.sup = ss.value;
-    else n.sub = ss.value;
+    n.sub = ss.sub;
+    n.sup = ss.sup;
     i = ss.next;
   }
 
@@ -3274,6 +3449,8 @@ function tokenText(t) {
     case CLOSE: return "]";
     case SUB: return "_";
     case SUP: return "^";
+    case SUB_TEXT: return SUB_OPEN + t.value + SUB_CLOSE;
+    case SUP_TEXT: return SUP_OPEN + t.value + SUP_CLOSE;
     case MOVEMENT: return "->";
     default: return String(t.value);
   }
@@ -3331,6 +3508,7 @@ function needsQuote(s, mode) {
   const str = s == null ? "" : String(s);
   if (str.length === 0) return true;
   if (/[\[\]^_"]/.test(str)) return true;
+  if (TAG_LIKE.test(str)) return true; // 含 <sub> 之类：不加引号会被当成下标/上标
   if (/^(-->|->|<-|<>)/.test(str)) return true;
 
   if (mode === "node") {
@@ -3382,10 +3560,8 @@ function serialize(root) {
     if (bracketed) out += "[";
     // 标签正好是 %Empty 又不是转义节点时，必须带引号写，否则再解析回来就变成转义节点了
     out += quote(n.label, bracketed ? "node" : "leaf", isEscapeLabel(n.label) && !n.escape);
-
-    const hasSub = n.sub != null && n.sub !== "";
-    const ss = hasSub ? n.sub : n.sup != null && n.sup !== "" ? n.sup : null;
-    if (ss != null) out += (hasSub ? "_" : "^") + quote(ss, "token");
+    // 下标 / 上标一律写成显式记号（作者 2026-09-30 定的规范形式），两种可以同时存在
+    out += subSupText(n);
 
     if (!isLeaf) {
       const lone = n.children.length === 1;
@@ -3458,12 +3634,20 @@ class RuleError extends Error {
 
 const RULE_WS = /\s/;
 
-/** 读一个"标签 [+ 下/上标]"的 token */
+/**
+ * 读一个"标签 [+ 下标 / 上标]"的 token。
+ *
+ * 下标上标有两种写法，和括号记法一致：
+ *   `_x` / `^x`（老写法，一个 token）
+ *   `<sub>…</sub>` / `<sup>…</sup>`（内容可以含空格、`_`、`^`）
+ * 两种可以混用、顺序随意，每种最多一次。
+ */
 function parseLabelToken(text, lineNo) {
   let i = 0;
   const skip = () => {
     while (i < text.length && RULE_WS.test(text[i])) i++;
   };
+  const startsTag = (at) => text.startsWith(SUB_OPEN, at) || text.startsWith(SUP_OPEN, at);
 
   skip();
   if (i >= text.length) throw new RuleError("这里需要一个标签", lineNo);
@@ -3478,35 +3662,66 @@ function parseLabelToken(text, lineNo) {
     i = end + 1;
   } else {
     let j = i;
-    while (j < text.length && !RULE_WS.test(text[j]) && text[j] !== "_" && text[j] !== "^") j++;
+    while (j < text.length && !RULE_WS.test(text[j]) && text[j] !== "_" && text[j] !== "^" && !startsTag(j)) j++;
     label = text.slice(i, j);
     i = j;
     if (label === "")
       throw new RuleError("标签不能以 _ 或 ^ 开头，否则分不清是标签还是下标", lineNo);
+    // 裸标签里若是"多出来的结束记号"，和括号记法一样直接报错（带引号写就是普通文字）
+    const stray = [SUB_CLOSE, SUP_CLOSE].find((c) => label.includes(c));
+    if (stray) throw new RuleError(`多余的 "${stray}"（前面没有对应的开始记号）`, lineNo);
   }
 
   let sub = null;
   let sup = null;
-  skip();
-  if (text[i] === "_" || text[i] === "^") {
-    const isSup = text[i] === "^";
-    i++;
+  for (;;) {
     skip();
-    let v;
-    if (text[i] === '"') {
-      const end = text.indexOf('"', i + 1);
-      if (end < 0) throw new RuleError("引号没有闭合", lineNo);
-      v = text.slice(i + 1, end);
-      i = end + 1;
-    } else {
-      let j = i;
-      while (j < text.length && !RULE_WS.test(text[j])) j++;
-      v = text.slice(i, j);
-      i = j;
+    if (text[i] === "_" || text[i] === "^") {
+      const isSup = text[i] === "^";
+      i++;
+      skip();
+      let v;
+      if (text[i] === '"') {
+        const end = text.indexOf('"', i + 1);
+        if (end < 0) throw new RuleError("引号没有闭合", lineNo);
+        v = text.slice(i + 1, end);
+        i = end + 1;
+      } else {
+        let j = i;
+        while (j < text.length && !RULE_WS.test(text[j]) && text[j] !== "_" && text[j] !== "^" && !startsTag(j)) j++;
+        v = text.slice(i, j);
+        i = j;
+      }
+      if (v === "") throw new RuleError(`${isSup ? "上" : "下"}标后面缺少内容`, lineNo);
+      if (isSup) {
+        if (sup != null) throw new RuleError("上标只能写一次", lineNo);
+        sup = v;
+      } else {
+        if (sub != null) throw new RuleError("下标只能写一次", lineNo);
+        sub = v;
+      }
+      continue;
     }
-    if (v === "") throw new RuleError(`${isSup ? "上" : "下"}标后面缺少内容`, lineNo);
-    if (isSup) sup = v;
-    else sub = v;
+    const isSubTag = text.startsWith(SUB_OPEN, i);
+    const isSupTag = text.startsWith(SUP_OPEN, i);
+    if (isSubTag || isSupTag) {
+      const open = isSupTag ? SUP_OPEN : SUB_OPEN;
+      const close = isSupTag ? SUP_CLOSE : SUB_CLOSE;
+      const end = text.indexOf(close, i + open.length);
+      if (end < 0) throw new RuleError(`"${open}" 没有闭合（要写成 ${open}…${close}）`, lineNo);
+      const v = text.slice(i + open.length, end).trim();
+      if (v === "") throw new RuleError(`"${open}" 里没有内容`, lineNo);
+      if (isSupTag) {
+        if (sup != null) throw new RuleError("上标只能写一次", lineNo);
+        sup = v;
+      } else {
+        if (sub != null) throw new RuleError("下标只能写一次", lineNo);
+        sub = v;
+      }
+      i = end + close.length;
+      continue;
+    }
+    break;
   }
 
   skip();
@@ -3574,13 +3789,15 @@ function parseLine(raw, lineNo) {
  * 这样编辑器才有机会把编号自动修回去，而不是直接报错卡住。
  */
 function resolveMother(byId, e) {
+  // 标签 + 下标/上标都相同才算同一个节点（不然 N<sub>1</sub> 与 N<sub>2</sub> 会认错）
+  const same = (n) => n.label === e.spec.label && (n.sub ?? null) === (e.spec.sub ?? null) && (n.sup ?? null) === (e.spec.sup ?? null);
   const exact = byId.get(e.motherId);
-  if (exact && exact.label === e.spec.label) return exact;
+  if (exact && same(exact)) return exact;
 
   let best = null;
   let bestGap = Infinity;
   for (const [id, n] of byId) {
-    if (n.label !== e.spec.label) continue;
+    if (!same(n)) continue;
     const gap = Math.abs(id - e.motherId);
     if (gap < bestGap) {
       bestGap = gap;
@@ -3676,15 +3893,13 @@ function parseRules(text) {
 function tokenOf(n) {
   const label = String(n.label ?? "");
   // 标签长得像转义节点（%Empty 或带撇）但又不是转义节点时，必须带引号写，
-  // 否则再解析回来就变成转义节点了
+  // 否则再解析回来就变成转义节点了。含 <sub>/<sup> 字样的标签同理（不加引号会被当成下标）
   const force = isEscapeLabel(label) && !n.escape;
-  const bare = !force && label !== "" && !/[\s"^_]/.test(label) && !/-->|->/.test(label);
+  const tagLike = /<\/?su[bp]>/.test(label);
+  const bare = !force && !tagLike && label !== "" && !/[\s"^_]/.test(label) && !/-->|->/.test(label);
   const head = bare ? label : `"${label.replace(/"/g, "")}"`;
-
-  const ss = (v) => (/[\s"]/.test(String(v)) ? `"${String(v).replace(/"/g, "")}"` : String(v));
-  if (n.sub != null && n.sub !== "") return `${head}_${ss(n.sub)}`;
-  if (n.sup != null && n.sup !== "") return `${head}^${ss(n.sup)}`;
-  return head;
+  // 下标 / 上标一律写成显式记号（和括号记法一样），两种可以同时存在
+  return head + subSupText(n);
 }
 
 /**
@@ -3820,15 +4035,17 @@ function layout(root, measure, options = {}) {
   const levelHeight = Math.round(o.fontSize * 2.8 * o.vscale);
   const subSize = Math.round(o.fontSize * 0.72);
 
-  /** @type {Map<object, {node:object,textW:number,subW:number,labelW:number,w:number,x:number,y:number,cx:number,depth:number,row:number}>} */
+  /** @type {Map<object, {node:object,textW:number,subW:number,supW:number,labelW:number,w:number,x:number,y:number,cx:number,depth:number,row:number}>} */
   const info = new Map();
 
   function measureNode(n) {
     const textW = measure(n.label, o.fontSize, o.fontFamily);
-    const hasSS = (n.sub != null && n.sub !== "") || (n.sup != null && n.sup !== "");
-    const ssText = hasSS ? String(n.sub != null && n.sub !== "" ? n.sub : n.sup) : "";
-    const subW = hasSS ? measure(ssText, subSize, o.fontFamily) + 4 : 0;
-    let labelW = Math.max(textW + subW + o.padX * 2, o.minLabelWidth);
+    // 下标和上标可以同时存在（`N<sub>i</sub><sup>2</sup>`），所以各算各的宽度，并排放。
+    const hasSub = n.sub != null && n.sub !== "";
+    const hasSup = n.sup != null && n.sup !== "";
+    const subW = hasSub ? measure(String(n.sub), subSize, o.fontFamily) + 4 : 0;
+    const supW = hasSup ? measure(String(n.sup), subSize, o.fontFamily) + 4 : 0;
+    let labelW = Math.max(textW + subW + supW + o.padX * 2, o.minLabelWidth);
     // 导出时转义节点不画方框，也就不该占横向位置：
     // 否则它那 76.8px 的幽灵宽度会把儿女整体推偏，分叉点看着就不对称了。
     // （画布上仍然按方框算宽 —— 那边 %Empty 是要显示的，0 宽会让文字压到邻居。）
@@ -3837,6 +4054,7 @@ function layout(root, measure, options = {}) {
       node: n,
       textW,
       subW,
+      supW,
       labelW,
       w: labelW,
       x: 0,
@@ -4335,7 +4553,7 @@ function drawTree(svg, lay, opts = {}) {
       }),
     );
 
-    const contentW = it.textW + it.subW;
+    const contentW = it.textW + it.subW + it.supW;
     const contentLeft = it.cx - contentW / 2;
     // 只有"词"染红：叶子节点、而且是母亲节点唯一的女儿节点（也就是记法里写成裸标签的那种），
     // 或者带位移箭头的叶子。方括号包起来的空节点是范畴，跟非叶子一样用蓝色。
@@ -4363,12 +4581,13 @@ function drawTree(svg, lay, opts = {}) {
     label.textContent = n.label;
     g.appendChild(label);
 
+    // 下标与上标可以同时存在：下标排在标签右边、往下挪，上标紧跟在它后面、往上挪
     const hasSub = n.sub != null && n.sub !== "";
-    const ss = hasSub ? n.sub : n.sup != null && n.sup !== "" ? n.sup : null;
-    if (ss != null) {
-      const sub = el("text", {
-        x: contentLeft + it.textW + it.subW / 2,
-        y: it.y + nodeH / 2 + (hasSub ? nodeH * 0.22 : -nodeH * 0.22),
+    const hasSup = n.sup != null && n.sup !== "";
+    const putSS = (value, x, down) => {
+      const ss = el("text", {
+        x,
+        y: it.y + nodeH / 2 + (down ? nodeH * 0.22 : -nodeH * 0.22),
         "text-anchor": "middle",
         "dominant-baseline": "central",
         "font-family": o.fontFamily,
@@ -4376,9 +4595,11 @@ function drawTree(svg, lay, opts = {}) {
         fill,
         "pointer-events": "none",
       });
-      sub.textContent = String(ss);
-      g.appendChild(sub);
-    }
+      ss.textContent = String(value);
+      g.appendChild(ss);
+    };
+    if (hasSub) putSS(n.sub, contentLeft + it.textW + it.subW / 2, true);
+    if (hasSup) putSS(n.sup, contentLeft + it.textW + it.subW + it.supW / 2, false);
 
     gNode.appendChild(g);
   }
@@ -4461,6 +4682,14 @@ function download(blob, filename) {
 function stripUnsupported(text) {
   // 双引号在括号记法里无法转义，只能是引号本身
   return String(text).replace(/"/g, "");
+}
+
+/**
+ * 节点的"标签 + 下标 / 上标"文字，给改名框用。
+ * 不加引号 —— 框里不该逼用户打引号；解析那边（`parseLabelSpec`）两种都认。
+ */
+function nodeSpecText(n) {
+  return String(n.label ?? "") + subSupText(n);
 }
 
 /** 字符偏移 -> {行, 列}（都从 0 开始） */
@@ -5848,9 +6077,17 @@ class SyntaxTreeEditor {
    * 改标签（并且同步转义标记）。规则只有一条：标签**正好**是 %Empty 就是转义节点，
    * 别的写法一律是普通标签 —— 想让 %Empty 只当普通标签，在代码框里写带引号的 "%Empty"。
    */
+  /**
+   * 改一个节点的"标签 + 下标 / 上标"。
+   * 文字里可以带 `_x` / `^x` 或 `<sub>…</sub>` / `<sup>…</sup>`（宽松解析：
+   * 写不成记号的就当标签文字，这样边打字边重绘不会报错）。
+   */
   #setNodeLabel(n, text) {
-    n.label = text;
-    n.escape = isEscapeLabel(text);
+    const spec = parseLabelSpec(text);
+    n.label = spec.label;
+    n.sub = spec.sub;
+    n.sup = spec.sup;
+    n.escape = isEscapeLabel(spec.label);
   }
 
   /** 套用标签（范畴快捷按钮 / 外部调用）。空白画布上会用它当根节点开一棵树 */
@@ -5861,7 +6098,7 @@ class SyntaxTreeEditor {
       return;
     }
     const n = this.selected || this.root;
-    if (!n || n.label === clean) return;
+    if (!n || labelSpecText(n) === clean) return;
     this.#mutate(() => {
       this.#setNodeLabel(n, clean);
     });
@@ -5874,10 +6111,11 @@ class SyntaxTreeEditor {
     const it = this.lay && this.lay.info.get(n);
     if (!it) return;
     this.#pushUndo();
-    this.editBackup = n.label;
+    // 备份与显示都用"标签 + 下标/上标"的规范写法，这样下标也能在框里改
+    this.editBackup = nodeSpecText(n);
     this.editing = n;
     this.input.hidden = false;
-    this.input.value = n.label;
+    this.input.value = this.editBackup;
     this.#positionEditor();
     this.input.focus();
     this.input.select();
@@ -5907,7 +6145,7 @@ class SyntaxTreeEditor {
     const n = this.editing;
     this.editing = null;
     this.input.hidden = true;
-    if (n.label === this.editBackup) this.undoStack.pop(); // 没有实际改动，撤掉这条历史
+    if (nodeSpecText(n) === this.editBackup) this.undoStack.pop(); // 没有实际改动，撤掉这条历史
     this.#refresh({ syncText: true });
     if (refocus) this.scroller.focus();
   }
@@ -5917,13 +6155,12 @@ class SyntaxTreeEditor {
     const n = this.editing;
     this.editing = null;
     this.input.hidden = true;
-    n.label = this.editBackup;
-    n.escape = isEscapeLabel(this.editBackup);
+    // 备份是"标签 + 下标/上标"的规范文字，解析回去即可（下标也一起还原）
+    this.#setNodeLabel(n, this.editBackup);
     this.undoStack.pop();
     this.#refresh({ syncText: true });
     if (refocus) this.scroller.focus();
   }
-
   // ------------------------------------------------------------ 事件
 
   #onCanvasDown(ev) {

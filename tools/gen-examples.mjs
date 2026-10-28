@@ -29,6 +29,8 @@ const CASES = [
   // 4 强制上移：对 base 里的 X' 强制上移之后（姊妹节点 Z 被删掉，XP 改名成 X'）。
   // 放在最后，免得影响前面那些例子的 id（图里的 data-id 会进 diff）
   { name: "forceup", value: "[X' [X word2] [Y word3]]" },
+  // 3.1 括号记法：一个节点同时带下标和上标（v1.3.0-beta.2 起 `<sub>` 写法正式支持）
+  { name: "subsup", value: "[NP [D the] [N<sub>i</sub><sup>2</sup> cat]]" },
 ];
 
 installDom();

@@ -356,7 +356,7 @@ export function drawTree(svg, lay, opts = {}) {
       }),
     );
 
-    const contentW = it.textW + it.subW;
+    const contentW = it.textW + it.subW + it.supW;
     const contentLeft = it.cx - contentW / 2;
     // 只有"词"染红：叶子节点、而且是母亲节点唯一的女儿节点（也就是记法里写成裸标签的那种），
     // 或者带位移箭头的叶子。方括号包起来的空节点是范畴，跟非叶子一样用蓝色。
@@ -384,12 +384,13 @@ export function drawTree(svg, lay, opts = {}) {
     label.textContent = n.label;
     g.appendChild(label);
 
+    // 下标与上标可以同时存在：下标排在标签右边、往下挪，上标紧跟在它后面、往上挪
     const hasSub = n.sub != null && n.sub !== "";
-    const ss = hasSub ? n.sub : n.sup != null && n.sup !== "" ? n.sup : null;
-    if (ss != null) {
-      const sub = el("text", {
-        x: contentLeft + it.textW + it.subW / 2,
-        y: it.y + nodeH / 2 + (hasSub ? nodeH * 0.22 : -nodeH * 0.22),
+    const hasSup = n.sup != null && n.sup !== "";
+    const putSS = (value, x, down) => {
+      const ss = el("text", {
+        x,
+        y: it.y + nodeH / 2 + (down ? nodeH * 0.22 : -nodeH * 0.22),
         "text-anchor": "middle",
         "dominant-baseline": "central",
         "font-family": o.fontFamily,
@@ -397,9 +398,11 @@ export function drawTree(svg, lay, opts = {}) {
         fill,
         "pointer-events": "none",
       });
-      sub.textContent = String(ss);
-      g.appendChild(sub);
-    }
+      ss.textContent = String(value);
+      g.appendChild(ss);
+    };
+    if (hasSub) putSS(n.sub, contentLeft + it.textW + it.subW / 2, true);
+    if (hasSup) putSS(n.sup, contentLeft + it.textW + it.subW + it.supW / 2, false);
 
     gNode.appendChild(g);
   }

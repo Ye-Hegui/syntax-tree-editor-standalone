@@ -269,12 +269,39 @@ t("下标 / 上标不会在规则记法里丢失", () => {
   }
 });
 
-t("下标的写法：NP_1 / N^s / \"the mailman\"_1", () => {
-  assert.equal(toRulesText(parse("[TP [NP_1 x]]")), "0 TP -> NP_1\n1 NP_1 -> x");
-  assert.equal(toRulesText(parse("[TP [N^s x]]")), "0 TP -> N^s\n1 N^s -> x");
+t("下标的写法：NP_1 / N^s / \"the mailman\"_1（读旧写法，写规范形式）", () => {
+  assert.equal(
+    toRulesText(parse("[TP [NP_1 x]]")),
+    "0 TP -> NP<sub>1</sub>\n1 NP<sub>1</sub> -> x",
+  );
+  assert.equal(
+    toRulesText(parse("[TP [N^s x]]")),
+    "0 TP -> N<sup>s</sup>\n1 N<sup>s</sup> -> x",
+  );
   assert.equal(
     toRulesText(parse('[TP [NP_2 "the mailman"]]')),
-    '0 TP -> NP_2\n1 NP_2 -> "the mailman"',
+    '0 TP -> NP<sub>2</sub>\n1 NP<sub>2</sub> -> "the mailman"',
+  );
+});
+
+t("下标也能写成 <sub>…</sub>：内容可以有空格，上下标可以同时存在", () => {
+  assert.equal(
+    toRulesText(parse("[TP [NP<sub>1</sub> x]]")),
+    "0 TP -> NP<sub>1</sub>\n1 NP<sub>1</sub> -> x",
+  );
+  assert.equal(
+    toRulesText(parse("[TP [NP<sub>the mailman</sub> x]]")),
+    "0 TP -> NP<sub>the mailman</sub>\n1 NP<sub>the mailman</sub> -> x",
+  );
+  // 两种写法混着写、顺序随意，导出一律是 <sub> 在前、<sup> 在后
+  assert.equal(
+    toRulesText(parse("[TP [N^2<sub>i</sub> x]]")),
+    "0 TP -> N<sub>i</sub><sup>2</sup>\n1 N<sub>i</sub><sup>2</sup> -> x",
+  );
+  // 标签本身长得像记号时加引号，就是普通文字
+  assert.equal(
+    toRulesText(parse('[TP ["a<sub>b</sub>" x]]')),
+    '0 TP -> "a<sub>b</sub>"\n1 "a<sub>b</sub>" -> x',
   );
 });
 

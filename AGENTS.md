@@ -47,7 +47,9 @@
 树     := 节点+
 节点   := "[" 标签 节点* "]"      非叶子节点
        |  裸标签                   叶子节点
-标签   := 文字 ("_" 下标)? ("^" 上标)?     含空格/引号/_/^ 时整体用双引号包住
+标签   := 文字 (下标)? (上标)?              含空格/引号/_/^/<sub> 时整体用双引号包住
+下标   := "_" token | "<sub>" 内容 "</sub>"   `<sub>` 的内容写到一个 </sub> 为止，可以有空格
+上标   := "^" token | "<sup>" 内容 "</sup>"   下标上标可同时出现、顺序随意，各最多一个
 箭头   := 叶子 " ->" 词序号                位移箭头（词序号 = 从左到右第几个词，从 1 开始）
 ```
 
@@ -64,6 +66,10 @@
 4. 箭头只挂在**叶子**上，而且**起点和落点都必须是叶子** —— 词序号只能定位到叶子。
    这是对齐 jsSyntaxTree 的结果，它的箭头本来就只连词。要指向非叶子只能改用规则记法。
    （箭头序号数的是**所有叶子**，与染色说的「词」口径不同；为什么这不算问题见「编号体系」一节的说明。）
+5. **下标上标的规范形式是 `<sub>…</sub>` / `<sup>…</sup>`**（作者 2026-09-30 定的）：
+   `N_s` / `N^s` 仍可读入，但 `serialize()` 一律写标签形式。标签里要是本来就有 `<sub>` 字样，
+   必须加引号（`"a<sub>b</sub>"` 是一个普通标签），否则再解析回来就变成下标了。
+   模型的 `sub` / `sup` 可以同时有值，`layout` / `render` 两者都画（宽度相加、下标偏右下、上标偏右上）。
 
 ### 规则记法
 
@@ -128,7 +134,7 @@
 | `src/model.js` | `node` `walk` `preorder` `findParent` `nodeIds` `cloneSubtree` `ESCAPE_LABEL` `addChild` `removeNode` `canAddPrimeLevel` `addPrimeLevel` `canCollapsePrimeLevel` `collapsePrimeLevel` `canForceCollapseLevel` `forceCollapseLevel` `moveNodeLeft` `moveNodeRight` |
 | `src/i18n.js` | `STRINGS` `LANGS` `LANG_LABELS` `TERMS` `TERM_KINDS` `TERM_LABELS` `DEFAULT_TERM` `i18nText` `applyTerms` —— 界面文案表与三套称谓用词，纯数据加两个纯函数，不依赖 DOM |
 | `src/docs-en.js` | `DOCS_EN` —— 教程正文（网页底部那一篇）的英文版，整篇 HTML 一个常量；**只导出、不 import**（扁平打包会去掉 import）。改它要守三条：`doc-*` 锚点与中文版一致、`example/*.svg` 原样保留、亲属称谓用 mother/sister/daughter |
-| `src/notation.js` | `parse` `serialize` `toText` `NotationError` |
+| `src/notation.js` | `parse` `serialize` `toText` `NotationError` `SUB_OPEN` `SUB_CLOSE` `SUP_OPEN` `SUP_CLOSE` `subSupText` `parseLabelSpec` `labelSpecText` —— 后三个是"标签 + 下标/上标"的公共工具（改名框与规则记法都靠它们） |
 | `src/rules.js` | `parseRules` `serializeRules` `toRulesText` `RuleError` |
 | `src/style.js` | `COLOR_NAMES` `COLOR_VALUES` `baselineColor` `splitStyleDecls` `applyStyleDecls` `styleDeclsText` |
 | `src/layout.js` | `layout` `wordNodes` `ALIGN_MODES` `CENTER_MODES` |
@@ -337,10 +343,10 @@ cmd /c "npm run build"   ← 重新生成单文件版
 3. **内部特性（转义节点 / `%Empty`）的规格不在本仓库** —— 作者要求不公开，规格与来龙去脉记在
    工作区 `HANDOVER.md` 第九部分 ⑤。上面 6.1 第 1 条讲的是它的**渲染手法**（不含语法）；
    本文件只留这个名字，不给语法，README / 教程 / CHANGELOG 里一个字都没有。
-4. **版本号**：`package.json` 与页脚是 `1.3.0-beta.1`（**公开测试版**：已推送、GitHub Release
-   已发布并勾了 pre-release、线上 Pages 同步）；对外正式发布过的最新版本仍是 `1.2.0`。
+4. **版本号**：`package.json` 与页脚是 `1.3.0-beta.2`（第二个公开测试版：下标上标 `<sub>` 写法）；
+   `v1.3.0-beta.1` 已推送并发布过 Release。对外正式发布过的最新版本仍是 `1.2.0`。
    三处一致性（`package.json` / 页脚 / `CHANGELOG` 顶部）由自检强制，
-   而且自检的正则**认预发布号**（`1.3.0-beta.1` 这种，三处必须一模一样）。
+   而且自检的正则**认预发布号**（`1.3.0-beta.2` 这种，三处必须一模一样）。
 
 ### 不要做的事
 

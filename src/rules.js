@@ -27,6 +27,7 @@
 
 import { node, nodeIds, preorder, ESCAPE_LABEL, isEscapeLabel } from "./model.js";
 import { splitStyleDecls, applyStyleDecls, styleDeclsText } from "./style.js";
+import { SUB_OPEN, SUB_CLOSE, SUP_OPEN, SUP_CLOSE, subSupText } from "./notation.js";
 
 export class RuleError extends Error {
   constructor(message, line = 1) {
@@ -38,12 +39,20 @@ export class RuleError extends Error {
 
 const RULE_WS = /\s/;
 
-/** 读一个"标签 [+ 下/上标]"的 token */
+/**
+ * 读一个"标签 [+ 下标 / 上标]"的 token。
+ *
+ * 下标上标有两种写法，和括号记法一致：
+ *   `_x` / `^x`（老写法，一个 token）
+ *   `<sub>…</sub>` / `<sup>…</sup>`（内容可以含空格、`_`、`^`）
+ * 两种可以混用、顺序随意，每种最多一次。
+ */
 function parseLabelToken(text, lineNo) {
   let i = 0;
   const skip = () => {
     while (i < text.length && RULE_WS.test(text[i])) i++;
   };
+  const startsTag = (at) => text.startsWith(SUB_OPEN, at) || text.startsWith(SUP_OPEN, at);
 
   skip();
   if (i >= text.length) throw new RuleError("这里需要一个标签", lineNo);
@@ -58,35 +67,66 @@ function parseLabelToken(text, lineNo) {
     i = end + 1;
   } else {
     let j = i;
-    while (j < text.length && !RULE_WS.test(text[j]) && text[j] !== "_" && text[j] !== "^") j++;
+    while (j < text.length && !RULE_WS.test(text[j]) && text[j] !== "_" && text[j] !== "^" && !startsTag(j)) j++;
     label = text.slice(i, j);
     i = j;
     if (label === "")
       throw new RuleError("标签不能以 _ 或 ^ 开头，否则分不清是标签还是下标", lineNo);
+    // 裸标签里若是"多出来的结束记号"，和括号记法一样直接报错（带引号写就是普通文字）
+    const stray = [SUB_CLOSE, SUP_CLOSE].find((c) => label.includes(c));
+    if (stray) throw new RuleError(`多余的 "${stray}"（前面没有对应的开始记号）`, lineNo);
   }
 
   let sub = null;
   let sup = null;
-  skip();
-  if (text[i] === "_" || text[i] === "^") {
-    const isSup = text[i] === "^";
-    i++;
+  for (;;) {
     skip();
-    let v;
-    if (text[i] === '"') {
-      const end = text.indexOf('"', i + 1);
-      if (end < 0) throw new RuleError("引号没有闭合", lineNo);
-      v = text.slice(i + 1, end);
-      i = end + 1;
-    } else {
-      let j = i;
-      while (j < text.length && !RULE_WS.test(text[j])) j++;
-      v = text.slice(i, j);
-      i = j;
+    if (text[i] === "_" || text[i] === "^") {
+      const isSup = text[i] === "^";
+      i++;
+      skip();
+      let v;
+      if (text[i] === '"') {
+        const end = text.indexOf('"', i + 1);
+        if (end < 0) throw new RuleError("引号没有闭合", lineNo);
+        v = text.slice(i + 1, end);
+        i = end + 1;
+      } else {
+        let j = i;
+        while (j < text.length && !RULE_WS.test(text[j]) && text[j] !== "_" && text[j] !== "^" && !startsTag(j)) j++;
+        v = text.slice(i, j);
+        i = j;
+      }
+      if (v === "") throw new RuleError(`${isSup ? "上" : "下"}标后面缺少内容`, lineNo);
+      if (isSup) {
+        if (sup != null) throw new RuleError("上标只能写一次", lineNo);
+        sup = v;
+      } else {
+        if (sub != null) throw new RuleError("下标只能写一次", lineNo);
+        sub = v;
+      }
+      continue;
     }
-    if (v === "") throw new RuleError(`${isSup ? "上" : "下"}标后面缺少内容`, lineNo);
-    if (isSup) sup = v;
-    else sub = v;
+    const isSubTag = text.startsWith(SUB_OPEN, i);
+    const isSupTag = text.startsWith(SUP_OPEN, i);
+    if (isSubTag || isSupTag) {
+      const open = isSupTag ? SUP_OPEN : SUB_OPEN;
+      const close = isSupTag ? SUP_CLOSE : SUB_CLOSE;
+      const end = text.indexOf(close, i + open.length);
+      if (end < 0) throw new RuleError(`"${open}" 没有闭合（要写成 ${open}…${close}）`, lineNo);
+      const v = text.slice(i + open.length, end).trim();
+      if (v === "") throw new RuleError(`"${open}" 里没有内容`, lineNo);
+      if (isSupTag) {
+        if (sup != null) throw new RuleError("上标只能写一次", lineNo);
+        sup = v;
+      } else {
+        if (sub != null) throw new RuleError("下标只能写一次", lineNo);
+        sub = v;
+      }
+      i = end + close.length;
+      continue;
+    }
+    break;
   }
 
   skip();
@@ -154,13 +194,15 @@ function parseLine(raw, lineNo) {
  * 这样编辑器才有机会把编号自动修回去，而不是直接报错卡住。
  */
 function resolveMother(byId, e) {
+  // 标签 + 下标/上标都相同才算同一个节点（不然 N<sub>1</sub> 与 N<sub>2</sub> 会认错）
+  const same = (n) => n.label === e.spec.label && (n.sub ?? null) === (e.spec.sub ?? null) && (n.sup ?? null) === (e.spec.sup ?? null);
   const exact = byId.get(e.motherId);
-  if (exact && exact.label === e.spec.label) return exact;
+  if (exact && same(exact)) return exact;
 
   let best = null;
   let bestGap = Infinity;
   for (const [id, n] of byId) {
-    if (n.label !== e.spec.label) continue;
+    if (!same(n)) continue;
     const gap = Math.abs(id - e.motherId);
     if (gap < bestGap) {
       bestGap = gap;
@@ -256,15 +298,13 @@ export function parseRules(text) {
 function tokenOf(n) {
   const label = String(n.label ?? "");
   // 标签长得像转义节点（%Empty 或带撇）但又不是转义节点时，必须带引号写，
-  // 否则再解析回来就变成转义节点了
+  // 否则再解析回来就变成转义节点了。含 <sub>/<sup> 字样的标签同理（不加引号会被当成下标）
   const force = isEscapeLabel(label) && !n.escape;
-  const bare = !force && label !== "" && !/[\s"^_]/.test(label) && !/-->|->/.test(label);
+  const tagLike = /<\/?su[bp]>/.test(label);
+  const bare = !force && !tagLike && label !== "" && !/[\s"^_]/.test(label) && !/-->|->/.test(label);
   const head = bare ? label : `"${label.replace(/"/g, "")}"`;
-
-  const ss = (v) => (/[\s"]/.test(String(v)) ? `"${String(v).replace(/"/g, "")}"` : String(v));
-  if (n.sub != null && n.sub !== "") return `${head}_${ss(n.sub)}`;
-  if (n.sup != null && n.sup !== "") return `${head}^${ss(n.sup)}`;
-  return head;
+  // 下标 / 上标一律写成显式记号（和括号记法一样），两种可以同时存在
+  return head + subSupText(n);
 }
 
 /**
